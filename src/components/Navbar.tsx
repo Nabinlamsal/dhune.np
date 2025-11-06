@@ -8,16 +8,32 @@ export default function Navbar() {
 
       <div className="hidden md:flex justify-center">
         <div className="flex items-left space-x-8">
-          <a href="#" className="hover:text-blue-600 transition">About</a>
-          <a href="#" className="hover:text-blue-600 transition">Services</a>
-          <a href="#" className="hover:text-blue-600 transition">FAQs</a>
-          <a href="#" className="hover:text-blue-600 transition">Contact</a>
-          <a href="#" className="hover:text-blue-600 transition">Blogs</a>
+          <a
+            href="#"
+            className="relative text-black hover:text-[#040947] transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#ebbc01] hover:before:w-full before:transition-all"
+          >About</a>
+          <a
+            href="#"
+            className="relative text-black hover:text-[#040947] transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#ebbc01] hover:before:w-full before:transition-all"
+          >How it Works?</a>
+          <a
+            href="#"
+            className="relative text-black hover:text-[#040947] transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#ebbc01] hover:before:w-full before:transition-all"
+          >Services</a>
+          <a
+            href="#"
+            className="relative text-black hover:text-[#040947] transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#ebbc01] hover:before:w-full before:transition-all"
+          >Help Section</a>
+          <a
+            href="#"
+            className="relative text-black hover:text-[#040947] transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#ebbc01] hover:before:w-full before:transition-all"
+          >Contact</a>
+
         </div>
       </div>
 
       <div>
-        <button className="bg-[] text-[#F7F5EE]  px-4 py-1 rounded-lg bg-blue-600 hover:bg-[#121008ea] transition">
+        <button className="text-[#F7F5EE] h-8 px-4 py-1 rounded-lg bg-[#040947] hover:bg-[#121008ea] transition">
           Book Service
         </button>
       </div>
