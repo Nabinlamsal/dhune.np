@@ -1,0 +1,91 @@
+sequence-diagram
+
+Admin [icon: shield, color: red]
+Frontend [icon: monitor, color: gray]
+Backend [icon: server, color: blue]
+Provider [icon: briefcase, color: teal]
+User [icon: user, color: blue]
+PaymentGateway [icon: credit-card, color: green]
+Database [icon: database, color: purple]
+
+%% ------------------------------
+%% ADMIN LOGIN
+%% ------------------------------
+
+Admin > Frontend: Login Request
+Frontend > Backend: Validate Admin Credentials
+activate Backend
+Backend --> Frontend: JWT + Dashboard Access Granted
+deactivate Backend
+
+%% ------------------------------
+%% REVIEW PROVIDER REGISTRATIONS
+%% ------------------------------
+
+Admin > Frontend: View Pending Provider Applications
+Frontend > Backend: Fetch Pending Providers
+Backend > Database: Query Pending Provider Docs
+Database --> Backend: Provider List
+Backend --> Frontend: Send Provider Applications
+
+Admin > Frontend: Approve/Reject Provider
+Frontend > Backend: Update Provider Status
+Backend > Database: Update Provider Record
+
+alt Provider Approved
+Backend > PaymentGateway: Trigger Registration Fee Payment
+PaymentGateway --> Backend: Payment Status
+Backend --> Provider: Approval + Payment Confirmation
+else Provider Rejected
+Backend --> Provider: Rejection Notification
+end
+
+%% ------------------------------
+%% MONITOR SERVICE REQUESTS
+%% ------------------------------
+
+Admin > Frontend: View All Active Orders
+Frontend > Backend: Request Orders Data
+Backend > Database: Fetch Active Orders
+Database --> Backend: Orders Data
+Backend --> Frontend: Display Orders
+
+%% ------------------------------
+%% HANDLE DISPUTES (USER ↔ PROVIDER)
+%% ------------------------------
+
+User > Backend: File Dispute
+Backend --> Admin: Dispute Notification
+
+Admin > Frontend: Review Dispute
+Frontend > Backend: Request Dispute Details
+Backend > Database: Fetch Dispute Info
+Database --> Backend: Dispute Details
+
+Admin > Backend: Resolve Dispute (Refund / Reassign / Warn Provider)
+Backend > Database: Update Dispute + Order Status
+Backend --> User: Resolution Notification
+Backend --> Provider: Resolution Notification
+
+%% ------------------------------
+%% COMMISSION & PAYOUT MANAGEMENT
+%% ------------------------------
+
+Admin > Frontend: View Commission Reports
+Frontend > Backend: Request Commission Data
+Backend > Database: Fetch Payments + Commissions
+Database --> Backend: Data Returned
+Backend --> Frontend: Display Report
+
+Admin > Backend: Approve Vendor Payout
+Backend > PaymentGateway: Transfer Amount to Provider
+PaymentGateway --> Backend: Confirmation
+Backend --> Provider: Payout Completed Notification
+
+%% ------------------------------
+%% MANAGE NOTIFICATIONS
+%% ------------------------------
+
+Admin > Backend: Send Platform Announcement
+Backend --> User: Broadcast Notification
+Backend --> Provider: Broadcast Notification

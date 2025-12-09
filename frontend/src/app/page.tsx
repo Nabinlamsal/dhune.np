@@ -15,7 +15,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-black sm:text-4xl lg:text-6xl">
               Pickup to Delivery,
               <div className="relative inline-flex">
-                <span className="absolute inset-x-0 bottom-0 border-b-[15px] border-[#040947]"></span>                <h1 className="relative text-2xl font-bold text-black sm:text-4xl lg:text-6xl mt-4">
+                <span className="absolute inset-x-0 bottom-0 border-b-[25px] border-[#ebbc01]"></span>                <h1 className="relative text-2xl font-bold text-black sm:text-4xl lg:text-6xl mt-4">
                   Your Way!
                 </h1>
               </div>
@@ -28,7 +28,7 @@ export default function Home() {
             <a
               href="#"
               title=""
-              className="inline-flex items-center justify-center px-10 py-4 mr-10 text-base font-semibold text-white transition-all duration-200 bg-[#040947] hover:bg-[#121008ea] rounded-lg h-8"
+              className="inline-flex items-center justify-center px-10 py-4 mr-10 text-sm font-semibold text-white transition-all duration-200 bg-[#040947] hover:bg-[#121008ea] rounded-lg h-10"
               role="button"
             >
               Get Started
@@ -36,7 +36,7 @@ export default function Home() {
             <a
               href="#"
               title=""
-              className="inline-flex items-center justify-center px-10 py-4 text-base font-semibold text-black transition-all duration-200 bg-[#ebbc01] hover:bg-[#121008ea] h-8 rounded-lg"
+              className="inline-flex items-center justify-center px-10 py-4 text-sm font-semibold text-black transition-all duration-200 bg-[#ebbc01] hover:bg-[#121008ea] hover:text-white h-10 rounded-lg"
               role="button"
             >
               Vendor Registration
@@ -74,6 +74,9 @@ export default function Home() {
           </div>
 
         </div>
+      </div>
+      <div className="bg-[#040947] justify-center h-100">
+        <h1 className="text-5xl align-middle font-bold text-amber-400 mt-10"> Download User Mobile Application Now</h1>
       </div>
     </div >
   );

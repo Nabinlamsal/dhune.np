@@ -1,0 +1,215 @@
+entity-relationship-diagram
+
+users [icon: user, color: blue] {
+    id string pk
+    name string
+    email string
+    phone string
+    role string      // normal | business
+    password string
+    createdAt timestamp
+}
+
+addresses [icon: map-pin, color: blue] {
+    id string pk
+    userId string
+    label string
+    fullAddress string
+    lat number
+    lng number
+}
+
+providers [icon: building, color: purple] {
+    id string pk
+    ownerId string   // user reference
+    businessName string
+    email string
+    phone string
+    status string    // pending | approved | suspended
+    rating number
+    createdAt timestamp
+}
+
+provider_documents [icon: file-text, color: purple] {
+    id string pk
+    providerId string
+    docType string        // PAN, registration
+    fileUrl string
+    status string         // uploaded | verified | rejected
+    uploadedAt timestamp
+}
+
+subscription_packages [icon: gift, color: yellow] {
+    id string pk
+    title string
+    description string
+    price number
+    durationMonths number
+}
+
+provider_subscriptions [icon: credit-card, color: yellow] {
+    id string pk
+    providerId string
+    packageId string
+    paymentId string
+    startDate timestamp
+    endDate timestamp
+    status string         // active | expired | cancelled
+}
+
+service_categories [icon: list, color: green] {
+    id string pk
+    name string
+    description string
+}
+
+provider_services [icon: settings, color: green] {
+    id string pk
+    providerId string
+    categoryId string
+    pricePerKg number
+    pricePerItem number
+}
+
+requests [icon: shopping-bag, color: orange] {
+    id string pk
+    userId string
+    categoryId string
+    requestType string      // weight | itemized
+    estWeight number
+    itemsJson string
+    pickupAddressId string
+    preferredTime timestamp
+    status string           // created | offers_open | selected | cancelled
+    lat number
+    lng number
+    createdAt timestamp
+}
+
+request_items [icon: package, color: orange] {
+    id string pk
+    requestId string
+    itemName string
+    quantity number
+    estPrice number
+}
+
+offers [icon: handshake, color: teal] {
+    id string pk
+    providerId string
+    requestId string
+    price number
+    etaText string
+    notes string
+    status string           // sent | withdrawn | expired
+    createdAt timestamp
+}
+
+orders [icon: truck, color: red] {
+    id string pk
+    requestId string
+    offerId string
+    providerId string
+    status string           // confirmed | picked_up | washing | delivery | completed | cancelled
+    totalAmount number
+    commissionAmount number
+    confirmedAt timestamp
+    completedAt timestamp
+}
+
+payments [icon: credit-card, color: yellow] {
+    id string pk
+    orderId string
+    payerId string
+    method string       // esewa | khalti | cod
+    purpose string      // service_payment | subscription_fee
+    amount number
+    status string       // pending | success | failed
+    gatewayRef string
+    paidAt timestamp
+}
+
+reviews [icon: star, color: pink] {
+    id string pk
+    orderId string
+    userId string
+    providerId string
+    rating number
+    comment string
+    createdAt timestamp
+}
+
+disputes [icon: alert-circle, color: red] {
+    id string pk
+    orderId string
+    raisedById string
+    raisedByType string     // user | provider
+    reason string
+    status string           // open | resolved
+    resolutionNotes string
+}
+
+notifications [icon: bell, color: purple] {
+    id string pk
+    targetId string
+    targetType string     // user | provider | admin
+    type string           // realtime | email
+    title string
+    body string
+    sentAt timestamp
+}
+
+admins [icon: shield, color: gray] {
+    id string pk
+    name string
+    email string
+    role string
+}
+
+action_logs [icon: activity, color: gray] {
+    id string pk
+    adminId string
+    action string
+    details string
+    createdAt timestamp
+}
+
+//// RELATIONSHIPS ////
+
+addresses.userId > users.id
+
+providers.ownerId > users.id
+provider_documents.providerId > providers.id
+provider_subscriptions.providerId > providers.id
+provider_subscriptions.packageId > subscription_packages.id
+
+provider_services.providerId > providers.id
+provider_services.categoryId > service_categories.id
+
+requests.userId > users.id
+requests.categoryId > service_categories.id
+requests.pickupAddressId > addresses.id
+
+request_items.requestId > requests.id
+
+offers.providerId > providers.id
+offers.requestId > requests.id
+
+orders.requestId > requests.id
+orders.offerId > offers.id
+orders.providerId > providers.id
+
+payments.orderId > orders.id
+payments.payerId > users.id
+
+reviews.orderId > orders.id
+reviews.userId > users.id
+reviews.providerId > providers.id
+
+disputes.orderId > orders.id
+
+notifications.targetId <> users.id
+notifications.targetId <> providers.id
+notifications.targetId <> admins.id
+
+action_logs.adminId > admins.id
