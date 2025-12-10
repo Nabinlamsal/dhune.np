@@ -1,5 +1,10 @@
-import AudienceSection from "../components/AudienceSection";
+"use client";
+import { useState } from "react";
+import AudienceSection from "../components/ui/AudienceSection";
+import LoginModal from "../components/modals/LoginModal";
+
 export default function Home() {
+  const [showLogin, setShowLogin] = useState(false);
   return (
     <div className="bg-[#F7F5EE]">
       <div className="relative mt-10 h-screen bg-[url('/hero.jpg')] bg-cover bg-center bg-no-repeat px-10">
@@ -26,8 +31,7 @@ export default function Home() {
             </p>
 
             <a
-              href="#"
-              title=""
+              onClick={() => setShowLogin(true)}
               className="inline-flex items-center justify-center px-10 py-4 mr-10 text-sm font-semibold text-white transition-all duration-200 bg-[#040947] hover:bg-[#121008ea] rounded-lg h-10"
               role="button"
             >
@@ -70,13 +74,15 @@ export default function Home() {
               "<span className="text-[#040947] font-bold ">Our Mission </span>
               is to simplify how Nepal does laundry by creating a digital ecosystem where quality, trust, and convenience come together"
             </p>
+
+            <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
             <AudienceSection />
           </div>
 
         </div>
       </div>
       <div className="bg-[#040947] justify-center h-100">
-        <h1 className="text-5xl align-middle font-bold text-amber-400 mt-10"> Download User Mobile Application Now</h1>
+        <h1 className="text-6xl align-left self-center font-bold text-amber-400 mt-10"> Download<br />Mobile <br />Application <br />Now</h1>
       </div>
     </div >
   );

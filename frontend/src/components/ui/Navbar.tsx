@@ -1,5 +1,11 @@
 // Navbar.jsx
+"use client";
+import { useState } from "react"
+import LoginModal from "../modals/LoginModal"
+
 export default function Navbar() {
+  const [showLogin, setShowLogin] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between h-16 bg-[#F7F5EE] text-[#1A1A2E] font-sans font-semibold px-8 shadow-md">
       <div className="flex items-center space-x-2 px-10">
@@ -33,10 +39,11 @@ export default function Navbar() {
       </div>
 
       <div>
-        <button className="text-[#F7F5EE] h-8 px-4 py-1 rounded-lg bg-[#040947] hover:bg-[#121008ea] transition">
+        <button onClick={() => setShowLogin(true)} className="text-[#F7F5EE] h-8 px-4 py-1 rounded-lg bg-[#040947] hover:bg-[#121008ea] transition">
           Book Service
         </button>
       </div>
-    </nav>
+      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
+    </nav >
   );
 }
