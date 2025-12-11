@@ -1,13 +1,13 @@
 // Navbar.jsx
 "use client";
 import { useState } from "react"
-import LoginModal from "../modals/LoginModal"
+import LoginModal from "./modals/LoginModal"
 
 export default function Navbar() {
   const [showLogin, setShowLogin] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between h-16 bg-[#F7F5EE] text-[#1A1A2E] font-sans font-semibold px-8 shadow-md">
+    <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between h-16 bg-[#F7F5EE] text-[#1A1A2E] font-nunito font-semibold px-8 shadow-md">
       <div className="flex items-center space-x-2 px-10">
         <img src="/image.png" alt="logo" className="h-10 w-10 mix-blend-multiply" /><span>Dhune.np</span>
       </div>

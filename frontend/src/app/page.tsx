@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
-import AudienceSection from "../components/ui/AudienceSection";
+import AudienceSection from "../components/AudienceSection";
 import LoginModal from "../components/modals/LoginModal";
+import VendorSignupModal from "../components/modals/VendorSignupModal";
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
+  const [showVendorSignup, setShowVendorSignup] = useState(false);
   return (
-    <div className="bg-[#F7F5EE]">
+    <div className="bg-[#F7F5EE] font-nunito">
       <div className="relative mt-10 h-screen bg-[url('/hero.jpg')] bg-cover bg-center bg-no-repeat px-10">
         {/* Optional overlay for readability */}
         <div className="absolute inset-0 bg-[#eaeaea] opacity-20"></div>
@@ -17,7 +19,7 @@ export default function Home() {
             <p className="font-bold text-[#ebbc01] font-nunito text-base mb-5 sm:text-lg lg:text-xl max-w-md">
               / Connect. Compare. Clean.
             </p>
-            <h1 className="text-4xl font-bold text-black sm:text-4xl lg:text-6xl">
+            <h1 className="text-4xl font-bold text-black sm:text-4xl lg:text-6xl font-nunito">
               Pickup to Delivery,
               <div className="relative inline-flex">
                 <span className="absolute inset-x-0 bottom-0 border-b-[25px] border-[#ebbc01]"></span>                <h1 className="relative text-2xl font-bold text-black sm:text-4xl lg:text-6xl mt-4">
@@ -38,8 +40,7 @@ export default function Home() {
               Get Started
             </a>
             <a
-              href="#"
-              title=""
+              onClick={() => setShowVendorSignup(true)}
               className="inline-flex items-center justify-center px-10 py-4 text-sm font-semibold text-black transition-all duration-200 bg-[#ebbc01] hover:bg-[#121008ea] hover:text-white h-10 rounded-lg"
               role="button"
             >
@@ -76,6 +77,7 @@ export default function Home() {
             </p>
 
             <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
+            <VendorSignupModal open={showVendorSignup} onClose={() => setShowVendorSignup(false)} />
             <AudienceSection />
           </div>
 
