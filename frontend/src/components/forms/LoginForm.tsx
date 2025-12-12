@@ -1,21 +1,21 @@
-
 import { cn } from "@/lib/utils"
-import { Button } from "@/src/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/src/components/ui/card"
-import { Field, FieldDescription, FieldGroup, FieldLabel, } from "@/src/components/ui/field"
-import { Input } from "@/src/components/ui/input"
-import { VendorSignupForm } from "./VendorSignupForm"
-import { BusinessSignupForm } from "./BusinessSignupForm"
-import { useState } from "react"
+import { Button } from "../ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "../ui/field"
+import { Input } from "../ui/input"
 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../ui/select";
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const [showVendorSignup, setShowVendorSignup] = useState(false);
-    const [showBusinessUserSignup, setShowBusinessUserSignup] = useState(false);
-    const [showNormalUserSignup, setShowNormalUserSignup] = useState(false);
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -26,9 +26,12 @@ export function LoginForm({
                         Login to your account
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                     <form>
                         <FieldGroup>
+
+                            {/* Email */}
                             <Field>
                                 <FieldLabel htmlFor="email">Email</FieldLabel>
                                 <Input
@@ -38,6 +41,8 @@ export function LoginForm({
                                     required
                                 />
                             </Field>
+
+                            {/* Password */}
                             <Field>
                                 <div className="flex items-center">
                                     <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -50,41 +55,46 @@ export function LoginForm({
                                 </div>
                                 <Input id="password" type="password" required />
                             </Field>
+
+                            {/* Login Buttons */}
                             <Field>
-                                <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit">Login</Button>
-                                <Button className="bg-[#6187c2] hover:bg-[#357ae8]" variant="outline" type="button">
+                                <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit">
+                                    Login
+                                </Button>
+
+                                <Button
+                                    className="bg-[#6187c2] hover:bg-[#357ae8] mt-2"
+                                    variant="outline"
+                                    type="button"
+                                >
                                     Login with Google
                                 </Button>
-                                <FieldDescription className="text-center">
-                                    Don't have an account?{" "}
 
-                                    <select
-                                        className="border border-amber-400 rounded-md px-2 py-1 ml-1 text-[#121008ea] bg-amber-400font-semibold cursor-pointer"
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (!value) return;
-
-                                            // Redirect depending on selection
-                                            if (value === "normal") window.location.href = "/signup/normal";
-                                            if (value === "business") window.location.href = "/signup/business";
-                                            if (value === "vendor") window.location.href = "/signup/vendor";
+                                {/* SIGNUP DROPDOWN (FINAL) */}
+                                <FieldDescription className="text-center mt-4">
+                                    Don&apos;t have an account?
+                                    <Select
+                                        onValueChange={(value) => {
+                                            if (value) window.location.href = `/signup/${value}`;
                                         }}
                                     >
-                                        <option value="" hidden>Sign up as...</option>
-                                        <option value="normal" onClick={() => setShowNormalUserSignup(true)}>Normal User</option>
-                                        <option value="business" onClick={() => setShowBusinessUserSignup(true)}>Business User</option>
-                                        <option value="vendor" onClick={() => setShowVendorSignup(true)}>Laundry Vendor</option>
-                                    </select>
-                                </FieldDescription>
+                                        <SelectTrigger className="inline-flex w-[200px] ml-2 bg-white border border-gray-300 rounded-md">
+                                            <SelectValue placeholder="Sign up as..." />
+                                        </SelectTrigger>
 
+                                        <SelectContent className="bg-white shadow-md rounded-md">
+                                            <SelectItem value="normal">Normal User</SelectItem>
+                                            <SelectItem value="business">Business User</SelectItem>
+                                            <SelectItem value="vendor">Laundry Vendor</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FieldDescription>
                             </Field>
+
                         </FieldGroup>
                     </form>
-                    <NormalUserSignupForm open={showNormalUserSignup} onClose={() => setShowNormalUserSignup(false)} />
-                    <BusinessSignupForm open={showBusinessUserSignup} onClose={() => setShowBusinessUserSignup(false)} />
-                    <VendorSignupForm open={showVendorSignup} onClose={() => setShowVendorSignup(false)} />
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
