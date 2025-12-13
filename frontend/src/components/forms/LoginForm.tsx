@@ -13,12 +13,11 @@ import {
 } from "../ui/select";
 
 export function LoginForm({
-    className,
-    ...props
-}: React.ComponentProps<"div">) {
+    onSignupSelect
+}: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
 
     return (
-        <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <div className={cn("flex flex-col gap-6")}>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-yellow-600">Dhune.np</CardTitle>
@@ -74,18 +73,17 @@ export function LoginForm({
                                 <FieldDescription className="text-center mt-4">
                                     Don&apos;t have an account?
                                     <Select
-                                        onValueChange={(value) => {
-                                            if (value) window.location.href = `/signup/${value}`;
-                                        }}
+                                        onValueChange={(value) => onSignupSelect(value as any)
+                                        }
                                     >
                                         <SelectTrigger className="inline-flex w-[200px] ml-2 bg-white border border-gray-300 rounded-md">
                                             <SelectValue placeholder="Sign up as..." />
                                         </SelectTrigger>
 
                                         <SelectContent className="bg-white shadow-md rounded-md">
-                                            <SelectItem value="normal">Normal User</SelectItem>
-                                            <SelectItem value="business">Business User</SelectItem>
-                                            <SelectItem value="vendor">Laundry Vendor</SelectItem>
+                                            <SelectItem value="user_signup">Normal User</SelectItem>
+                                            <SelectItem value="business_signup">Business User</SelectItem>
+                                            <SelectItem value="vendor_signup">Laundry Vendor</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FieldDescription>

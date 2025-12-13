@@ -21,11 +21,10 @@ import {
 } from "../ui/field";
 import { Input } from "../ui/input";
 
-export function BusinessSignupForm({ className, ...props }: React.ComponentProps<"div">) {
-    const [showLogin, setShowLogin] = useState(false);
+export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
 
     return (
-        <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto", className)} {...props}>
+        <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-blue-700">Business User Signup - Dhune.np</CardTitle>
@@ -137,7 +136,7 @@ export function BusinessSignupForm({ className, ...props }: React.ComponentProps
                             <Field className="col-span-full">
                                 <Button
                                     type="submit"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
                                 >
                                     Register as Business User
                                 </Button>
@@ -147,20 +146,18 @@ export function BusinessSignupForm({ className, ...props }: React.ComponentProps
                             <Field className="col-span-full">
                                 <FieldDescription className="text-center text-md font-semibold mx-0">
                                     Already have an account?{" "}
-                                    <a
-                                        href="#"
-                                        className="text-blue-800"
-                                        onClick={() => setShowLogin(true)}
+                                    <button
+                                        type="button"
+                                        className="text-blue-800 underline"
+                                        onClick={onBack}
                                     >
                                         Sign In
-                                    </a>
+                                    </button>
                                 </FieldDescription>
                             </Field>
 
                         </FieldGroup>
                     </form>
-
-                    <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
                 </CardContent>
             </Card>
         </div>

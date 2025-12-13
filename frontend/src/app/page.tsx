@@ -2,7 +2,6 @@
 import { useState } from "react";
 import AudienceSection from "../components/AudienceSection";
 import LoginModal from "../components/modals/LoginModal";
-import VendorSignupModal from "../components/modals/VendorSignupModal";
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
@@ -77,7 +76,6 @@ export default function Home() {
             </p>
 
             <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
-            <VendorSignupModal open={showVendorSignup} onClose={() => setShowVendorSignup(false)} />
             <AudienceSection />
           </div>
 

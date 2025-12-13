@@ -2,8 +2,6 @@
 "use client"
 
 import { cn } from "@/lib/utils";
-import LoginModal from "../modals/LoginModal";
-import { useState } from "react";
 import { Button } from "../ui/button";
 import {
     Card,
@@ -21,13 +19,12 @@ import {
 } from "../ui/field";
 import { Input } from "../ui/input";
 
-export function VendorSignupForm({ className, ...props }: React.ComponentProps<"div">) {
-    const [showLogin, setShowLogin] = useState(false);
+export function VendorSignupForm({ onBack }: { onBack: () => void }) {
 
     return (
-        <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto", className)} {...props}>
+        <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
             <Card>
-                <CardHeader className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <CardHeader className="flex md:grid-cols-2 gap-10">
                     <div>
                         <CardTitle className="text-yellow-600">Vendor Signup - Dhune.np</CardTitle>
                         <CardDescription>
@@ -37,17 +34,6 @@ export function VendorSignupForm({ className, ...props }: React.ComponentProps<"
                             </span>
                         </CardDescription>
                     </div>
-
-                    <FieldDescription className="text-center text-md font-semibold mx-7">
-                        Already have an account?{" "}
-                        <a
-                            href="#"
-                            className="text-[#040947]"
-                            onClick={() => setShowLogin(true)}
-                        >
-                            Sign In
-                        </a>
-                    </FieldDescription>
                 </CardHeader>
 
                 <CardContent>
@@ -149,7 +135,7 @@ export function VendorSignupForm({ className, ...props }: React.ComponentProps<"
                             <Field className="col-span-full">
                                 <Button
                                     type="submit"
-                                    className="bg-[#ebbc01] hover:bg-[#040947] text-black font-bold py-2 px-4 rounded w-full"
+                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
                                 >
                                     Register as Vendor
                                 </Button>
@@ -159,19 +145,17 @@ export function VendorSignupForm({ className, ...props }: React.ComponentProps<"
                             <Field className="col-span-full">
                                 <FieldDescription className="text-center text-md font-semibold mx-0">
                                     Already have an account?{" "}
-                                    <a
-                                        href="#"
-                                        className="text-[#040947]"
-                                        onClick={() => setShowLogin(true)}
+                                    <button
+                                        type="button"
+                                        className="text-blue-800 underline"
+                                        onClick={onBack}
                                     >
                                         Sign In
-                                    </a>
+                                    </button>
                                 </FieldDescription>
                             </Field>
                         </FieldGroup>
                     </form>
-
-                    <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
                 </CardContent>
             </Card>
         </div>
