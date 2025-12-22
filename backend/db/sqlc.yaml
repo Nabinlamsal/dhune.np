@@ -7,4 +7,4 @@ sql:
     gen:
       go:
         package: "db"
-        out: "../internal/domain/db"
+        out: "../internal/database"
