@@ -7,23 +7,28 @@ type SignupRequestDTO struct {
 	Phone       string `json:"phone" binding:"required"`
 	Password    string `json:"password" binding:"required,min=6"`
 
-	// Owner / representative name (business & vendor)
+	//business or vendor representative name
 	OwnerName *string `json:"owner_name,omitempty"`
 
-	// Business-only fields (role = business)
+	//business users only
 	BusinessType *string `json:"business_type,omitempty"`
 
-	// Vendor-only fields (role = vendor)
+	//vendors only
 	Address *string `json:"address,omitempty"`
 
-	// Common for business & vendor
-	RegistrationNumber *string `json:"registration_number,omitempty"`
-
-	// Documents (for business/vendor)
-	Documents []SignupDocumentDTO `json:"documents,omitempty"`
+	//for business and vendors
+	RegistrationNumber *string             `json:"registration_number,omitempty"`
+	Documents          []SignupDocumentDTO `json:"documents,omitempty"`
 }
 
 type SignupDocumentDTO struct {
 	DocumentType string `json:"document_type" binding:"required"` // business_registration | vendor_registration
 	DocumentURL  string `json:"document_url" binding:"required,url"`
+}
+
+type SignupResponseDTO struct {
+	UserId          string `json:"user_id"`
+	Role            string `json:"role"`
+	Status          string `json:"status"`
+	ResponseMessage string `json:"message"`
 }

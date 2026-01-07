@@ -33,7 +33,6 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <Navbar />
         {children}
       </body>
     </html>

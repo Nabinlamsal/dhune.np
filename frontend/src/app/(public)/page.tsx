@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import AudienceSection from "../components/AudienceSection";
-import LoginModal from "../components/modals/LoginModal";
+import AudienceSection from "../../components/AudienceSection";
+import LoginModal from "../../components/modals/LoginModal";
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);

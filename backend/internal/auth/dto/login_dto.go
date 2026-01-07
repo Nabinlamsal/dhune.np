@@ -1,8 +1,18 @@
 package dto
 
-type RegisterCostumerDTO struct {
-	FullName    string `json:"full_name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
-	Password    string `json:"password" binding:"required,min=6"`
+type LoginRequestDTO struct {
+	EmailOrPhone string `json:"email_or_phone"`
+	Password     string `json:"password"`
+}
+type LoginResponseDTO struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+
+	User struct {
+		ID          string `json:"id"`
+		DisplayName string `json:"display_name"`
+		Role        string `json:"role"`
+	} `json:"user"`
+
+	Message string `json:"message"`
 }
