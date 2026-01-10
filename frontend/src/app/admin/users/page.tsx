@@ -175,7 +175,11 @@ export default function AdminUsersPage() {
             />
 
             {/* Table */}
-            <DataTable columns={columns} data={filteredUsers} />
+            <DataTable
+                columns={columns}
+                data={filteredUsers}
+                onRowClick={(user) => setSelectedUser(user)}
+            />
 
             {/* Details Drawer */}
             <DetailsDrawer
@@ -243,3 +247,4 @@ function Detail({
         </div>
     )
 }
+

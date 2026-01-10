@@ -21,10 +21,10 @@ export default function Sidebar() {
     const menu = [
         { href: "/admin", label: "Dashboard", icon: <LayoutDashboard /> },
         { href: "/admin/users", label: "Users", icon: <Users /> },
-        { href: "/admin/business", label: "Business Accounts", icon: <Building2 /> },
         { href: "/admin/vendors", label: "Vendors", icon: <Store /> },
         { href: "/admin/orders", label: "Orders", icon: <ShoppingBag /> },
-        { href: "/admin/marketplace", label: "Requests & Offers", icon: <Gavel /> },
+        { href: "/admin/offers", label: "Offers", icon: <Building2 /> },
+        { href: "/admin/requests", label: "Requests", icon: <Gavel /> },
         { href: "/admin/payments", label: "Payments", icon: <CreditCard /> },
         { href: "/admin/categories", label: "Categories", icon: <Layers /> },
     ]

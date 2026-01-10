@@ -17,7 +17,7 @@ export function ActionMenu({
     onDelete,
 }: ActionMenuProps) {
     return (
-        <div className="relative group">
+        <div className="relative group" onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" size="icon">
                 <MoreVertical className="w-4 h-4" />
             </Button>
