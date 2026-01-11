@@ -1,7 +1,7 @@
 "use client"
 
 import { X } from "lucide-react"
-import { Card } from "@/src/components/ui/card"
+
 import { Button } from "@/src/components/ui/button"
 
 interface DetailsDrawerProps {
