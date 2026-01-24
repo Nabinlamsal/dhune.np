@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserRepository interface {
+type CommandRepository interface {
 	ApproveVendor(ctx context.Context, userId uuid.UUID) error
 	RejectVendor(ctx context.Context, userId uuid.UUID) error
 	ApproveBusinessUser(ctx context.Context, userId uuid.UUID) error
