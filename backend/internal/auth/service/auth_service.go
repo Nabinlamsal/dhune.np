@@ -163,6 +163,42 @@ func (s *AuthService) Login(
 		return nil, errors.New("invalid credentials")
 	}
 
+	//Global suspension check (applies to all roles)
+	if !user.IsActive {
+		return nil, errors.New("account is suspended")
+	}
+
+	//Role-based approval check
+	switch user.Role {
+
+	case "business":
+		bp, err := s.authRepo.GetBusinessProfileByUserID(ctx, user.ID)
+		if err != nil {
+			return nil, errors.New("business profile not found")
+		}
+		if bp.ApprovalStatus != "approved" {
+			return nil, errors.New("business account not approved or rejected")
+		}
+
+	case "vendor":
+		vp, err := s.authRepo.GetVendorProfileByUserID(ctx, user.ID)
+		if err != nil {
+			return nil, errors.New("vendor profile not found")
+		}
+		if vp.ApprovalStatus != "approved" {
+			return nil, errors.New("vendor account not approved")
+		}
+
+	case "user":
+	//already applied in query
+
+	case "admin":
+		//admin bypasses all
+
+	default:
+		return nil, errors.New("invalid user role")
+	}
+
 	accessToken, err := s.jwtService.GenerateAccessToken(user.ID, user.Role)
 	if err != nil {
 		return nil, err
