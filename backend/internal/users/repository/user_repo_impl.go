@@ -16,11 +16,13 @@ func NewUserRepoImpl(q *db.Queries) *UserRepoImpl {
 	return &UserRepoImpl{q: q}
 }
 
-func (repo *UserRepoImpl) GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string) ([]model.AdminUserSummary, error) {
+func (repo *UserRepoImpl) GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string, limit int32, offset int32) ([]model.AdminUserSummary, error) {
 	params := db.GetUsersAdminViewParams{
 		Column1: roles,
 		Column2: status,
 		Column3: search,
+		Limit:   limit,
+		Offset:  offset,
 	}
 
 	//execute sql query

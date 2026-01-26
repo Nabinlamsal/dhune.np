@@ -239,13 +239,15 @@ WHERE
         )
   AND
     ($3 IS NULL OR u.email ILIKE '%' || $3 || '%')
-ORDER BY u.created_at DESC
+ORDER BY u.created_at DESC LIMIT $4 OFFSET $5
 `
 
 type GetUsersAdminViewParams struct {
 	Column1 []string
 	Column2 interface{}
 	Column3 interface{}
+	Limit   int32
+	Offset  int32
 }
 
 type GetUsersAdminViewRow struct {
@@ -265,7 +267,13 @@ type GetUsersAdminViewRow struct {
 
 // all the users
 func (q *Queries) GetUsersAdminView(ctx context.Context, arg GetUsersAdminViewParams) ([]GetUsersAdminViewRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUsersAdminView, pq.Array(arg.Column1), arg.Column2, arg.Column3)
+	rows, err := q.db.QueryContext(ctx, getUsersAdminView,
+		pq.Array(arg.Column1),
+		arg.Column2,
+		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

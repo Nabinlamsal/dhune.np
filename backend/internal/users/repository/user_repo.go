@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string) ([]model.AdminUserSummary, error)
+	GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string, limit int32, offset int32) ([]model.AdminUserSummary, error)
 	GetUserDocuments(ctx context.Context, userId uuid.UUID) error
 	GetUserDetails(ctx context.Context, userId uuid.UUID) (*model.UserProfile, error)
 }

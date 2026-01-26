@@ -12,12 +12,11 @@ func (s *UserService) ApproveVendor(ctx context.Context, userId uuid.UUID) error
 	if err != nil {
 		return err
 	}
-	if user.VendorProfile.ApprovalStatus != "pending" {
-		return errors.New("user must be in pending state")
-	}
-
 	if user.Role != "vendor" {
 		return errors.New("user is not a vendor")
+	}
+	if user.VendorProfile.ApprovalStatus != "pending" {
+		return errors.New("user must be in pending state")
 	}
 	return s.commandRepo.ApproveVendor(ctx, userId)
 }
@@ -26,12 +25,11 @@ func (s *UserService) RejectVendor(ctx context.Context, userId uuid.UUID) error 
 	if err != nil {
 		return err
 	}
-	if user.VendorProfile.ApprovalStatus != "pending" {
-		return errors.New("user must be in pending state")
-	}
-
 	if user.Role != "vendor" {
 		return errors.New("user is not a vendor")
+	}
+	if user.VendorProfile.ApprovalStatus != "pending" {
+		return errors.New("user must be in pending state")
 	}
 	return s.commandRepo.RejectVendor(ctx, userId)
 }
@@ -41,12 +39,11 @@ func (s *UserService) ApproveBusinessUser(ctx context.Context, userId uuid.UUID)
 	if err != nil {
 		return err
 	}
-	if user.VendorProfile.ApprovalStatus != "pending" {
-		return errors.New("user must be in pending state")
-	}
-
 	if user.Role != "business" {
 		return errors.New("user is not a business")
+	}
+	if user.BusinessProfile.ApprovalStatus != "pending" {
+		return errors.New("user must be in pending state")
 	}
 	return s.commandRepo.ApproveBusinessUser(ctx, userId)
 }
@@ -55,13 +52,15 @@ func (s *UserService) RejectBusinessUser(ctx context.Context, userId uuid.UUID) 
 	if err != nil {
 		return err
 	}
-	if user.VendorProfile.ApprovalStatus != "pending" {
-		return errors.New("user must be in pending state")
-	}
 
 	if user.Role != "business" {
 		return errors.New("user is not a business")
 	}
+
+	if user.BusinessProfile.ApprovalStatus != "pending" {
+		return errors.New("user must be in pending state")
+	}
+
 	return s.commandRepo.RejectBusinessUser(ctx, userId)
 }
 

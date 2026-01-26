@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"github.com/Nabinlamsal/dhune.np/internal/users/model"
 	"github.com/Nabinlamsal/dhune.np/internal/users/repository"
+	"github.com/google/uuid"
 )
 
 type UserService struct {
@@ -16,6 +19,94 @@ func NewUserService(commandRepo repository.CommandRepository, userRepo repositor
 	return &UserService{commandRepo: commandRepo, userRepo: userRepo}
 }
 
-func (service *UserService) GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string) *[]model.AdminUserSummary {
+func (service *UserService) GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string, limit int32, offset int32) ([]model.AdminUserSummary, error) {
 
+	//validate pagination
+	if limit < 10 {
+		return nil, errors.New("limit cant be less than 10")
+	}
+	if limit > 100 {
+		return nil, errors.New("limit cant be more than 100")
+	}
+	if offset < 0 {
+		return nil, errors.New("offset cannot be negative")
+	}
+	//normalize roles
+	if len(roles) > 0 {
+		allowedRoles := map[string]bool{
+			"user":     true,
+			"admin":    true,
+			"business": true,
+			"vendor":   true,
+		}
+		seenRoles := map[string]struct{}{}
+		normalizedRoles := make([]string, 0, len(roles))
+
+		for _, role := range roles {
+			role = strings.ToLower(strings.TrimSpace(role))
+			if role == " " {
+				continue
+			}
+
+			if !allowedRoles[role] {
+				return nil, errors.New("role " + role + " is not allowed")
+			}
+
+			if _, ok := seenRoles[role]; !ok {
+				seenRoles[role] = struct{}{}
+				normalizedRoles = append(normalizedRoles, role)
+			}
+
+			roles = normalizedRoles
+		}
+	}
+
+	//normalize status
+	if status != nil {
+		s := strings.ToLower(strings.TrimSpace(*status))
+		if s == "" {
+			status = nil
+		} else {
+			switch s {
+			case "active", "pending", "rejected", "suspended":
+				status = &s
+			default:
+				return nil, errors.New("invalid status filter")
+			}
+		}
+	}
+
+	//normalize search
+	if search != nil {
+		q := strings.TrimSpace(*search)
+		if q == "" {
+			search = nil
+		} else {
+			search = &q
+		}
+	}
+
+	users, err := service.userRepo.GetUsersFiltered(ctx, roles, status, search, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+
+}
+func (service *UserService) GetUserDetail(
+	ctx context.Context,
+	userId uuid.UUID,
+) (*model.UserProfile, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	user, err := service.userRepo.GetUserDetails(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

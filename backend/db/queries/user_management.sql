@@ -42,7 +42,7 @@ WHERE
         )
   AND
     ($3 IS NULL OR u.email ILIKE '%' || $3 || '%')
-ORDER BY u.created_at DESC;
+ORDER BY u.created_at DESC LIMIT $4 OFFSET $5;
 
 
 -- details
