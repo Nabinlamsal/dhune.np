@@ -4,48 +4,64 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Nabinlamsal/dhune.np/internal/auth/controller"
-	"github.com/Nabinlamsal/dhune.np/internal/auth/repository"
-	"github.com/Nabinlamsal/dhune.np/internal/auth/routes"
-	"github.com/Nabinlamsal/dhune.np/internal/auth/service"
+	"github.com/gin-gonic/gin"
+
+	// config & db
 	"github.com/Nabinlamsal/dhune.np/internal/config"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
-	"github.com/gin-gonic/gin"
+
+	// auth layer
+	authcontroller "github.com/Nabinlamsal/dhune.np/internal/auth/controller"
+	authrepo "github.com/Nabinlamsal/dhune.np/internal/auth/repository"
+	authroutes "github.com/Nabinlamsal/dhune.np/internal/auth/routes"
+	authservice "github.com/Nabinlamsal/dhune.np/internal/auth/service"
+
+	// users layer
+	usercontroller "github.com/Nabinlamsal/dhune.np/internal/users/controller"
+	userrepo "github.com/Nabinlamsal/dhune.np/internal/users/repository"
+	userroutes "github.com/Nabinlamsal/dhune.np/internal/users/routes"
+	userservice "github.com/Nabinlamsal/dhune.np/internal/users/service"
 )
 
 func main() {
 	fmt.Println("Server running for Dhune.np")
 
+	// load env
 	config.LoadEnv()
 
+	// connect db
 	conn, err := config.ConnectDB(&config.AppConfig)
 	if err != nil {
 		log.Fatal("failed to connect database:", err)
 	}
 	defer conn.Close()
-
 	queries := db.New(conn)
 
-	// repository
-	authRepo := repository.NewAuthRepository(queries)
+	//repositories
+	authRepo := authrepo.NewAuthRepository(queries)
+	userRepo := userrepo.NewUserRepoImpl(queries)
+	commandRepo := userrepo.NewCommandRepoImpl(queries)
 
-	// services
-	passwordService := service.Password()
-	jwtService := service.NewJWTService(config.AppConfig)
-
-	authService := service.NewAuthService(
+	//services
+	passwordService := authservice.Password()
+	jwtService := authservice.NewJWTService(config.AppConfig)
+	authService := authservice.NewAuthService(
 		authRepo,
 		passwordService,
 		jwtService,
 		conn,
 	)
+	userService := userservice.NewUserService(
+		commandRepo,
+		userRepo,
+	)
 
-	// controller
-	authController := controller.NewAuthController(authService)
+	//controllers
+	authController := authcontroller.NewAuthController(authService)
+	userController := usercontroller.NewUserController(userService)
 
-	// router
+	//router
 	router := gin.Default()
-
 	// health check
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -53,10 +69,12 @@ func main() {
 		})
 	})
 
-	// auth routes
-	routes.RegisterAuthRoutes(router, authController, jwtService)
+	//app routes
+	authroutes.RegisterAuthRoutes(router, authController, jwtService)
+	userroutes.RegisterAdminRoutes(router, userController, jwtService)
 
-	log.Println("Auth service listening on port:", config.AppConfig.ServerPort)
+	// start server
+	log.Println("Server listening on port:", config.AppConfig.ServerPort)
 	if err := router.Run(":" + config.AppConfig.ServerPort); err != nil {
 		log.Fatal(err)
 	}

@@ -11,7 +11,7 @@ type CommandRepoImpl struct {
 	q *db.Queries
 }
 
-func NewCommandRepository(q *db.Queries) *CommandRepoImpl {
+func NewCommandRepoImpl(q *db.Queries) *CommandRepoImpl {
 	return &CommandRepoImpl{q: q}
 }
 

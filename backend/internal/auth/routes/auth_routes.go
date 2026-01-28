@@ -12,13 +12,12 @@ func RegisterAuthRoutes(
 	authController *controller.AuthController,
 	jwtSvc service.JWTService,
 ) {
-
 	auth := router.Group("/auth")
 	{
 		// public routes
 		auth.POST("/signup", authController.Signup)
 		auth.POST("/login", authController.Login)
-
+		
 		// protected routes
 		auth.GET(
 			"/me",
