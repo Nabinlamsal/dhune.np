@@ -83,7 +83,6 @@ FROM users u
 WHERE u.id = $1
 LIMIT 1;
 
-
 -- name: GetUserDocuments :many
 SELECT
     id,
