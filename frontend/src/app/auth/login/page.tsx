@@ -7,14 +7,12 @@ export default function LoginPage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F7F5EE]">
-            <LoginForm
-                onSignupSelect={(type) => {
-                    if (type === "user_signup") router.push("/auth/signup/user");
-                    if (type === "business_signup") router.push("/auth/signup/business");
-                    if (type === "vendor_signup") router.push("/auth/signup/vendor");
-                }}
-            />
-        </div>
+        <LoginForm
+            onSignupSelect={(type) => {
+                if (type === "user_signup") router.push("/auth/signup/user");
+                if (type === "business_signup") router.push("/auth/signup/business");
+                if (type === "vendor_signup") router.push("/auth/signup/vendor");
+            }}
+        />
     );
 }

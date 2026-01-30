@@ -7,8 +7,6 @@ export default function VendorSignupPage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F7F5EE]">
-            <VendorSignupForm onBack={() => router.push("/auth/login")} />
-        </div>
+        <VendorSignupForm onBack={() => router.push("/auth/login")} />
     );
 }

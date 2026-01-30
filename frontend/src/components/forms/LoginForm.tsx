@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -17,7 +19,7 @@ export function LoginForm({
 }: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
 
     return (
-        <div className={cn("flex flex-col gap-6")}>
+        <div className={cn("w-1/3 gap-6")}>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-yellow-600">Dhune.np</CardTitle>
@@ -27,7 +29,9 @@ export function LoginForm({
                 </CardHeader>
 
                 <CardContent>
-                    <form>
+                    <form
+                        onSubmit={(e) => e.preventDefault()
+                        }>
                         <FieldGroup>
 
                             {/* Email */}
@@ -43,7 +47,7 @@ export function LoginForm({
 
                             {/* Password */}
                             <Field>
-                                <div className="flex items-center">
+                                <div className="flex items-center justify-between">
                                     <FieldLabel htmlFor="password">Password</FieldLabel>
                                     <a
                                         href="#"
@@ -93,6 +97,7 @@ export function LoginForm({
                     </form>
                 </CardContent>
             </Card>
-        </div>
+        </div >
+
     );
 }

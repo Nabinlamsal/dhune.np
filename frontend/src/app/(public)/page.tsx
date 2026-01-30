@@ -1,11 +1,10 @@
 "use client";
-import { useState } from "react";
 import AudienceSection from "../../components/AudienceSection";
-import LoginModal from "../../components/modals/LoginModal";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showVendorSignup, setShowVendorSignup] = useState(false);
+  const router = useRouter();
+
   return (
     <div className="bg-[#F7F5EE] font-nunito">
       <div className="relative mt-10 h-screen bg-[url('/hero.jpg')] bg-cover bg-center bg-no-repeat px-10">
@@ -32,14 +31,14 @@ export default function Home() {
             </p>
 
             <a
-              onClick={() => setShowLogin(true)}
+              onClick={() => router.push("/auth/login")}
               className="inline-flex items-center justify-center px-10 py-4 mr-10 text-sm font-semibold text-white transition-all duration-200 bg-[#040947] hover:bg-[#121008ea] rounded-lg h-10"
               role="button"
             >
               Get Started
             </a>
             <a
-              onClick={() => setShowVendorSignup(true)}
+              onClick={() => router.push("/auth/signup/vendor")}
               className="inline-flex items-center justify-center px-10 py-4 text-sm font-semibold text-black transition-all duration-200 bg-[#ebbc01] hover:bg-[#121008ea] hover:text-white h-10 rounded-lg"
               role="button"
             >
@@ -75,7 +74,6 @@ export default function Home() {
               is to simplify how Nepal does laundry by creating a digital ecosystem where quality, trust, and convenience come together"
             </p>
 
-            <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
             <AudienceSection />
           </div>
 

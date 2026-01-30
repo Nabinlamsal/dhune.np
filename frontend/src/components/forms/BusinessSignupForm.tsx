@@ -2,7 +2,6 @@
 "use client"
 
 import { cn } from "@/lib/utils";
-import LoginModal from "../modals/LoginModal";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import {

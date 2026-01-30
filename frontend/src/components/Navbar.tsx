@@ -1,10 +1,10 @@
 // Navbar.jsx
 "use client";
-import { useState } from "react"
-import LoginModal from "./modals/LoginModal"
+import { useRouter } from 'next/navigation';
+
 
 export default function Navbar() {
-  const [showLogin, setShowLogin] = useState(false);
+  const router = useRouter();
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between h-16 bg-[#F7F5EE] text-[#1A1A2E] font-nunito font-semibold px-8 shadow-md">
@@ -39,11 +39,10 @@ export default function Navbar() {
       </div>
 
       <div>
-        <button onClick={() => setShowLogin(true)} className="text-[#F7F5EE] h-8 px-4 py-1 rounded-lg bg-[#040947] hover:bg-[#121008ea] transition">
+        <button onClick={() => router.push("/auth/login")} className="text-[#F7F5EE] h-8 px-4 py-1 rounded-lg bg-[#040947] hover:bg-[#121008ea] transition">
           Book Service
         </button>
       </div>
-      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
     </nav >
   );
 }
