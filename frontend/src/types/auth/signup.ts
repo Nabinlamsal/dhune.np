@@ -1,6 +1,6 @@
 import { UserStatus, Role } from "./identity";
 export type SignupDocument = {
-    document_type: string; // business_registration | vendor_registration
+    document_type: string; //registration, tax etc
     document_url: string;
 };
 
@@ -11,7 +11,7 @@ export type SignupRequest = {
     phone: string;
     password: string;
 
-    // optional 
+    // optional for business and vendor
     owner_name?: string;
     business_type?: string;
     address?: string;

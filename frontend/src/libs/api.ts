@@ -1,40 +1,24 @@
+import axios, { AxiosRequestConfig } from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
+const apiClient = axios.create({
+    baseURL: "https://localhost:8111",
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
 export async function api<T>(
-    endpoint: string,
-    options: RequestInit = {}
+    url: string,
+    config?: AxiosRequestConfig
 ): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: options.method || "GET",
-        credentials: "include", // IMPORTANT: enables cookie-based auth
-        headers: {
-            "Content-Type": "application/json",
-            ...(options.headers || {}),
-        },
-        ...options,
-    });
+    try {
+        const response = await apiClient.request<T>({
+            url,
+            ...config,
+        });
 
-    if (!response.ok) {
-        let errorPayload: any = null;
-
-        try {
-            errorPayload = await response.json();
-        } catch {
-            errorPayload = { message: "Unknown server error" };
-        }
-
-        throw {
-            status: response.status,
-            message: errorPayload.message || "Request failed",
-            error: errorPayload,
-        };
+        return response.data;
+    } catch (error: any) {
+        // normalize error
+        throw error;
     }
-
-    // Handle empty responses (e.g., 204 No Content)
-    if (response.status === 204) {
-        return null as T;
-    }
-
-    return response.json() as Promise<T>;
 }
