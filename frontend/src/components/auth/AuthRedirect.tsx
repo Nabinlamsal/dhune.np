@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMe } from "@/src/hooks/useAuth";
+import { useMe } from "@/src/hooks/auth/useMe";
+
 
 export function AuthRedirect() {
     const router = useRouter();

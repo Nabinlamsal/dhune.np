@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import { useLogin } from "@/src/hooks/useAuth"
+import { useLogin } from "@/src/hooks/auth/useSignup"
 import { useState } from "react"
 export function LoginForm({
     onSignupSelect

@@ -19,8 +19,19 @@ import {
     FieldLabel,
 } from "../ui/field";
 import { Input } from "../ui/input";
+import { useSignup } from "@/src/hooks/auth/useSignup";
 
 export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
+    const { mutate, isPending } = useSignup();
+    const [name, setName] = useState("")
+    const [owner, setOwner] = useState("")
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [email, setEmail] = useState("")
+    const [businessType, setBusinessType] = useState("")
+    const [registrationNumber, setRegistrationNumber] = useState("")
+    const [password, setPassword] = useState("");
+    const [documentUrl, setDocumentUrl] = useState("");
+    const [documentType, setDocumentType] = useState("business_registration");
 
     return (
         <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
@@ -37,19 +48,32 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                 </CardHeader>
 
                 <CardContent>
-                    <form className="flex flex-col gap-4">
-                        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <form
+                        className="flex flex-col gap-4"
+                        onSubmit={(e) => {
+                            e.preventDefault();
 
-                            {/* Owner Full Name */}
-                            <Field>
-                                <FieldLabel htmlFor="ownerName">Owner Full Name</FieldLabel>
-                                <Input
-                                    id="ownerName"
-                                    type="text"
-                                    placeholder="Owner’s legal full name"
-                                    required
-                                />
-                            </Field>
+                            mutate({
+                                role: "business",
+                                display_name: name,
+                                email,
+                                phone: phoneNumber,
+                                password,
+                                owner_name: owner,
+                                business_type: businessType,
+                                registration_number: registrationNumber,
+
+                                documents: [
+                                    {
+                                        document_type: documentType,
+                                        document_url: documentUrl,
+                                    },
+                                ],
+                            });
+                        }}
+                    >
+
+                        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
                             {/* Business Name */}
                             <Field>
@@ -58,9 +82,25 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                     id="businessName"
                                     type="text"
                                     placeholder="Example: Everest Hospital Pvt Ltd"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     required
                                 />
                             </Field>
+
+                            {/* Owner Full Name */}
+                            <Field>
+                                <FieldLabel htmlFor="ownerName">Owner Full Name</FieldLabel>
+                                <Input
+                                    id="ownerName"
+                                    type="text"
+                                    value={owner}
+                                    onChange={(e) => setOwner(e.target.value)}
+                                    placeholder="Owner’s legal full name"
+                                    required
+                                />
+                            </Field>
+
 
                             {/* Business Type */}
                             <Field>
@@ -68,6 +108,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="businessType"
                                     type="text"
+                                    value={businessType}
+                                    onChange={(e) => setBusinessType(e.target.value)}
                                     placeholder="Hospital, Hotel, Hostel, Laundry, etc."
                                     required
                                 />
@@ -79,6 +121,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="email"
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="business@example.com"
                                     required
                                 />
@@ -90,6 +134,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="phone"
                                     type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
                                     placeholder="+977 98XXXXXXXX"
                                     required
                                 />
@@ -101,6 +147,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="registrationNumber"
                                     type="text"
+                                    value={registrationNumber}
+                                    onChange={(e) => setRegistrationNumber(e.target.value)}
                                     placeholder="Official business registration number"
                                     required
                                 />
@@ -112,6 +160,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="registrationDoc"
                                     type="file"
+                                    value={documentUrl}
+                                    onChange={(e) => setDocumentUrl(e.target.value)}
                                     accept=".pdf,.jpg,.png"
                                     required
                                 />
@@ -126,6 +176,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="password"
                                     type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Create a strong password"
                                     required
                                 />
@@ -135,9 +187,10 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                             <Field className="col-span-full">
                                 <Button
                                     type="submit"
+                                    disabled={isPending}
                                     className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
                                 >
-                                    Register as Business User
+                                    {isPending ? "Registering..." : "Register as Business User"}
                                 </Button>
                             </Field>
 

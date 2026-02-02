@@ -1,7 +1,7 @@
-import { LoginRequest, LoginResponse } from "../types/auth/login";
-import { api } from "../libs/api";
-import { SignupRequest, SignupResponse } from "../types/auth/signup";
-import { UserIdentity } from "../types/auth/identity";
+import { LoginRequest, LoginResponse } from "../../types/auth/login";
+import { api } from "../../libs/api";
+import { SignupRequest, SignupResponse } from "../../types/auth/signup";
+import { UserIdentity } from "../../types/auth/identity";
 
 export const login = async (
     payload: LoginRequest
@@ -22,6 +22,7 @@ export const signup = async (
         data: payload
     });
 }
+
 export const me = (): Promise<UserIdentity> => {
     return api<UserIdentity>("/auth/me", {
         method: "GET",

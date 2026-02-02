@@ -218,6 +218,6 @@ func (s *AuthService) Login(
 	resp.User.ID = user.ID.String()
 	resp.User.DisplayName = user.DisplayName
 	resp.User.Role = user.Role
-
+	
 	return resp, nil
 }

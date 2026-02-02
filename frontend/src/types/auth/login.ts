@@ -1,4 +1,3 @@
-import { UserIdentity } from "./identity";
 
 export type LoginRequest = {
     email_or_phone: string;

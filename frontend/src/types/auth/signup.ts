@@ -22,6 +22,5 @@ export type SignupRequest = {
 export type SignupResponse = {
     user_id: string;
     role: Role;
-    status: UserStatus;
     message: string;
 };
