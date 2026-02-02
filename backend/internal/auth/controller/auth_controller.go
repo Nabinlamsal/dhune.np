@@ -52,7 +52,6 @@ func (ac *AuthController) Me(c *gin.Context) {
 		utils.Error(c, http.StatusUnauthorized, "unauthorized")
 		return
 	}
-
 	role, _ := c.Get("role")
 
 	utils.Success(c, gin.H{

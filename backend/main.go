@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Nabinlamsal/dhune.np/internal/auth/middleware"
 	"github.com/gin-gonic/gin"
 
 	// config & db
@@ -36,7 +37,6 @@ func main() {
 	}
 	defer conn.Close()
 	queries := db.New(conn)
-
 	//repositories
 	authRepo := authrepo.NewAuthRepository(queries)
 	userRepo := userrepo.NewUserRepoImpl(queries)
@@ -62,6 +62,8 @@ func main() {
 
 	//router
 	router := gin.Default()
+	//cors
+	router.Use(middleware.CORSMiddleware())
 	// health check
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
