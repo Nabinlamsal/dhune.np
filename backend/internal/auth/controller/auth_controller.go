@@ -19,18 +19,27 @@ func NewAuthController(authService *service.AuthService) *AuthController {
 
 func (ac *AuthController) Signup(c *gin.Context) {
 	var body dto.SignupRequestDTO
-	if err := c.ShouldBindJSON(&body); err != nil {
+
+	if err := c.ShouldBind(&body); err != nil {
 		utils.Error(c, 400, err.Error())
 		return
 	}
 
-	resp, err := ac.authService.CreateUser(c.Request.Context(), body)
+	file, _ := c.FormFile("document") // may be nil
+
+	resp, err := ac.authService.Signup(
+		c.Request.Context(),
+		body,
+		file,
+	)
 	if err != nil {
 		utils.Error(c, 500, err.Error())
 		return
 	}
+
 	utils.Created(c, resp)
 }
+
 func (ac *AuthController) Login(c *gin.Context) {
 	var body dto.LoginRequestDTO
 	if err := c.ShouldBindJSON(&body); err != nil {

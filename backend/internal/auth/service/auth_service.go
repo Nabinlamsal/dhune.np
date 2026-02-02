@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"mime/multipart"
 	"strings"
 
 	"github.com/Nabinlamsal/dhune.np/internal/auth/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/auth/repository"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 )
 
 type AuthService struct {
@@ -32,9 +34,10 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) CreateUser(
+func (s *AuthService) Signup(
 	ctx context.Context,
 	req dto.SignupRequestDTO,
+	file *multipart.FileHeader,
 ) (*dto.SignupResponseDTO, error) {
 
 	role := strings.ToLower(strings.TrimSpace(req.Role))
@@ -42,20 +45,30 @@ func (s *AuthService) CreateUser(
 		return nil, errors.New("invalid role")
 	}
 
+	// role based validations
 	if role == "business" {
-		if req.OwnerName == nil || req.BusinessType == nil ||
-			req.RegistrationNumber == nil || len(req.Documents) == 0 {
+		if req.OwnerName == nil ||
+			req.BusinessType == nil ||
+			req.RegistrationNumber == nil {
 			return nil, errors.New("missing required business fields")
+		}
+		if file == nil {
+			return nil, errors.New("business document is required")
 		}
 	}
 
 	if role == "vendor" {
-		if req.OwnerName == nil || req.Address == nil ||
-			req.RegistrationNumber == nil || len(req.Documents) == 0 {
+		if req.OwnerName == nil ||
+			req.Address == nil ||
+			req.RegistrationNumber == nil {
 			return nil, errors.New("missing required vendor fields")
+		}
+		if file == nil {
+			return nil, errors.New("vendor document is required")
 		}
 	}
 
+	// uniqueness checks
 	if _, err := s.authRepo.FindUserByEmail(ctx, req.Email); err == nil {
 		return nil, errors.New("email already registered")
 	}
@@ -63,11 +76,24 @@ func (s *AuthService) CreateUser(
 		return nil, errors.New("phone already registered")
 	}
 
+	// pwd hashing
 	hashedPwd, err := s.pwdService.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
+	var docURL string
 
+	if role == "business" || role == "vendor" {
+		docURL, err = utils.UploadDocumentToCloudinary(
+			ctx,
+			file,
+			"dhune/registration-documents",
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// transaction
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -77,6 +103,7 @@ func (s *AuthService) CreateUser(
 	qtx := db.New(tx)
 	txRepo := repository.NewAuthRepository(qtx)
 
+	// create user
 	user, err := txRepo.CreateUser(ctx, db.CreateUserParams{
 		DisplayName:  req.DisplayName,
 		Email:        req.Email,
@@ -88,44 +115,54 @@ func (s *AuthService) CreateUser(
 		return nil, err
 	}
 
+	//role specific profile
 	if role == "business" {
-		if _, err := txRepo.CreateBusinessUserProfile(ctx,
+		_, err = txRepo.CreateBusinessUserProfile(ctx,
 			db.CreateBusinessUserProfileParams{
 				UserID:             user.ID,
 				OwnerName:          *req.OwnerName,
 				BusinessType:       *req.BusinessType,
 				RegistrationNumber: *req.RegistrationNumber,
-			}); err != nil {
+			})
+		if err != nil {
 			return nil, err
 		}
 	}
 
 	if role == "vendor" {
-		if _, err := txRepo.CreateVendorProfile(ctx,
+		_, err = txRepo.CreateVendorProfile(ctx,
 			db.CreateVendorProfileParams{
 				UserID:             user.ID,
 				OwnerName:          *req.OwnerName,
 				Address:            *req.Address,
 				RegistrationNumber: *req.RegistrationNumber,
-			}); err != nil {
+			})
+		if err != nil {
 			return nil, err
 		}
 	}
+	if role == "business" || role == "vendor" {
+		docType := "business_registration"
+		if role == "vendor" {
+			docType = "vendor_registration"
+		}
 
-	for _, doc := range req.Documents {
-		if _, err := txRepo.CreateDocument(ctx, db.CreateDocumentParams{
+		_, err = txRepo.CreateDocument(ctx, db.CreateDocumentParams{
 			UserID:       user.ID,
-			DocumentType: doc.DocumentType,
-			DocumentUrl:  doc.DocumentURL,
-		}); err != nil {
+			DocumentType: docType,
+			DocumentUrl:  docURL,
+		})
+		if err != nil {
 			return nil, err
 		}
 	}
 
+	//commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
+	//responce
 	msg := "Signup successful. Please login."
 	if role != "user" {
 		msg = "Signup successful. Your account is pending admin approval."
@@ -218,6 +255,6 @@ func (s *AuthService) Login(
 	resp.User.ID = user.ID.String()
 	resp.User.DisplayName = user.DisplayName
 	resp.User.Role = user.Role
-	
+
 	return resp, nil
 }

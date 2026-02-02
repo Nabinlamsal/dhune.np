@@ -1,24 +1,16 @@
 package dto
 
 type SignupRequestDTO struct {
-	Role        string `json:"role" binding:"required,oneof=user business vendor"`
-	DisplayName string `json:"display_name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	Phone       string `json:"phone" binding:"required"`
-	Password    string `json:"password" binding:"required,min=6"`
+	Role        string `form:"role" binding:"required,oneof=user business vendor"`
+	DisplayName string `form:"display_name" binding:"required"`
+	Email       string `form:"email" binding:"required,email"`
+	Phone       string `form:"phone" binding:"required"`
+	Password    string `form:"password" binding:"required,min=6"`
 
-	//business or vendor representative name
-	OwnerName *string `json:"owner_name,omitempty"`
-
-	//business users only
-	BusinessType *string `json:"business_type,omitempty"`
-
-	//vendors only
-	Address *string `json:"address,omitempty"`
-
-	//for business and vendors
-	RegistrationNumber *string             `json:"registration_number,omitempty"`
-	Documents          []SignupDocumentDTO `json:"documents,omitempty"`
+	OwnerName          *string `form:"owner_name"`
+	BusinessType       *string `form:"business_type"`
+	Address            *string `form:"address"`
+	RegistrationNumber *string `form:"registration_number"`
 }
 
 type SignupDocumentDTO struct {
