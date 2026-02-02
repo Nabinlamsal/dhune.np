@@ -7,12 +7,16 @@ export default function LoginPage() {
     const router = useRouter();
 
     return (
-        <LoginForm
-            onSignupSelect={(type) => {
-                if (type === "user_signup") router.push("/auth/signup/user");
-                if (type === "business_signup") router.push("/auth/signup/business");
-                if (type === "vendor_signup") router.push("/auth/signup/vendor");
-            }}
-        />
+        <>
+            <LoginForm
+                onSignupSelect={(type) => {
+                    if (type === "user_signup") router.push("/auth/signup/user");
+                    if (type === "business_signup") router.push("/auth/signup/business");
+                    if (type === "vendor_signup") router.push("/auth/signup/vendor");
+                }}
+            />
+        </>
+
+
     );
 }

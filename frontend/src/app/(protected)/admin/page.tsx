@@ -2,6 +2,7 @@
 
 import { StatCard } from "@/src/components/dashboard/StatCard"
 import { ConversionFunnel } from "@/src/components/dashboard/ConversionFunnel"
+import { AuthRedirect } from "@/src/components/auth/AuthRedirect"
 
 export default function DashboardPage() {
     return (
@@ -79,7 +80,9 @@ export default function DashboardPage() {
 
                 {/* Funnel */}
                 <ConversionFunnel />
+
             </div>
+            <AuthRedirect />
         </>
     )
 }

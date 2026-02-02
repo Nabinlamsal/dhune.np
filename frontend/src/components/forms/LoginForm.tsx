@@ -13,15 +13,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import { useLogin } from "@/src/hooks/auth/useLogin"
+import { useLogin } from "@/src/hooks/useAuth"
 import { useState } from "react"
-import router from "next/navigation"
-
 export function LoginForm({
     onSignupSelect
 }: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
-
-
+    const { mutate, isPending, error } = useLogin();
+    const [emailOrPhone, setEmailOrPhone] = useState("")
+    const [password, setPassword] = useState("")
     return (
         <div className={cn("w-1/3 gap-6")}>
             <Card>
@@ -34,8 +33,14 @@ export function LoginForm({
 
                 <CardContent>
                     <form
-                        onSubmit={(e) => e.preventDefault()
-                        }>
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            mutate({
+                                email_or_phone: emailOrPhone,
+                                password,
+                            });
+
+                        }}>
                         <FieldGroup>
 
                             {/* Email */}
@@ -45,6 +50,8 @@ export function LoginForm({
                                     id="email"
                                     type="email"
                                     placeholder="example@gmail.com"
+                                    value={emailOrPhone}
+                                    onChange={(e) => setEmailOrPhone(e.target.value)}
                                     required
                                 />
                             </Field>
@@ -60,13 +67,18 @@ export function LoginForm({
                                         Forgot your password?
                                     </a>
                                 </div>
-                                <Input id="password" type="password" required />
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required />
                             </Field>
 
                             {/* Login Buttons */}
                             <Field>
-                                <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit">
-                                    Login
+                                <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit" disabled={isPending}>
+                                    {isPending ? "Logging In>>" : "Login"}
                                 </Button>
 
                                 <Button
