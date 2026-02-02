@@ -18,8 +18,14 @@ import {
     FieldLabel,
 } from "../ui/field";
 import { Input } from "../ui/input";
-
+import { useSignup } from "@/src/hooks/auth/useSignup";
+import { useState } from "react";
 export function UserSignupForm({ onBack }: { onBack: () => void }) {
+    const { mutate, isPending } = useSignup()
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [password, setPassword] = useState("")
 
     return (
         <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
@@ -34,7 +40,19 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                 </CardHeader>
 
                 <CardContent>
-                    <form className="flex flex-col gap-4">
+                    <form
+                        className="flex flex-col gap-4"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData();
+
+                            formData.append("role", "user");
+                            formData.append("display_name", name);
+                            formData.append("email", email);
+                            formData.append("phone", phoneNumber);
+                            formData.append("password", password);
+                            mutate(formData)
+                        }}>
                         <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
                             {/* Business / Shop Name */}
@@ -44,6 +62,8 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                     id="fullName"
                                     type="text"
                                     placeholder="Example: Rajesh Hamal"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     required
                                 />
                             </Field>
@@ -55,6 +75,8 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                     id="contactNumber"
                                     type="tel"
                                     placeholder="+977 98XXXXXXXX"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
                                     required
                                 />
                             </Field>
@@ -66,6 +88,8 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                     id="email"
                                     type="email"
                                     placeholder="name@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </Field>
@@ -77,6 +101,8 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                     id="password"
                                     type="password"
                                     placeholder="Create a strong password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                             </Field>
@@ -86,8 +112,9 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                 <Button
                                     type="submit"
                                     className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
+                                    disabled={isPending}
                                 >
-                                    Submit Details
+                                    {isPending ? "Registering..." : "Register as User"}
                                 </Button>
                             </Field>
 

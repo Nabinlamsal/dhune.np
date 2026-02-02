@@ -30,8 +30,7 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
     const [businessType, setBusinessType] = useState("")
     const [registrationNumber, setRegistrationNumber] = useState("")
     const [password, setPassword] = useState("");
-    const [documentUrl, setDocumentUrl] = useState("");
-    const [documentType, setDocumentType] = useState("business_registration");
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
 
     return (
         <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
@@ -52,24 +51,20 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                         className="flex flex-col gap-4"
                         onSubmit={(e) => {
                             e.preventDefault();
+                            const formData = new FormData();
 
-                            mutate({
-                                role: "business",
-                                display_name: name,
-                                email,
-                                phone: phoneNumber,
-                                password,
-                                owner_name: owner,
-                                business_type: businessType,
-                                registration_number: registrationNumber,
-
-                                documents: [
-                                    {
-                                        document_type: documentType,
-                                        document_url: documentUrl,
-                                    },
-                                ],
-                            });
+                            formData.append("role", "business");
+                            formData.append("display_name", name);
+                            formData.append("email", email);
+                            formData.append("phone", phoneNumber);
+                            formData.append("password", password);
+                            formData.append("owner_name", owner);
+                            formData.append("business_type", businessType);
+                            formData.append("registration_number", registrationNumber);
+                            if (documentFile) {
+                                formData.append("document", documentFile);
+                            }
+                            mutate(formData)
                         }}
                     >
 
@@ -153,15 +148,16 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                                     required
                                 />
                             </Field>
-
                             {/* Registration Document */}
                             <Field>
                                 <FieldLabel htmlFor="registrationDoc">Registration Document</FieldLabel>
                                 <Input
                                     id="registrationDoc"
                                     type="file"
-                                    value={documentUrl}
-                                    onChange={(e) => setDocumentUrl(e.target.value)}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) setDocumentFile(file)
+                                    }}
                                     accept=".pdf,.jpg,.png"
                                     required
                                 />

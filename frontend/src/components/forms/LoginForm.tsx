@@ -13,8 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import { useLogin } from "@/src/hooks/auth/useSignup"
 import { useState } from "react"
+import { useLogin } from "@/src/hooks/auth/useLogin"
 export function LoginForm({
     onSignupSelect
 }: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
