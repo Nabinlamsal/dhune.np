@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/Nabinlamsal/dhune.np/internal/auth/middleware"
+	"github.com/Nabinlamsal/dhune.np/internal/bootstrap"
 	"github.com/gin-gonic/gin"
 
 	// config & db
@@ -36,7 +38,13 @@ func main() {
 		log.Fatal("failed to connect database:", err)
 	}
 	defer conn.Close()
+
+	//seed admin
+	if err := bootstrap.SeedAdmin(context.Background(), conn); err != nil {
+		log.Fatal("failed to seed admin:", err)
+	}
 	queries := db.New(conn)
+
 	//repositories
 	authRepo := authrepo.NewAuthRepository(queries)
 	userRepo := userrepo.NewUserRepoImpl(queries)
