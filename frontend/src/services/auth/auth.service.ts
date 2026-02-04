@@ -6,10 +6,15 @@ import { UserIdentity } from "../../types/auth/identity";
 export const login = async (
     payload: LoginRequest
 ): Promise<LoginResponse> => {
-    return api<LoginResponse>("/auth/login", {
+    const res = await api<{
+        success: boolean;
+        data: LoginResponse;
+    }>("/auth/login", {
         method: "POST",
         data: payload,
     });
+
+    return res.data;
 };
 
 export const signup = async (

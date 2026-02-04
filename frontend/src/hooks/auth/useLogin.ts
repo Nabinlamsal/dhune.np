@@ -10,10 +10,22 @@ export const useLogin = () => {
     return useMutation({
         mutationFn: login,
         onSuccess: (data) => {
-            console.log("LOGIN RESPONSE:", data);
             localStorage.setItem("token", data.access_token);
-            queryClient.invalidateQueries({ queryKey: ["me"] });
-            router.replace("/dashboard");
-        },
+
+            const role = data.user.role;
+
+            if (role === "admin") {
+                router.replace("/admin");
+                return;
+            }
+
+            if (role === "vendor") {
+                router.replace("/vendor");
+                return;
+            }
+
+            router.replace("/mobile-app");
+        }
+
     });
 };
