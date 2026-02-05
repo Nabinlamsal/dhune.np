@@ -2,6 +2,7 @@ package controller
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Nabinlamsal/dhune.np/internal/users/service"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
@@ -18,7 +19,13 @@ func NewUserController(userService *service.UserService) *UserController {
 }
 
 func (c *UserController) GetFilteredUsers(ctx *gin.Context) {
-	roles := ctx.QueryArray("role")
+	rolesStr := ctx.Query("roles")
+
+	var roles []string
+	if rolesStr != "" {
+		roles = strings.Split(rolesStr, ",")
+	}
+
 	search := ctx.Query("search")
 	status := ctx.Query("status")
 
