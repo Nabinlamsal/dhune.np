@@ -1,75 +1,28 @@
 import { api } from "@/src/libs/api";
-import { CommandResponse, UserCommandPayload } from "@/src/types/users/command"
+import { CommandResponse, UserCommandPayload } from "@/src/types/users/command";
 
-export const approveVendor = async (
-    payload: UserCommandPayload
+const patchCommand = async (
+    path: string
 ): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/vendors/${payload.userId}/approve`,
-        {
-            method: "PATCH",
-        }
-    );
-
-    return res;
-};
-export const rejectVendor = async (
-    payload: UserCommandPayload
-): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/vendors/${payload.userId}/reject`,
-        {
-            method: "PATCH",
-        }
-    );
-
-    return res;
-};
-export const approveBusiness = async (
-    payload: UserCommandPayload
-): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/business/${payload.userId}/approve`,
-        {
-            method: "PATCH",
-        }
-    );
-    return res;
+    return api<CommandResponse>(path, {
+        method: "PATCH",
+    });
 };
 
-export const rejectBusiness = async (
-    payload: UserCommandPayload
-): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/business/${payload.userId}/reject`,
-        {
-            method: "PATCH",
-        }
-    );
-    return res;
-};
+export const approveVendor = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/vendors/${payload.userId}/approve`);
 
-export const suspend = async (
-    payload: UserCommandPayload
-): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/users/${payload.userId}/suspend`,
-        {
-            method: "PATCH",
-        }
-    );
-    return res;
-};
+export const rejectVendor = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/vendors/${payload.userId}/reject`);
 
-export const reactivate = async (
-    payload: UserCommandPayload
-): Promise<CommandResponse> => {
-    const res = await api<CommandResponse>(
-        `/admin/users/${payload.userId}/reactivate`,
-        {
-            method: "PATCH",
-        }
-    );
-    return res;
-};
+export const approveBusiness = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/business/${payload.userId}/approve`);
 
+export const rejectBusiness = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/business/${payload.userId}/reject`);
+
+export const suspendUser = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/users/${payload.userId}/suspend`);
+
+export const reactivateUser = (payload: UserCommandPayload) =>
+    patchCommand(`/admin/users/${payload.userId}/reactivate`);

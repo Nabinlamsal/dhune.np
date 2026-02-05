@@ -1,11 +1,11 @@
 import {
-    UserRole,
     AdminUserFilterStatus,
 } from "./user.enums";
+import { Role } from "../auth/identity";
 
 //admin-user filters
 export interface AdminUserFilter {
-    roles?: UserRole[];
+    roles?: Role[];
 
     status?: AdminUserFilterStatus;
 

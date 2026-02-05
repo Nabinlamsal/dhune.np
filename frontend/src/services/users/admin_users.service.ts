@@ -6,22 +6,31 @@ import { AdminUserFilter } from "@/src/types/users/filter";
 export const getUsersFiltered = async (
     filter: AdminUserFilter
 ): Promise<AdminUserSummary[]> => {
-    const res = await api<AdminUserSummary[]>(
-        "/admin/users",
-        {
-            method: "GET",
-            params: {
-                roles: filter.roles?.join(","),
-                status: filter.status,
-                search: filter.search,
-                limit: filter.limit,
-                offset: filter.offset,
-            },
-        }
-    );
-    return res;
-};
 
+    const params = new URLSearchParams({
+        limit: String(filter.limit),
+        offset: String(filter.offset),
+    });
+
+    if (filter.roles?.length) {
+        params.set("roles", filter.roles.join(","));
+    }
+
+    if (filter.status) {
+        params.set("status", filter.status);
+    }
+
+    if (filter.search) {
+        params.set("search", filter.search);
+    }
+
+    const res = await api<{ users: AdminUserSummary[] }>(
+        `/admin/users?${params.toString()}`,
+        { method: "GET" }
+    );
+
+    return res.users;
+};
 
 export const getUserDetail = async (
     userId: string

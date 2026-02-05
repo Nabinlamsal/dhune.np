@@ -8,6 +8,7 @@ interface ActionMenuProps {
     onApprove?: () => void
     onReject?: () => void
     onDelete?: () => void
+    onSuspend?: () => void
 }
 
 export function ActionMenu({
@@ -15,6 +16,7 @@ export function ActionMenu({
     onApprove,
     onReject,
     onDelete,
+    onSuspend
 }: ActionMenuProps) {
     return (
         <div className="relative group" onClick={(e) => e.stopPropagation()}>
@@ -53,6 +55,14 @@ export function ActionMenu({
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                         Delete
+                    </button>
+                )}
+                {onSuspend && (
+                    <button
+                        onClick={onReject}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                        Reject
                     </button>
                 )}
             </div>

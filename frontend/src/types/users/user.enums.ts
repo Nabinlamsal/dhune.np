@@ -1,12 +1,4 @@
 
-//user roles
-export type UserRole =
-    | "user"
-    | "admin"
-    | "vendor"
-    | "business";
-
-
 //approval status
 export type ApprovalStatus =
     | "pending"
@@ -22,7 +14,7 @@ export type AccountStatus =
 
 //admin filters
 export type AdminUserFilterStatus =
-    | "active"
+    | "approved"
     | "pending"
     | "rejected"
     | "suspended";

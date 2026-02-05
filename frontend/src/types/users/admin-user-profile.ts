@@ -1,4 +1,4 @@
-import { UserRole } from "./user.enums";
+import { Role } from "../auth/identity";
 import { BusinessProfile, VendorProfile } from "./profile";
 import { UserDocument } from "./document";
 
@@ -10,7 +10,7 @@ export interface BaseUser {
     email: string;
     phone: string;
 
-    role: UserRole;
+    role: Role;
 
     isActive: boolean;
 

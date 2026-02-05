@@ -7,5 +7,5 @@ export type Role =
 export type UserIdentity = {
     id: string;
     display_name: string;
-    role: Role;
+    role: Role
 };

@@ -1,4 +1,5 @@
-import { UserRole, ApprovalStatus } from "./user.enums";
+import { Role } from "../auth/identity";
+import { ApprovalStatus } from "./user.enums";
 
 //for admin table
 export interface AdminUserSummary {
@@ -8,12 +9,11 @@ export interface AdminUserSummary {
     email: string;
     phone: string;
 
-    role: UserRole;
+    role: Role;
 
     isActive: boolean;
 
-    businessApprovalStatus?: ApprovalStatus;
-    vendorApprovalStatus?: ApprovalStatus;
+    approvalStatus?: ApprovalStatus;
 
     createdAt: string;
 }

@@ -14,9 +14,11 @@ import {
 } from "lucide-react"
 import SidebarItem from "./SidebarItem"
 import { usePathname } from "next/navigation"
+import { useLogout } from "@/src/hooks/auth/useLogout"
 
 export default function Sidebar() {
     const pathname = usePathname()
+    const logout = useLogout()
 
     const menu = [
         { href: "/admin", label: "Dashboard", icon: <LayoutDashboard /> },
@@ -62,7 +64,9 @@ export default function Sidebar() {
                     label="Admin Settings"
                     icon={<Settings />}
                 />
-                <button className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10">
+                <button
+                    onClick={logout}
+                    className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10">
                     <LogOut className="w-5 h-5" />
                     Logout
                 </button>
