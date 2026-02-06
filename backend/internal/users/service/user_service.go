@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"strings"
 
@@ -62,14 +63,16 @@ func (service *UserService) GetUsersFiltered(ctx context.Context, roles []string
 	}
 
 	//normalize status
+	var statusNS sql.NullString
 	if status != nil {
 		s := strings.ToLower(strings.TrimSpace(*status))
-		if s == "" {
-			status = nil
-		} else {
+		if s != "" {
 			switch s {
-			case "active", "pending", "rejected", "suspended":
-				status = &s
+			case "pending", "rejected", "suspended":
+				statusNS = sql.NullString{
+					String: s,
+					Valid:  true,
+				}
 			default:
 				return nil, errors.New("invalid status filter")
 			}
@@ -77,23 +80,25 @@ func (service *UserService) GetUsersFiltered(ctx context.Context, roles []string
 	}
 
 	//normalize search
+	var searchNS sql.NullString
 	if search != nil {
 		q := strings.TrimSpace(*search)
-		if q == "" {
-			search = nil
-		} else {
-			search = &q
+		if q != "" {
+			searchNS = sql.NullString{
+				String: q,
+				Valid:  true,
+			}
 		}
 	}
 
-	users, err := service.userRepo.GetUsersFiltered(ctx, roles, status, search, limit, offset)
+	users, err := service.userRepo.GetUsersFiltered(ctx, roles, statusNS, searchNS, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	return users, nil
-
 }
+
 func (service *UserService) GetUserDetail(
 	ctx context.Context,
 	userId uuid.UUID,

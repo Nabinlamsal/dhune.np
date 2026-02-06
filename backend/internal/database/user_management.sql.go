@@ -205,49 +205,48 @@ FROM users u
          LEFT JOIN business_profiles bp ON bp.user_id = u.id
          LEFT JOIN vendor_profiles vp ON vp.user_id = u.id
 WHERE
-    ($1::text[] IS NULL OR u.role = ANY($1))
-  AND
     (
-        $2 IS NULL
-            OR (
-            $2 = 'active'
-                AND u.is_active = TRUE
-                AND (
-                u.role = 'user'
-                    OR bp.approval_status = 'approved'
-                    OR vp.approval_status = 'approved'
-                )
-            )
-            OR (
-            $2 = 'pending'
-                AND (
-                bp.approval_status = 'pending'
-                    OR vp.approval_status = 'pending'
-                )
-            )
-            OR (
-            $2 = 'rejected'
-                AND (
-                bp.approval_status = 'rejected'
-                    OR vp.approval_status = 'rejected'
-                )
-            )
-            OR (
-            $2 = 'suspended'
-                AND u.is_active = FALSE
+        $3::text[] IS NULL
+            OR u.role = ANY($3::text[])
+        )
+
+  AND (
+    $4::text IS NULL
+
+        OR (
+        $4::text = 'pending'
+            AND (
+            bp.approval_status = 'pending'
+                OR vp.approval_status = 'pending'
             )
         )
-  AND
-    ($3 IS NULL OR u.email ILIKE '%' || $3 || '%')
-ORDER BY u.created_at DESC LIMIT $4 OFFSET $5
+        OR (
+        $4::text = 'rejected'
+            AND (
+            bp.approval_status = 'rejected'
+                OR vp.approval_status = 'rejected'
+            )
+        )
+        OR (
+        $4::text = 'suspended'
+            AND u.is_active = FALSE
+        )
+    )
+
+  AND (
+    $5::text IS NULL
+        OR u.email ILIKE '%' || $5::text || '%'
+    )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2
 `
 
 type GetUsersAdminViewParams struct {
-	Column1 []string
-	Column2 interface{}
-	Column3 interface{}
-	Limit   int32
-	Offset  int32
+	Limit  int32
+	Offset int32
+	Roles  []string
+	Status sql.NullString
+	Search sql.NullString
 }
 
 type GetUsersAdminViewRow struct {
@@ -268,11 +267,11 @@ type GetUsersAdminViewRow struct {
 // all the users
 func (q *Queries) GetUsersAdminView(ctx context.Context, arg GetUsersAdminViewParams) ([]GetUsersAdminViewRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUsersAdminView,
-		pq.Array(arg.Column1),
-		arg.Column2,
-		arg.Column3,
 		arg.Limit,
 		arg.Offset,
+		pq.Array(arg.Roles),
+		arg.Status,
+		arg.Search,
 	)
 	if err != nil {
 		return nil, err

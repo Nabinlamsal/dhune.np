@@ -8,42 +8,40 @@ FROM users u
          LEFT JOIN business_profiles bp ON bp.user_id = u.id
          LEFT JOIN vendor_profiles vp ON vp.user_id = u.id
 WHERE
-    ($1::text[] IS NULL OR u.role = ANY($1))
-  AND
     (
-        $2 IS NULL
-            OR (
-            $2 = 'active'
-                AND u.is_active = TRUE
-                AND (
-                u.role = 'user'
-                    OR bp.approval_status = 'approved'
-                    OR vp.approval_status = 'approved'
-                )
-            )
-            OR (
-            $2 = 'pending'
-                AND (
-                bp.approval_status = 'pending'
-                    OR vp.approval_status = 'pending'
-                )
-            )
-            OR (
-            $2 = 'rejected'
-                AND (
-                bp.approval_status = 'rejected'
-                    OR vp.approval_status = 'rejected'
-                )
-            )
-            OR (
-            $2 = 'suspended'
-                AND u.is_active = FALSE
+        sqlc.narg(roles)::text[] IS NULL
+            OR u.role = ANY(sqlc.narg(roles)::text[])
+        )
+
+  AND (
+    sqlc.narg(status)::text IS NULL
+
+        OR (
+        sqlc.narg(status)::text = 'pending'
+            AND (
+            bp.approval_status = 'pending'
+                OR vp.approval_status = 'pending'
             )
         )
-  AND
-    ($3 IS NULL OR u.email ILIKE '%' || $3 || '%')
-ORDER BY u.created_at DESC LIMIT $4 OFFSET $5;
+        OR (
+        sqlc.narg(status)::text = 'rejected'
+            AND (
+            bp.approval_status = 'rejected'
+                OR vp.approval_status = 'rejected'
+            )
+        )
+        OR (
+        sqlc.narg(status)::text = 'suspended'
+            AND u.is_active = FALSE
+        )
+    )
 
+  AND (
+    sqlc.narg(search)::text IS NULL
+        OR u.email ILIKE '%' || sqlc.narg(search)::text || '%'
+    )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2;
 
 -- details
 -- name: GetUserDetail :one

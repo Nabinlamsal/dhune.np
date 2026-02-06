@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/users/model"
@@ -16,13 +17,18 @@ func NewUserRepoImpl(q *db.Queries) *UserRepoImpl {
 	return &UserRepoImpl{q: q}
 }
 
-func (repo *UserRepoImpl) GetUsersFiltered(ctx context.Context, roles []string, status *string, search *string, limit int32, offset int32) ([]model.AdminUserSummary, error) {
+func (repo *UserRepoImpl) GetUsersFiltered(ctx context.Context,
+	roles []string,
+	status sql.NullString,
+	search sql.NullString,
+	limit int32,
+	offset int32) ([]model.AdminUserSummary, error) {
 	params := db.GetUsersAdminViewParams{
-		Column1: roles,
-		Column2: status,
-		Column3: search,
-		Limit:   limit,
-		Offset:  offset,
+		Limit:  limit,
+		Offset: offset,
+		Roles:  roles,
+		Status: status,
+		Search: search,
 	}
 
 	//execute sql query
