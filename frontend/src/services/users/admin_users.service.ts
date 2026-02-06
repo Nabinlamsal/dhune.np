@@ -1,6 +1,6 @@
 import { api } from "@/src/libs/api";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
-import { AdminUserSummary } from "@/src/types/users/admin-user-summary";
+import { AdminUsersPayload, AdminUserSummary, ApiResponse } from "@/src/types/users/admin-user-summary";
 import { AdminUserFilter } from "@/src/types/users/filter";
 
 export const getUsersFiltered = async (
@@ -24,12 +24,12 @@ export const getUsersFiltered = async (
         params.set("search", filter.search);
     }
 
-    const res = await api<{ users: AdminUserSummary[] }>(
+    const res = await api<ApiResponse<AdminUsersPayload>>(
         `/admin/users?${params.toString()}`,
         { method: "GET" }
     );
 
-    return res.users;
+    return res.data.users;
 };
 
 export const getUserDetail = async (

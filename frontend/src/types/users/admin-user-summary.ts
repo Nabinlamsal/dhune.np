@@ -1,5 +1,9 @@
 import { Role } from "../auth/identity";
 import { ApprovalStatus } from "./user.enums";
+export interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+}
 
 //for admin table
 export interface AdminUserSummary {
@@ -13,7 +17,11 @@ export interface AdminUserSummary {
 
     isActive: boolean;
 
-    approvalStatus?: ApprovalStatus;
+    businessApprovalStatus?: ApprovalStatus | null;
+    vendorApprovalStatus?: ApprovalStatus | null;
 
     createdAt: string;
+}
+export interface AdminUsersPayload {
+    users: AdminUserSummary[];
 }

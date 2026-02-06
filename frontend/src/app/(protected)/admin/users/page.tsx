@@ -247,10 +247,9 @@
 //         </div>
 //     )
 // }
-
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 /* UI */
 import { DataTable } from "@/src/components/dashboard/table/DataTable";
@@ -261,197 +260,125 @@ import { FilterTabs } from "@/src/components/dashboard/FilterTabs";
 
 /* Hooks */
 import { useGetUsersFiltered } from "@/src/hooks/users/useAdminUsers";
+import { useGetUserProfile } from "@/src/hooks/users/useAdminUsers";
 import {
     useBusinessApprove,
     useBusinessReject,
+    useVendorApprove,
+    useVendorReject,
     useSuspendUser,
+    useReactivateUser,
 } from "@/src/hooks/users/useUserCommand";
 
 /* Types */
+import { Role } from "@/src/types/auth/identity";
 import { AdminUserSummary } from "@/src/types/users/admin-user-summary";
 import { AdminUserFilter } from "@/src/types/users/filter";
-import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
 
-/* ------------------------------------------------ */
+/* ---------------- Helpers ---------------- */
 
-type RoleFilter = "all" | "business" | "user";
+function getApprovalStatus(user: AdminUserSummary) {
+    if (!user.isActive) return "suspended";
 
-type UIStatusFilter =
-    | "all"
-    | "approved"   // maps to active
-    | "pending"
-    | "rejected"
-    | "suspended";
+    if (user.role === "user") return "approved";
 
-const LIMIT = 10;
+    return user.role === "business"
+        ? user.businessApprovalStatus ?? "pending"
+        : user.vendorApprovalStatus ?? "pending";
+}
 
-/* ------------------------------------------------ */
-
-const mapUIStatusToApiStatus = (
-    status: UIStatusFilter
-): AdminUserFilterStatus | undefined => {
-    if (status === "all") return undefined;
-    if (status === "approved") return undefined; // CRITICAL LINE
-    return status;
-};
-
-/* ------------------------------------------------ */
+/* ---------------- Page ---------------- */
 
 export default function AdminUsersPage() {
-    /* ---------------- State ---------------- */
+    /* Filters */
+    const [roleFilter, setRoleFilter] = useState<"all" | Role>("all");
+    const [statusFilter, setStatusFilter] = useState<
+        "all" | "pending" | "approved" | "rejected" | "suspended"
+    >("all");
 
-    const [roleFilter, setRoleFilter] =
-        useState<RoleFilter>("all");
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-    const [statusFilter, setStatusFilter] =
-        useState<UIStatusFilter>("all");
+    /* API Filter */
+    const filter: AdminUserFilter = useMemo(
+        () => ({
+            roles: roleFilter === "all" ? undefined : [roleFilter],
+            status: statusFilter === "all" ? undefined : statusFilter,
+            limit: 10,
+            offset: 0,
+        }),
+        [roleFilter, statusFilter]
+    );
 
-    const [page, setPage] = useState(0);
+    /* Queries */
+    const { data: users, isPending } = useGetUsersFiltered(filter);
+    const { data: profile } = useGetUserProfile(selectedUserId ?? "");
 
-    const [selectedUserId, setSelectedUserId] =
-        useState<string | null>(null);
+    /* Mutations */
+    const { mutate: approveBusiness } = useBusinessApprove();
+    const { mutate: rejectBusiness } = useBusinessReject();
+    const { mutate: approveVendor } = useVendorApprove();
+    const { mutate: rejectVendor } = useVendorReject();
+    const { mutate: suspendUser } = useSuspendUser();
+    const { mutate: reactivateUser } = useReactivateUser();
 
-    /* ---------------- Build API Filter ---------------- */
-
-    const filter: AdminUserFilter = useMemo(() => {
-        return {
-            roles:
-                roleFilter === "all"
-                    ? undefined
-                    : [roleFilter],
-
-            status: mapUIStatusToApiStatus(statusFilter),
-
-            limit: LIMIT,
-            offset: page * LIMIT,
-        };
-    }, [roleFilter, statusFilter, page]);
-
-    /* ---------------- Query ---------------- */
-
-    const {
-        data: users,
-        isPending,
-        error,
-    } = useGetUsersFiltered(filter);
-
-    /* ---------------- Mutations ---------------- */
-
-    const { mutate: approveBusiness } =
-        useBusinessApprove();
-
-    const { mutate: rejectBusiness } =
-        useBusinessReject();
-
-    const { mutate: suspendUser } =
-        useSuspendUser();
-
-    /* ---------------- Guards ---------------- */
-
-    if (isPending) {
-        return (
-            <p className="text-gray-500">
-                Loading users...
-            </p>
-        );
-    }
-
-    if (error) {
-        return (
-            <p className="text-red-500">
-                Failed to load users
-            </p>
-        );
-    }
-
-    /* ---------------- Helpers ---------------- */
-
-    const renderStatus = (user: AdminUserSummary) => {
-        if (!user.isActive) {
-            return <StatusBadge status="suspended" />;
-        }
-
-        if (user.role === "business") {
-            return (
-                <StatusBadge
-                    status={user.approvalStatus ?? "pending"}
-                />
-            );
-        }
-
-        // normal user
-        return <StatusBadge status="approved" />;
-    };
-
-    /* ---------------- Table ---------------- */
-
+    /* Table Columns */
     const columns = [
-        {
-            key: "displayName",
-            header: "Name",
-        },
-        {
-            key: "email",
-            header: "Email",
-        },
+        { key: "displayName", header: "Name" },
+        { key: "email", header: "Email" },
+        { key: "phone", header: "Phone" },
         {
             key: "role",
             header: "Role",
-            render: (u: AdminUserSummary) =>
-                u.role === "user"
-                    ? "Normal User"
-                    : "Business",
+            render: (u: AdminUserSummary) => u.role.toUpperCase(),
         },
         {
             key: "status",
-            header: "Status",
-            render: renderStatus,
+            header: "Approval Status",
+            render: (u: AdminUserSummary) => (
+                <StatusBadge status={getApprovalStatus(u)} />
+            ),
+        },
+        {
+            key: "createdAt",
+            header: "Joined",
+            render: (u: AdminUserSummary) =>
+                new Date(u.createdAt).toLocaleDateString(),
         },
         {
             key: "actions",
             header: "",
-            render: (user: AdminUserSummary) => {
-                const isPendingBusiness =
-                    user.role === "business" &&
-                    user.approvalStatus === "pending";
-
-                const isApprovedUser =
-                    user.isActive &&
-                    (user.role === "user" ||
-                        user.approvalStatus === "approved");
+            render: (u: AdminUserSummary) => {
+                const status = getApprovalStatus(u);
 
                 return (
                     <ActionMenu
-                        onView={() =>
-                            setSelectedUserId(user.id)
-                        }
-
+                        onView={() => setSelectedUserId(u.id)}
                         onApprove={
-                            isPendingBusiness
+                            status === "pending"
                                 ? () =>
-                                    approveBusiness({
-                                        userId: user.id,
-                                    })
+                                    u.role === "business"
+                                        ? approveBusiness({ userId: u.id })
+                                        : approveVendor({ userId: u.id })
                                 : undefined
                         }
-
                         onReject={
-                            isPendingBusiness
+                            status === "pending"
                                 ? () =>
-                                    rejectBusiness({
-                                        userId: user.id,
-                                    })
+                                    u.role === "business"
+                                        ? rejectBusiness({ userId: u.id })
+                                        : rejectVendor({ userId: u.id })
                                 : undefined
                         }
-
                         onSuspend={
-                            isApprovedUser
-                                ? () =>
-                                    suspendUser({
-                                        userId: user.id,
-                                    })
+                            status === "approved"
+                                ? () => suspendUser({ userId: u.id })
                                 : undefined
                         }
+                    // onReactivate={
+                    //     status === "suspended"
+                    //         ? () => reactivateUser({ userId: u.id })
+                    //         : undefined
+                    // }
                     />
                 );
             },
@@ -462,91 +389,97 @@ export default function AdminUsersPage() {
 
     return (
         <>
-            <h2 className="text-2xl font-bold mb-4">
-                Users Management
-            </h2>
+            <h2 className="text-2xl font-bold mb-4">Users Management</h2>
 
             {/* Role Filter */}
             <FilterTabs
                 tabs={[
                     { label: "All", value: "all" },
-                    {
-                        label: "Normal Users",
-                        value: "user",
-                    },
-                    {
-                        label: "Business Users",
-                        value: "business",
-                    },
+                    { label: "Normal Users", value: "user" },
+                    { label: "Business Users", value: "business" },
+                    { label: "Vendors", value: "vendor" },
                 ]}
                 active={roleFilter}
-                onChange={(v) =>
-                    setRoleFilter(v as RoleFilter)
-                }
+                onChange={(v) => setRoleFilter(v as any)}
             />
 
             {/* Status Filter */}
             <FilterTabs
                 tabs={[
                     { label: "All", value: "all" },
-                    {
-                        label: "Approved",
-                        value: "approved",
-                    },
-                    {
-                        label: "Pending",
-                        value: "pending",
-                    },
-                    {
-                        label: "Rejected",
-                        value: "rejected",
-                    },
-                    {
-                        label: "Suspended",
-                        value: "suspended",
-                    },
+                    { label: "Approved", value: "approved" },
+                    { label: "Pending", value: "pending" },
+                    { label: "Rejected", value: "rejected" },
+                    { label: "Suspended", value: "suspended" },
                 ]}
                 active={statusFilter}
-                onChange={(v) =>
-                    setStatusFilter(v as UIStatusFilter)
-                }
+                onChange={(v) => setStatusFilter(v as any)}
             />
 
             {/* Table */}
             <DataTable
+                // loading={isPending}
                 columns={columns}
                 data={users ?? []}
+                onRowClick={(u) => setSelectedUserId(u.id)}
+            // compact
             />
-
-            {/* Pagination (simple) */}
-            <div className="flex gap-2 mt-4">
-                <button
-                    disabled={page === 0}
-                    onClick={() =>
-                        setPage((p) => Math.max(0, p - 1))
-                    }
-                >
-                    Previous
-                </button>
-
-                <button
-                    onClick={() =>
-                        setPage((p) => p + 1)
-                    }
-                >
-                    Next
-                </button>
-            </div>
 
             {/* Drawer */}
             <DetailsDrawer
                 open={!!selectedUserId}
-                onClose={() =>
-                    setSelectedUserId(null)
-                }
+                onClose={() => setSelectedUserId(null)}
                 title="User Details"
             >
-                User ID: {selectedUserId}
+                {!profile ? (
+                    <p className="text-sm text-gray-500">Loading...</p>
+                ) : (
+                    <div className="space-y-3 text-sm">
+                        <div>
+                            <p className="text-gray-500">Name</p>
+                            <p className="font-medium">{profile.displayName}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-gray-500">Email</p>
+                            <p className="font-medium">{profile.email}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-gray-500">Phone</p>
+                            <p className="font-medium">{profile.phone}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-gray-500">Role</p>
+                            <p className="font-medium">{profile.role}</p>
+                        </div>
+
+                        {profile.businessProfile && (
+                            <>
+                                <hr />
+                                <div>
+                                    <p className="text-gray-500">Owner Name</p>
+                                    <p className="font-medium">
+                                        {profile.businessProfile.ownerName}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Business Type</p>
+                                    <p className="font-medium">
+                                        {profile.businessProfile.businessType}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Registration Number</p>
+                                    <p className="font-medium">
+                                        {profile.businessProfile.registrationNumber}
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
             </DetailsDrawer>
         </>
     );
