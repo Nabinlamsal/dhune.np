@@ -68,7 +68,7 @@ func (service *UserService) GetUsersFiltered(ctx context.Context, roles []string
 		s := strings.ToLower(strings.TrimSpace(*status))
 		if s != "" {
 			switch s {
-			case "pending", "rejected", "suspended":
+			case "pending", "rejected", "suspended", "approved":
 				statusNS = sql.NullString{
 					String: s,
 					Valid:  true,

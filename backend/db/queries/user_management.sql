@@ -31,6 +31,14 @@ WHERE
             )
         )
         OR (
+        sqlc.narg(status)::text = 'approved'
+            AND (
+            bp.approval_status = 'approved'
+                OR vp.approval_status = 'approved'
+                OR u.role = 'user'
+            )
+        )
+        OR (
         sqlc.narg(status)::text = 'suspended'
             AND u.is_active = FALSE
         )
