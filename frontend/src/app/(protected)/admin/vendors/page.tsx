@@ -1,102 +1,160 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { DataTable } from "@/src/components/dashboard/table/DataTable"
-import { StatusBadge } from "@/src/components/dashboard/StatusBadge"
-import { FilterTabs } from "@/src/components/dashboard/FilterTabs"
+import { Button } from "@/src/components/ui/button";
+import { DataTable } from "@/src/components/dashboard/table/DataTable";
 
-type VendorStatus = "pending" | "approved" | "rejected"
+import { AdminUserSummary } from "@/src/types/users/admin-user-summary";
+import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
 
-interface AdminVendor {
-    id: string
-    displayName: string
-    email: string
-    phone: string
-    approvalStatus: VendorStatus
-    isActive: boolean
-    createdAt: string
+import { StatusBadge } from "@/src/components/common/StatusBadge";
+import { FilterTabs } from "@/src/components/common/FilterTabs";
+import { SearchInput } from "@/src/components/ui/search-input";
+import { useGetUsersFiltered } from "@/src/hooks/users/useAdminUsers";
+import { Role } from "@/src/types/auth/identity";
+
+/* ---------- helper ---------- */
+
+function deriveVendorStatus(
+    u: AdminUserSummary
+): AdminUserFilterStatus {
+    if (!u.IsActive) return "suspended";
+    return u.VendorApprovalStatus ?? "pending";
 }
 
-const VENDORS: AdminVendor[] = [
-    {
-        id: "v1",
-        displayName: "CleanMax Laundry",
-        email: "cleanmax@gmail.com",
-        phone: "9800001111",
-        approvalStatus: "pending",
-        isActive: true,
-        createdAt: "2024-12-10",
-    },
-    {
-        id: "v2",
-        displayName: "SnowWash Services",
-        email: "snowwash@gmail.com",
-        phone: "9800002222",
-        approvalStatus: "approved",
-        isActive: true,
-        createdAt: "2024-11-22",
-    },
-]
+/* ---------- page ---------- */
 
-export default function VendorsPage() {
-    const router = useRouter()
-    const [filter, setFilter] = useState<
-        "all" | "pending" | "approved" | "rejected"
-    >("all")
+export default function AdminVendorsPage() {
+    const router = useRouter();
 
-    const filteredVendors =
-        filter === "all"
-            ? VENDORS
-            : VENDORS.filter((v) => v.approvalStatus === filter)
+    const [statusFilter, setStatusFilter] =
+        useState<"all" | AdminUserFilterStatus>("all");
+
+    const [search, setSearch] = useState("");
+
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
+    const roles: Role[] = ["vendor"];
+
+    const filter = {
+        roles,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        search: search || undefined,
+        limit: pageSize,
+        offset: page * pageSize,
+    };
+
+    const { data: vendors = [], isLoading } =
+        useGetUsersFiltered(filter);
 
     const columns = [
-        { key: "displayName", header: "Vendor Name" },
-        { key: "email", header: "Email" },
-        { key: "phone", header: "Phone" },
+        { key: "DisplayName", header: "Vendor Name" },
+        { key: "Email", header: "Email" },
+        { key: "Phone", header: "Phone" },
         {
-            key: "approvalStatus",
+            key: "status",
             header: "Status",
-            render: (vendor: AdminVendor) => (
-                <StatusBadge status={vendor.approvalStatus} />
-            ),
+            render: (vendor: AdminUserSummary) => {
+                const status = deriveVendorStatus(vendor);
+                return <StatusBadge status={status} />;
+            },
         },
-        { key: "createdAt", header: "Joined" },
-    ]
+        {
+            key: "CreatedAt",
+            header: "Joined",
+            render: (vendor: AdminUserSummary) =>
+                new Date(vendor.CreatedAt).toLocaleDateString(),
+        },
+    ];
 
     return (
         <>
             {/* Header */}
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Vendors</h2>
+            <div className="mb-4">
+                <h2 className="text-2xl font-bold">
+                    Vendors Management
+                </h2>
                 <p className="text-sm text-gray-500">
-                    Manage laundry service providers
+                    Manage vendor accounts
                 </p>
             </div>
 
-            {/* Filters */}
-            <FilterTabs
-                tabs={[
-                    { label: "All", value: "all" },
-                    { label: "Pending", value: "pending" },
-                    { label: "Approved", value: "approved" },
-                    { label: "Rejected", value: "rejected" },
-                ]}
-                active={filter}
-                onChange={(v) =>
-                    setFilter(v as "all" | "pending" | "approved" | "rejected")
-                }
-            />
+            {/* Filters Row */}
+            <div className="flex items-center justify-between gap-6">
+                <FilterTabs
+                    tabs={[
+                        { label: "All", value: "all" },
+                        { label: "Pending", value: "pending" },
+                        { label: "Approved", value: "approved" },
+                        { label: "Rejected", value: "rejected" },
+                        { label: "Suspended", value: "suspended" },
+                    ]}
+                    active={statusFilter}
+                    onChange={(v) =>
+                        setStatusFilter(
+                            v as "all" | AdminUserFilterStatus
+                        )
+                    }
+                />
+
+                <SearchInput
+                    placeholder="Search vendors..."
+                    value={search}
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
+                />
+            </div>
 
             {/* Table */}
-            <DataTable
-                columns={columns}
-                data={filteredVendors}
-                onRowClick={(vendor) =>
-                    router.push(`/admin/vendors/${vendor.id}`)
-                }
-            />
+            <div className="mt-4">
+                {isLoading ? (
+                    <p className="text-sm text-gray-500">
+                        Loading vendors…
+                    </p>
+                ) : vendors.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                        No vendors found
+                    </p>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={vendors}
+                        onRowClick={(vendor) =>
+                            router.push(
+                                `/admin/vendors/${vendor.ID}`
+                            )
+                        }
+                    />
+                )}
+            </div>
+
+            {/* Pagination */}
+            <div className="flex justify-end gap-2 mt-4">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 0}
+                    onClick={() =>
+                        setPage((p) => Math.max(0, p - 1))
+                    }
+                >
+                    Previous
+                </Button>
+
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={vendors.length < pageSize}
+                    onClick={() =>
+                        setPage((p) => p + 1)
+                    }
+                >
+                    Next
+                </Button>
+            </div>
         </>
-    )
+    );
 }

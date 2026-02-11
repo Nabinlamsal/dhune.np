@@ -4,10 +4,10 @@ import { useMemo, useState } from "react"
 
 import { DataTable } from "@/src/components/dashboard/table/DataTable"
 
-import { FilterTabs } from "@/src/components/dashboard/FilterTabs"
-import { DetailsDrawer } from "@/src/components/dashboard/DetailsDrawer"
+import { FilterTabs } from "@/src/components/common/FilterTabs"
+import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
 import { StatCard } from "@/src/components/dashboard/StatCard"
-import { Status, StatusBadge } from "@/src/components/dashboard/StatusBadge"
+import { Status, StatusBadge } from "@/src/components/common/StatusBadge"
 
 type OrderStatus =
     | "in_progress"

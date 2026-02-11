@@ -10,7 +10,6 @@ interface DetailsDrawerProps {
     title: string
     children: React.ReactNode
 }
-
 export function DetailsDrawer({
     open,
     onClose,
@@ -20,16 +19,21 @@ export function DetailsDrawer({
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-            <div className="w-[420px] h-full bg-white shadow-xl animate-slide-in">
-                <div className="flex items-center justify-between p-6 border-b">
-                    <h3 className="font-semibold text-lg">{title}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b shrink-0">
+                    <h3 className="font-semibold text-base">{title}</h3>
                     <Button variant="ghost" size="icon" onClick={onClose}>
                         <X />
                     </Button>
                 </div>
 
-                <div className="p-6 space-y-4">{children}</div>
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-1 text-xs">
+                    {children}
+                </div>
+
             </div>
         </div>
     )

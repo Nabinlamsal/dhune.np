@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/src/components/ui/button"
-import { StatusBadge } from "@/src/components/dashboard/StatusBadge"
+import { StatusBadge } from "../../common/StatusBadge"
 import { ApprovalDialog } from "./ApprovalDialog"
 
 export type DocumentStatus = "pending" | "approved" | "rejected"

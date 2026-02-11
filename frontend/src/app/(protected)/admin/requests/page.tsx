@@ -3,9 +3,8 @@
 import { useState } from "react"
 
 import { DataTable } from "@/src/components/dashboard/table/DataTable"
-import { StatusBadge } from "@/src/components/dashboard/StatusBadge"
-import { FilterTabs } from "@/src/components/dashboard/FilterTabs"
-import { DetailsDrawer } from "@/src/components/dashboard/DetailsDrawer"
+import { StatusBadge } from "@/src/components/common/StatusBadge"
+import { FilterTabs } from "@/src/components/common/FilterTabs"
 
 /* ---------------- types ---------------- */
 

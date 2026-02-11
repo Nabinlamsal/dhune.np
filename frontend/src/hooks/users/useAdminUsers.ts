@@ -24,6 +24,6 @@ export const useGetUserProfile = (userId: string) => {
         queryKey: ["admin-user", userId],
         queryFn: () => getUserDetail(userId),
         enabled: !!userId,
-        staleTime: 30000,
+        staleTime: 0,
     });
 };

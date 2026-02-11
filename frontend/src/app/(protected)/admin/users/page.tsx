@@ -1,376 +1,98 @@
-// "use client"
-
-// import { useState } from "react"
-
-// import { DataTable } from "@/src/components/dashboard/table/DataTable"
-// import { StatusBadge } from "@/src/components/dashboard/StatusBadge"
-// import { ActionMenu } from "@/src/components/dashboard/ActionMenu"
-// import { DetailsDrawer } from "@/src/components/dashboard/DetailsDrawer"
-// import { FilterTabs } from "@/src/components/dashboard/FilterTabs"
-
-
-// type UserRole = "user" | "business"
-// type ApprovalStatus = "pending" | "approved" | "rejected"
-
-// interface AdminUser {
-//     id: string
-//     displayName: string
-//     email: string
-//     phone: string
-//     role: UserRole
-//     isActive: boolean
-//     createdAt: string
-
-//     // business-only fields
-//     ownerName?: string
-//     businessType?: string
-//     registrationNumber?: string
-//     approvalStatus?: ApprovalStatus
-// }
-
-// //statis files
-
-// const USERS: AdminUser[] = [
-//     {
-//         id: "1",
-//         displayName: "Ramesh Shrestha",
-//         email: "ramesh@gmail.com",
-//         phone: "9800000001",
-//         role: "user",
-//         isActive: true,
-//         createdAt: "2024-12-01",
-//     },
-//     {
-//         id: "2",
-//         displayName: "Sita Laundry Pvt Ltd",
-//         email: "contact@sitalaundry.com",
-//         phone: "9800000002",
-//         role: "business",
-//         isActive: true,
-//         createdAt: "2024-12-05",
-//         ownerName: "Sita Sharma",
-//         businessType: "Laundry Service",
-//         registrationNumber: "REG-12345",
-//         approvalStatus: "pending",
-//     },
-//     {
-//         id: "3",
-//         displayName: "Everest Hostel",
-//         email: "admin@everesthostel.com",
-//         phone: "9800000003",
-//         role: "business",
-//         isActive: false,
-//         createdAt: "2024-12-08",
-//         ownerName: "Kiran Thapa",
-//         businessType: "Hostel",
-//         registrationNumber: "REG-67890",
-//         approvalStatus: "approved",
-//     },
-// ]
-
-// //admin page
-
-// export default function AdminUsersPage() {
-//     const [activeFilter, setActiveFilter] = useState<
-//         "all" | "user" | "business"
-//     >("all")
-
-//     const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
-
-//     const filteredUsers =
-//         activeFilter === "all"
-//             ? USERS
-//             : USERS.filter((u) => u.role === activeFilter)
-
-//     const columns = [
-//         {
-//             key: "displayName",
-//             header: "Name",
-//         },
-//         {
-//             key: "email",
-//             header: "Email",
-//         },
-//         {
-//             key: "phone",
-//             header: "Phone",
-//         },
-//         {
-//             key: "role",
-//             header: "Role",
-//             render: (user: AdminUser) =>
-//                 user.role === "business" ? "Business" : "Normal",
-//         },
-//         {
-//             key: "approvalStatus",
-//             header: "Approval",
-//             render: (user: AdminUser) =>
-//                 user.role === "business" && user.approvalStatus ? (
-//                     <StatusBadge status={user.approvalStatus} />
-//                 ) : (
-//                     "—"
-//                 ),
-//         },
-//         {
-//             key: "isActive",
-//             header: "Active",
-//             render: (user: AdminUser) =>
-//                 user.isActive ? (
-//                     <StatusBadge status="active" />
-//                 ) : (
-//                     <StatusBadge status="disabled" />
-//                 ),
-//         },
-//         {
-//             key: "createdAt",
-//             header: "Joined",
-//         },
-//         {
-//             key: "actions",
-//             header: "",
-//             render: (user: AdminUser) => (
-//                 <ActionMenu
-//                     onView={() => setSelectedUser(user)}
-//                     onApprove={
-//                         user.role === "business" &&
-//                             user.approvalStatus === "pending"
-//                             ? () => { }
-//                             : undefined
-//                     }
-//                     onReject={
-//                         user.role === "business" &&
-//                             user.approvalStatus === "pending"
-//                             ? () => { }
-//                             : undefined
-//                     }
-//                     onDelete={() => { }}
-//                 />
-//             ),
-//         },
-//     ]
-
-//     return (
-//         <>
-//             {/* Header */}
-//             <div className="mb-6">
-//                 <h2 className="text-2xl font-bold text-gray-900">
-//                     Users Management
-//                 </h2>
-//                 <p className="text-sm text-gray-500">
-//                     Manage normal and business user accounts
-//                 </p>
-//             </div>
-
-//             {/* Filters */}
-//             <FilterTabs
-//                 tabs={[
-//                     { label: "All Users", value: "all" },
-//                     { label: "Normal Users", value: "user" },
-//                     { label: "Business Users", value: "business" },
-//                 ]}
-//                 active={activeFilter}
-//                 onChange={(v) =>
-//                     setActiveFilter(v as "all" | "user" | "business")
-//                 }
-//             />
-
-//             {/* Table */}
-//             <DataTable
-//                 columns={columns}
-//                 data={filteredUsers}
-//                 onRowClick={(user) => setSelectedUser(user)}
-//             />
-
-//             {/* Details Drawer */}
-//             <DetailsDrawer
-//                 open={!!selectedUser}
-//                 onClose={() => setSelectedUser(null)}
-//                 title="User Details"
-//             >
-//                 {selectedUser && (
-//                     <div className="space-y-4 text-sm">
-//                         <Detail label="Name" value={selectedUser.displayName} />
-//                         <Detail label="Email" value={selectedUser.email} />
-//                         <Detail label="Phone" value={selectedUser.phone} />
-//                         <Detail
-//                             label="Role"
-//                             value={
-//                                 selectedUser.role === "business"
-//                                     ? "Business"
-//                                     : "Normal"
-//                             }
-//                         />
-//                         <Detail
-//                             label="Active"
-//                             value={selectedUser.isActive ? "Yes" : "No"}
-//                         />
-
-//                         {selectedUser.role === "business" && (
-//                             <>
-//                                 <Detail
-//                                     label="Owner Name"
-//                                     value={selectedUser.ownerName}
-//                                 />
-//                                 <Detail
-//                                     label="Business Type"
-//                                     value={selectedUser.businessType}
-//                                 />
-//                                 <Detail
-//                                     label="Registration Number"
-//                                     value={selectedUser.registrationNumber}
-//                                 />
-//                                 <Detail
-//                                     label="Approval Status"
-//                                     value={selectedUser.approvalStatus}
-//                                 />
-//                             </>
-//                         )}
-//                     </div>
-//                 )}
-//             </DetailsDrawer>
-//         </>
-//     )
-// }
-
-
-// function Detail({
-//     label,
-//     value,
-// }: {
-//     label: string
-//     value?: string
-// }) {
-//     return (
-//         <div>
-//             <p className="text-gray-500">{label}</p>
-//             <p className="font-medium">{value ?? "—"}</p>
-//         </div>
-//     )
-// }
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
-import { StatusBadge } from "@/src/components/dashboard/StatusBadge";
-import { DetailsDrawer } from "@/src/components/dashboard/DetailsDrawer";
-import { FilterTabs } from "@/src/components/dashboard/FilterTabs";
 
-/* ---------------- Types ---------------- */
+import { AdminUserSummary } from "@/src/types/users/admin-user-summary";
+import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
+import { Role } from "@/src/types/auth/identity";
 
-type Role = "user" | "business";
-type Status = "approved" | "pending" | "rejected" | "suspended";
+import { useGetUserProfile, useGetUsersFiltered } from "@/src/hooks/users/useAdminUsers";
+import { useBusinessApprove, useBusinessReject, useReactivateUser, useSuspendUser } from "@/src/hooks/users/useUserCommand";
+import { Detail } from "@/src/components/common/DetailItem";
+import { StatusBadge } from "@/src/components/common/StatusBadge";
+import { FilterTabs } from "@/src/components/common/FilterTabs";
+import { DetailsDrawer } from "@/src/components/common/DetailsDrawer";
+import { SearchInput } from "@/src/components/ui/search-input";
 
-interface UserDocument {
-    id: string;
-    documentType: string;
-    verified: boolean;
+//helper
+function deriveUserStatus(
+    u: AdminUserSummary
+): AdminUserFilterStatus {
+    // suspension overrides everything
+    if (!u.IsActive) return "suspended";
+    if (u.Role === "business") {
+        return u.BusinessApprovalStatus ?? "pending";
+    }
+
+    if (u.Role === "vendor") {
+        return u.VendorApprovalStatus ?? "pending";
+    }
+
+    // normal user (auto-approved)
+    return "approved";
 }
 
-interface AdminUser {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    role: Role;
-    status: Status;
-    joinedAt: string;
-
-    // business-only
-    ownerName?: string;
-    businessType?: string;
-    registrationNumber?: string;
-    documents?: UserDocument[];
-}
-
-/* ---------------- Mock Data ---------------- */
-
-const USERS: AdminUser[] = [
-    {
-        id: "1",
-        name: "Ram Thapa",
-        email: "ram@gmail.com",
-        phone: "9800000001",
-        role: "user",
-        status: "approved",
-        joinedAt: "2024-12-01",
-    },
-    {
-        id: "2",
-        name: "Sita Laundry Pvt Ltd",
-        email: "contact@sitalaundry.com",
-        phone: "9800000002",
-        role: "business",
-        status: "pending",
-        joinedAt: "2024-12-05",
-        ownerName: "Sita Sharma",
-        businessType: "Laundry Service",
-        registrationNumber: "REG-12345",
-        documents: [
-            { id: "d1", documentType: "PAN", verified: true },
-            { id: "d2", documentType: "Registration", verified: false },
-        ],
-    },
-    {
-        id: "3",
-        name: "Everest Hostel",
-        email: "admin@everesthostel.com",
-        phone: "9800000003",
-        role: "business",
-        status: "approved",
-        joinedAt: "2024-12-08",
-        ownerName: "Kiran Thapa",
-        businessType: "Hostel",
-        registrationNumber: "REG-67890",
-        documents: [
-            { id: "d3", documentType: "PAN", verified: true },
-        ],
-    },
-    {
-        id: "4",
-        name: "Nabin User",
-        email: "nabin@gmail.com",
-        phone: "9800000004",
-        role: "user",
-        status: "suspended",
-        joinedAt: "2024-11-20",
-    },
-];
-
-/* ---------------- Page ---------------- */
-
+//page
 export default function AdminUsersPage() {
+    //filter
     const [roleFilter, setRoleFilter] = useState<"all" | Role>("all");
-    const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
 
+    const [statusFilter, setStatusFilter] =
+        useState<"all" | AdminUserFilterStatus>("all");
+
+    // pagination
     const [page, setPage] = useState(0);
-    const pageSize = 5;
+    const pageSize = 10;
 
-    const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+    //selected user 
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [search, setSearch] = useState("")
+    //backend filter 
+    const roles =
+        roleFilter === "all"
+            ? (["user", "business"] as Role[])
+            : [roleFilter];
 
-    const filteredUsers = useMemo(() => {
-        return USERS.filter((u) => {
-            if (roleFilter !== "all" && u.role !== roleFilter) return false;
-            if (statusFilter !== "all" && u.status !== statusFilter) return false;
-            return true;
-        });
-    }, [roleFilter, statusFilter]);
+    const filter = {
+        roles,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        search: search || undefined,
+        limit: pageSize,
+        offset: page * pageSize,
+    };
 
-    const paginated = filteredUsers.slice(
-        page * pageSize,
-        page * pageSize + pageSize
-    );
+    const { data: users = [], isLoading } =
+        useGetUsersFiltered(filter);
 
+    const {
+        data: userDetail,
+        isLoading: isUserLoading,
+    } = useGetUserProfile(selectedUserId ?? "");
+
+    const documents = userDetail?.Documents ?? [];
+
+    const approveBusiness = useBusinessApprove();
+    const rejectBusiness = useBusinessReject();
+    const suspend = useSuspendUser();
+    const reactivate = useReactivateUser();
+
+    //return
     return (
         <>
             {/* Header */}
             <div className="mb-4">
-                <h2 className="text-2xl font-bold">Users Management</h2>
+                <h2 className="text-2xl font-bold">
+                    Users Management
+                </h2>
                 <p className="text-sm text-gray-500">
-                    Manage normal and business users
+                    Manage Normal Users and Business Users Approval and Account Status
                 </p>
             </div>
-            <div className="flex gap-10">
-                {/* Role Filter */}
+
+            {/* Filters */}
+            <div className="flex gap-10 items-center">
+                {/* Role filter */}
                 <FilterTabs
                     tabs={[
                         { label: "All Users", value: "all" },
@@ -378,13 +100,21 @@ export default function AdminUsersPage() {
                         { label: "Business Users", value: "business" },
                     ]}
                     active={roleFilter}
-                    onChange={(v) => setRoleFilter(v as any)}
+                    onChange={(v) =>
+                        setRoleFilter(v as "all" | Role)
+                    }
                 />
 
-                {/* Status Filter */}
+                {/* Status filter */}
                 <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) =>
+                        setStatusFilter(
+                            e.target.value as
+                            | "all"
+                            | AdminUserFilterStatus
+                        )
+                    }
                     className="border rounded-md px-3 py-2 text-sm h-9 bg-gray-100"
                 >
                     <option value="all">All Status</option>
@@ -393,8 +123,14 @@ export default function AdminUsersPage() {
                     <option value="rejected">Rejected</option>
                     <option value="suspended">Suspended</option>
                 </select>
+                <SearchInput
+                    placeholder="Search vendors..."
+                    value={search}
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
+                />
             </div>
-
 
             {/* Table */}
             <div className="mt-4 rounded-xl border overflow-hidden">
@@ -409,23 +145,63 @@ export default function AdminUsersPage() {
                             <th className="p-3 text-left">Joined</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        {paginated.map((u) => (
-                            <tr
-                                key={u.id}
-                                className="border-t hover:bg-gray-50 cursor-pointer"
-                                onClick={() => setSelectedUser(u)}
-                            >
-                                <td className="p-3">{u.name}</td>
-                                <td className="p-3">{u.email}</td>
-                                <td className="p-3">{u.phone}</td>
-                                <td className="p-3 capitalize">{u.role}</td>
-                                <td className="p-3">
-                                    <StatusBadge status={u.status} />
+                        {isLoading && (
+                            <tr>
+                                <td
+                                    colSpan={6}
+                                    className="p-6 text-center text-gray-500"
+                                >
+                                    Loading users…
                                 </td>
-                                <td className="p-3">{u.joinedAt}</td>
                             </tr>
-                        ))}
+                        )}
+
+                        {!isLoading && users.length === 0 && (
+                            <tr>
+                                <td
+                                    colSpan={6}
+                                    className="p-6 text-center text-gray-500"
+                                >
+                                    No users found
+                                </td>
+                            </tr>
+                        )}
+
+                        {!isLoading &&
+                            users.map((u) => {
+                                const status = deriveUserStatus(u);
+
+                                return (
+                                    <tr
+                                        key={u.ID}
+                                        className="border-t hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => setSelectedUserId(u.ID)}
+                                    >
+                                        <td className="p-3">
+                                            {u.DisplayName}
+                                        </td>
+                                        <td className="p-3">
+                                            {u.Email}
+                                        </td>
+                                        <td className="p-3">
+                                            {u.Phone}
+                                        </td>
+                                        <td className="p-3 capitalize">
+                                            {u.Role}
+                                        </td>
+                                        <td className="p-3">
+                                            <StatusBadge status={status} />
+                                        </td>
+                                        <td className="p-3">
+                                            {new Date(
+                                                u.CreatedAt
+                                            ).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                     </tbody>
                 </table>
             </div>
@@ -436,96 +212,180 @@ export default function AdminUsersPage() {
                     size="sm"
                     variant="outline"
                     disabled={page === 0}
-                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    onClick={() =>
+                        setPage((p) => Math.max(0, p - 1))
+                    }
                 >
                     Previous
                 </Button>
+
                 <Button
                     size="sm"
                     variant="outline"
-                    disabled={(page + 1) * pageSize >= filteredUsers.length}
-                    onClick={() => setPage((p) => p + 1)}
+                    disabled={users.length < pageSize}
+                    onClick={() =>
+                        setPage((p) => p + 1)
+                    }
                 >
                     Next
                 </Button>
             </div>
 
-            {/* Drawer */}
+            {/* Details Drawer */}
             <DetailsDrawer
-                open={!!selectedUser}
-                onClose={() => setSelectedUser(null)}
+                open={!!selectedUserId}
+                onClose={() => setSelectedUserId(null)}
                 title="User Details"
             >
-                {selectedUser && (
-                    <div className="space-y-4 text-sm">
-                        <Detail label="Name" value={selectedUser.name} />
-                        <Detail label="Email" value={selectedUser.email} />
-                        <Detail label="Phone" value={selectedUser.phone} />
-                        <Detail label="Role" value={selectedUser.role} />
-                        <Detail label="Status" value={selectedUser.status} />
+                {isUserLoading && (
+                    <p className="text-sm text-gray-500">
+                        Loading user details…
+                    </p>
+                )}
 
-                        {selectedUser.role === "business" && (
-                            <>
-                                <hr />
-                                <Detail label="Owner Name" value={selectedUser.ownerName} />
-                                <Detail label="Business Type" value={selectedUser.businessType} />
-                                <Detail
-                                    label="Registration Number"
-                                    value={selectedUser.registrationNumber}
-                                />
+                {userDetail && (() => {
+                    const status =
+                        !userDetail.IsActive
+                            ? "suspended"
+                            : userDetail.Role === "business"
+                                ? userDetail.BusinessProfile?.ApprovalStatus ?? "pending"
+                                : "approved";
+                    return (
+                        <div className="space-y-4 text-sm">
+                            {/* Core info */}
+                            <Detail label="Name" value={userDetail.DisplayName} />
+                            <Detail label="Email" value={userDetail.Email} />
+                            <Detail label="Phone" value={userDetail.Phone} />
+                            <Detail label="Role" value={userDetail.Role} />
+                            <Detail label="Status" value={status} />
+                            <Detail
+                                label="Joined At"
+                                value={new Date(userDetail.CreatedAt).toLocaleString()}
+                            />
 
-                                <hr />
-                                <p className="font-medium">Documents</p>
-                                <ul className="space-y-1">
-                                    {selectedUser.documents?.map((d) => (
-                                        <li key={d.id} className="flex gap-2">
-                                            <span>{d.documentType}</span>
-                                            <StatusBadge
-                                                status={d.verified ? "approved" : "pending"}
-                                            />
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
+                            {/* Business profile */}
+                            {userDetail.BusinessProfile && (
+                                <>
+                                    <hr />
+                                    <p className="font-medium">Business Profile</p>
 
-                        {/* Actions */}
-                        <hr />
-                        <div className="flex gap-2">
-                            {selectedUser.status === "pending" &&
-                                selectedUser.role === "business" && (
-                                    <>
-                                        <Button size="sm">Approve</Button>
-                                        <Button size="sm" variant="destructive">
-                                            Reject
-                                        </Button>
-                                    </>
+                                    <Detail
+                                        label="Owner Name"
+                                        value={userDetail.BusinessProfile?.OwnerName}
+                                    />
+                                    <Detail
+                                        label="Business Type"
+                                        value={userDetail.BusinessProfile?.BusinessType}
+                                    />
+                                    <Detail
+                                        label="Registration Number"
+                                        value={userDetail.BusinessProfile?.RegistrationNumber}
+                                    />
+                                    <Detail
+                                        label="Approval Status"
+                                        value={userDetail.BusinessProfile?.ApprovalStatus}
+                                    />
+                                </>
+                            )}
+                            {/* Documents */}
+                            {documents.length > 0 && (
+                                <>
+                                    <hr />
+                                    <p className="font-medium">Documents</p>
+
+                                    <ul>
+                                        {documents.map((doc) => (
+                                            <li
+                                                key={doc.ID}
+                                                className="flex items-center justify-between"
+                                            >
+                                                <span>{doc.DocumentType.toUpperCase()}</span>
+                                                <a
+                                                    href={doc.DocumentURL}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition"                                                >
+                                                    Preview Document
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+
+                            <hr />
+                            <div className="flex gap-2">
+                                {status === "pending" &&
+                                    userDetail.Role === "business" && (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                onClick={() =>
+                                                    approveBusiness.mutate({
+                                                        userId: userDetail.ID,
+                                                    })
+                                                }
+                                                disabled={approveBusiness.isPending}
+                                            >
+                                                {approveBusiness.isPending
+                                                    ? "Approving…"
+                                                    : "Approve"}
+                                            </Button>
+
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() =>
+                                                    rejectBusiness.mutate({
+                                                        userId: userDetail.ID,
+                                                    })
+                                                }
+                                                disabled={rejectBusiness.isPending}
+                                            >
+                                                {rejectBusiness.isPending
+                                                    ? "Rejecting…"
+                                                    : "Reject"}
+                                            </Button>
+                                        </>
+                                    )}
+
+                                {status === "approved" && (
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() =>
+                                            suspend.mutate({
+                                                userId: userDetail.ID,
+                                            })
+                                        }
+                                        disabled={suspend.isPending}
+                                    >
+                                        {suspend.isPending
+                                            ? "Suspending…"
+                                            : "Suspend"}
+                                    </Button>
                                 )}
 
-                            {selectedUser.status === "approved" && (
-                                <Button size="sm" variant="destructive">
-                                    Suspend
-                                </Button>
-                            )}
-
-                            {selectedUser.status === "suspended" && (
-                                <Button size="sm">Reactivate</Button>
-                            )}
+                                {status === "suspended" && (
+                                    <Button
+                                        size="sm"
+                                        onClick={() =>
+                                            reactivate.mutate({
+                                                userId: userDetail.ID,
+                                            })
+                                        }
+                                        disabled={reactivate.isPending}
+                                    >
+                                        {reactivate.isPending
+                                            ? "Reactivating…"
+                                            : "Reactivate"}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
             </DetailsDrawer>
         </>
-    );
-}
-
-/* ---------------- Helper ---------------- */
-
-function Detail({ label, value }: { label: string; value?: string }) {
-    return (
-        <div>
-            <p className="text-gray-500">{label}</p>
-            <p className="font-medium">{value ?? "—"}</p>
-        </div>
     );
 }

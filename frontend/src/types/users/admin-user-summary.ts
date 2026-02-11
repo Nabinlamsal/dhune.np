@@ -7,20 +7,20 @@ export interface ApiResponse<T> {
 
 //for admin table
 export interface AdminUserSummary {
-    id: string; // uuid
+    ID: string;
 
-    displayName: string;
-    email: string;
-    phone: string;
+    DisplayName: string;
+    Email: string;
+    Phone: string;
 
-    role: Role;
+    Role: Role;
 
-    isActive: boolean;
+    IsActive: boolean;
 
-    businessApprovalStatus?: ApprovalStatus | null;
-    vendorApprovalStatus?: ApprovalStatus | null;
+    BusinessApprovalStatus?: ApprovalStatus | null;
+    VendorApprovalStatus?: ApprovalStatus | null;
 
-    createdAt: string;
+    CreatedAt: string;
 }
 export interface AdminUsersPayload {
     users: AdminUserSummary[];

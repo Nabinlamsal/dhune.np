@@ -1,21 +1,16 @@
 import { ApprovalStatus } from "./user.enums";
 
 
-//shared profile fields
-export interface BaseProfile {
-    ownerName: string;
-    registrationNumber: string;
-    approvalStatus: ApprovalStatus;
+export interface BusinessProfile {
+    owner_name: string;
+    business_type: string;
+    registration_number: string;
+    approval_status: ApprovalStatus;
 }
 
-
-//business profile only field
-export interface BusinessProfile extends BaseProfile {
-    businessType: string;
-}
-
-
-//vendor profile only field
-export interface VendorProfile extends BaseProfile {
+export interface VendorProfile {
+    owner_name: string;
     address: string;
+    registration_number: string;
+    approval_status: ApprovalStatus;
 }

@@ -3,27 +3,17 @@ import { BusinessProfile, VendorProfile } from "./profile";
 import { UserDocument } from "./document";
 
 //base user model
-export interface BaseUser {
-    id: string; // uuid
-
-    displayName: string;
+export interface AdminUserProfile {
+    id: string;
+    display_name: string;
     email: string;
     phone: string;
-
     role: Role;
+    is_active: boolean;
+    is_verified: boolean;
+    created_at: string;
 
-    isActive: boolean;
-
-    createdAt: string;
-}
-
-
-//admin view of users
-export interface AdminUserProfile extends BaseUser {
-    isVerified: boolean;
-
-    businessProfile?: BusinessProfile;
-    vendorProfile?: VendorProfile;
-
+    business_profile?: BusinessProfile;
+    vendor_profile?: VendorProfile;
     documents?: UserDocument[];
 }

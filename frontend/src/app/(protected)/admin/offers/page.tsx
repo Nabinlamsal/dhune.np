@@ -4,9 +4,10 @@ import { useState } from "react"
 
 import { StatCard } from "@/src/components/dashboard/StatCard"
 import { DataTable } from "@/src/components/dashboard/table/DataTable"
-import { StatusBadge } from "@/src/components/dashboard/StatusBadge"
-import { DetailsDrawer } from "@/src/components/dashboard/DetailsDrawer"
-import { FilterTabs } from "@/src/components/dashboard/FilterTabs"
+import { StatusBadge } from "@/src/components/common/StatusBadge"
+import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
+import { FilterTabs } from "@/src/components/common/FilterTabs"
+
 
 
 type OfferStatus =

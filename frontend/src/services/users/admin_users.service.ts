@@ -35,12 +35,11 @@ export const getUsersFiltered = async (
 export const getUserDetail = async (
     userId: string
 ): Promise<AdminUserProfile> => {
-    const res = await api<AdminUserProfile>(
+
+    const res = await api<ApiResponse<{ userDetail: AdminUserProfile }>>(
         `/admin/users/${userId}/profile`,
-        {
-            method: "GET",
-        }
+        { method: "GET" }
     );
 
-    return res;
+    return res.data.userDetail;
 };
