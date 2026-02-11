@@ -220,6 +220,7 @@ WHERE
                 OR vp.approval_status = 'pending'
             )
         )
+
         OR (
         $4::text = 'rejected'
             AND (
@@ -227,6 +228,17 @@ WHERE
                 OR vp.approval_status = 'rejected'
             )
         )
+
+        OR (
+        $4::text = 'approved'
+            AND u.is_active = TRUE
+            AND (
+            u.role = 'user'
+                OR bp.approval_status = 'approved'
+                OR vp.approval_status = 'approved'
+            )
+        )
+
         OR (
         $4::text = 'suspended'
             AND u.is_active = FALSE

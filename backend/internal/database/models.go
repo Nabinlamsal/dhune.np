@@ -5,10 +5,56 @@
 package db
 
 import (
+	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type PricingUnit string
+
+const (
+	PricingUnitKG    PricingUnit = "KG"
+	PricingUnitSQFT  PricingUnit = "SQFT"
+	PricingUnitITEMS PricingUnit = "ITEMS"
+)
+
+func (e *PricingUnit) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PricingUnit(s)
+	case string:
+		*e = PricingUnit(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PricingUnit: %T", src)
+	}
+	return nil
+}
+
+type NullPricingUnit struct {
+	PricingUnit PricingUnit
+	Valid       bool // Valid is true if PricingUnit is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPricingUnit) Scan(value interface{}) error {
+	if value == nil {
+		ns.PricingUnit, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PricingUnit.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPricingUnit) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PricingUnit), nil
+}
 
 type BusinessProfile struct {
 	ID                 uuid.UUID
@@ -19,6 +65,16 @@ type BusinessProfile struct {
 	ApprovalStatus     string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+}
+
+type Category struct {
+	ID           uuid.UUID
+	Name         string
+	Description  sql.NullString
+	AllowedUnits []PricingUnit
+	IsActive     bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type Document struct {

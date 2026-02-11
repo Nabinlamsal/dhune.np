@@ -23,6 +23,7 @@ WHERE
                 OR vp.approval_status = 'pending'
             )
         )
+
         OR (
         sqlc.narg(status)::text = 'rejected'
             AND (
@@ -30,14 +31,17 @@ WHERE
                 OR vp.approval_status = 'rejected'
             )
         )
+
         OR (
         sqlc.narg(status)::text = 'approved'
+            AND u.is_active = TRUE
             AND (
-            bp.approval_status = 'approved'
+            u.role = 'user'
+                OR bp.approval_status = 'approved'
                 OR vp.approval_status = 'approved'
-                OR u.role = 'user'
             )
         )
+
         OR (
         sqlc.narg(status)::text = 'suspended'
             AND u.is_active = FALSE
