@@ -42,8 +42,7 @@ function humanize(value: string) {
         .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/* ---------------- Page ---------------- */
-
+//page
 export default function VendorDetailsPage() {
     const params = useParams();
     const vendorId = params.id as string;
