@@ -2,3 +2,217 @@ $env:GOOSE_DRIVER="postgres"
 $env:GOOSE_DBSTRING="postgres://postgres:nabin@localhost:5432/dhune_db?sslmode=disable"
 
 goose -env=none -dir db/migrations up
+
+
+
+📋 2️⃣ COMPLETE LIST OF OPERATIONS (Full Order Module)
+
+Now we go full production-mode.
+
+This is your complete Order + Marketplace operation list.
+
+🧩 REQUEST OPERATIONS
+User Side
+
+✅ Create Request
+
+✅ View My Requests (paginated)
+
+✅ View Single Request Details
+
+✅ Cancel Request (if not accepted)
+
+✅ Expire Request (system job)
+
+🧩 REQUEST SERVICES
+
+Add services during request creation
+
+Fetch request services by request_id
+
+🧩 OFFER OPERATIONS
+Vendor Side
+
+Create Offer
+
+Update Offer (if still pending)
+
+Withdraw Offer
+
+View Offers for a Request
+
+View My Submitted Offers
+
+Auto-expire Offer (system job)
+
+🧩 OFFER ACCEPTANCE
+
+Accept Offer (atomic transaction)
+
+Auto-reject others
+
+Create Order
+
+Update Request → ORDER_CREATED
+
+This is the most critical operation.
+
+🧩 ORDER OPERATIONS
+
+Get My Orders (User)
+
+Get My Orders (Vendor)
+
+Get Order Details
+
+Update Order Status (Vendor)
+
+Order status transitions:
+
+CREATED
+
+PICKED_UP
+
+IN_PROGRESS
+
+DELIVERING
+
+COMPLETED
+
+CANCELLED
+
+DISPUTED
+
+Cancel Order (conditional rules)
+
+Mark Completed
+
+Open Dispute
+
+Resolve Dispute (admin later)
+
+🧩 PAYMENT OPERATIONS (Future)
+
+Initiate Payment
+
+Confirm Payment
+
+Refund Payment
+
+🧩 COMMISSION TRACKING (Future)
+
+Calculate Commission
+
+Store Commission Snapshot
+
+Vendor Payout Calculation
+
+🧩 ADMIN OPERATIONS
+
+View All Requests
+
+View All Offers
+
+View All Orders
+
+Force Cancel
+
+Force Resolve Dispute
+
+🧩 REAL-TIME EVENTS (WebSocket)
+
+Events to broadcast:
+
+request_created
+
+offer_created
+
+offer_updated
+
+offer_accepted
+
+offer_rejected
+
+order_created
+
+order_status_updated
+
+order_cancelled
+
+dispute_opened
+
+dispute_resolved
+
+📊 Total Core Operations Count
+
+Core Marketplace Flow (must implement first):
+
+~ 20–25 operations
+
+With payments + disputes + admin:
+
+~ 35–40 operations
+
+This is a serious backend.
+
+🧠 Statistics Endpoints (Very Important)
+
+Later you’ll need:
+
+Total requests created
+
+Total orders completed
+
+Vendor completion rate
+
+Vendor average completion time
+
+Vendor acceptance rate
+
+Platform revenue
+
+Pending disputes count
+
+Add stats endpoints:
+
+Vendor Dashboard Stats
+
+Admin Platform Stats
+
+User Activity Stats
+
+🧠 Concurrency Points Summary
+
+Where concurrency matters:
+
+Offer acceptance
+
+Order status update race
+
+Payment confirmation
+
+Handled via:
+
+DB transactions
+
+Row locking
+
+Conditional updates
+
+NOT goroutines.
+
+🧠 Goroutine Use Summary
+
+Use goroutines for:
+
+WebSocket hub loop
+
+Broadcasting
+
+Background expiry jobs
+
+Payment webhook listener
+
+Notification sending
+
+Not for CRUD.

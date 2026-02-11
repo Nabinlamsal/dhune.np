@@ -11,7 +11,183 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
+
+type OfferStatus string
+
+const (
+	OfferStatusPENDING  OfferStatus = "PENDING"
+	OfferStatusACCEPTED OfferStatus = "ACCEPTED"
+	OfferStatusREJECTED OfferStatus = "REJECTED"
+	OfferStatusEXPIRED  OfferStatus = "EXPIRED"
+)
+
+func (e *OfferStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OfferStatus(s)
+	case string:
+		*e = OfferStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OfferStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOfferStatus struct {
+	OfferStatus OfferStatus
+	Valid       bool // Valid is true if OfferStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOfferStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OfferStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OfferStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOfferStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OfferStatus), nil
+}
+
+type OrderStatus string
+
+const (
+	OrderStatusACCEPTED   OrderStatus = "ACCEPTED"
+	OrderStatusPICKEDUP   OrderStatus = "PICKED_UP"
+	OrderStatusINPROGRESS OrderStatus = "IN_PROGRESS"
+	OrderStatusDELIVERING OrderStatus = "DELIVERING"
+	OrderStatusCOMPLETED  OrderStatus = "COMPLETED"
+	OrderStatusCANCELLED  OrderStatus = "CANCELLED"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus
+	Valid       bool // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type PaymentMethod string
+
+const (
+	PaymentMethodCASH   PaymentMethod = "CASH"
+	PaymentMethodONLINE PaymentMethod = "ONLINE"
+)
+
+func (e *PaymentMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethod(s)
+	case string:
+		*e = PaymentMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethod struct {
+	PaymentMethod PaymentMethod
+	Valid         bool // Valid is true if PaymentMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethod), nil
+}
+
+type PaymentStatus string
+
+const (
+	PaymentStatusUNPAID   PaymentStatus = "UNPAID"
+	PaymentStatusPAID     PaymentStatus = "PAID"
+	PaymentStatusREFUNDED PaymentStatus = "REFUNDED"
+)
+
+func (e *PaymentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatus(s)
+	case string:
+		*e = PaymentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatus struct {
+	PaymentStatus PaymentStatus
+	Valid         bool // Valid is true if PaymentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatus), nil
+}
 
 type PricingUnit string
 
@@ -56,6 +232,51 @@ func (ns NullPricingUnit) Value() (driver.Value, error) {
 	return string(ns.PricingUnit), nil
 }
 
+type RequestsStatus string
+
+const (
+	RequestsStatusOPEN         RequestsStatus = "OPEN"
+	RequestsStatusONBID        RequestsStatus = "ON_BID"
+	RequestsStatusEXPIRED      RequestsStatus = "EXPIRED"
+	RequestsStatusCANCELLED    RequestsStatus = "CANCELLED"
+	RequestsStatusORDERCREATED RequestsStatus = "ORDER_CREATED"
+)
+
+func (e *RequestsStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RequestsStatus(s)
+	case string:
+		*e = RequestsStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RequestsStatus: %T", src)
+	}
+	return nil
+}
+
+type NullRequestsStatus struct {
+	RequestsStatus RequestsStatus
+	Valid          bool // Valid is true if RequestsStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRequestsStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.RequestsStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RequestsStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRequestsStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RequestsStatus), nil
+}
+
 type BusinessProfile struct {
 	ID                 uuid.UUID
 	UserID             uuid.UUID
@@ -85,6 +306,58 @@ type Document struct {
 	Verified     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+type Offer struct {
+	ID             uuid.UUID
+	RequestID      uuid.UUID
+	VendorID       uuid.UUID
+	BidPrice       string
+	CompletionTime time.Time
+	ServiceOptions pqtype.NullRawMessage
+	Description    sql.NullString
+	Status         OfferStatus
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+type Order struct {
+	ID            uuid.UUID
+	RequestID     uuid.UUID
+	OfferID       uuid.UUID
+	UserID        uuid.UUID
+	VendorID      uuid.UUID
+	FinalPrice    string
+	OrderStatus   OrderStatus
+	PaymentStatus PaymentStatus
+	PickupTime    sql.NullTime
+	DeliveryTime  sql.NullTime
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
+type Request struct {
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	PickupAddress  string
+	PickupTimeFrom time.Time
+	PickupTimeTo   time.Time
+	PaymentMethod  PaymentMethod
+	Status         RequestsStatus
+	ExpiresAt      sql.NullTime
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+type RequestService struct {
+	ID            uuid.UUID
+	RequestID     uuid.UUID
+	CategoryID    uuid.UUID
+	SelectedUnit  PricingUnit
+	QuantityValue float64
+	ItemsJson     pqtype.NullRawMessage
+	Description   sql.NullString
+	CreatedAt     time.Time
 }
 
 type User struct {
