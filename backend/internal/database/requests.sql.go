@@ -293,13 +293,13 @@ func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketpla
 const listRequestsAdmin = `-- name: ListRequestsAdmin :many
 SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at
 FROM requests
-WHERE ($1::requests_status IS NULL OR status = $1)
+WHERE ($1 IS NULL OR status = $1)
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
 type ListRequestsAdminParams struct {
-	Column1 RequestsStatus
+	Column1 interface{}
 	Limit   int32
 	Offset  int32
 }

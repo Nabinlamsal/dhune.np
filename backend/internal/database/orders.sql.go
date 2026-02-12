@@ -158,13 +158,13 @@ func (q *Queries) GetOrderStats(ctx context.Context) (GetOrderStatsRow, error) {
 const listOrdersAdmin = `-- name: ListOrdersAdmin :many
 SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
 FROM orders
-WHERE ($1::order_status IS NULL OR order_status = $1)
+WHERE ($1 IS NULL OR status = $1)
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
 type ListOrdersAdminParams struct {
-	Column1 OrderStatus
+	Column1 interface{}
 	Limit   int32
 	Offset  int32
 }

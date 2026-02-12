@@ -126,17 +126,17 @@ func (q *Queries) GetOfferStats(ctx context.Context) (GetOfferStatsRow, error) {
 const listOffersAdmin = `-- name: ListOffersAdmin :many
 SELECT id, request_id, vendor_id, bid_price, completion_time, service_options, description, status, created_at, updated_at
 FROM offers
-WHERE ($1::offer_status IS NULL OR status = $1)
-  AND ($2::uuid IS NULL OR vendor_id = $2)
-  AND ($3::uuid IS NULL OR request_id = $3)
+WHERE ($1 IS NULL OR status = $1)
+  AND ($2 IS NULL OR vendor_id = $2)
+  AND ($3 IS NULL OR request_id = $3)
 ORDER BY created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type ListOffersAdminParams struct {
-	Column1 OfferStatus
-	Column2 uuid.UUID
-	Column3 uuid.UUID
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
 	Limit   int32
 	Offset  int32
 }
