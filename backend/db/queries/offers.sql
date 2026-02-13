@@ -104,3 +104,8 @@ WHERE ($1 IS NULL OR status = $1)
   AND ($3 IS NULL OR request_id = $3)
 ORDER BY created_at DESC
 LIMIT $4 OFFSET $5;
+
+-- name: GetOfferByID :one
+SELECT *
+FROM offers
+WHERE id = $1;

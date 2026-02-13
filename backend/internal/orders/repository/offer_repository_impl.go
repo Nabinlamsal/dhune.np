@@ -46,6 +46,9 @@ func (r *offerRepository) ListByRequest(
 ) ([]db.Offer, error) {
 	return r.q.ListOffersByRequest(ctx, requestID)
 }
+func (r *offerRepository) GetByID(ctx context.Context, offerID uuid.UUID) (db.Offer, error) {
+	return r.q.GetOfferByID(ctx, offerID)
+}
 
 // List offers by vendor
 func (r *offerRepository) ListByVendor(

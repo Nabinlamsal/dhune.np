@@ -91,6 +91,30 @@ func (q *Queries) ExpireOffers(ctx context.Context) error {
 	return err
 }
 
+const getOfferByID = `-- name: GetOfferByID :one
+SELECT id, request_id, vendor_id, bid_price, completion_time, service_options, description, status, created_at, updated_at
+FROM offers
+WHERE id = $1
+`
+
+func (q *Queries) GetOfferByID(ctx context.Context, id uuid.UUID) (Offer, error) {
+	row := q.db.QueryRowContext(ctx, getOfferByID, id)
+	var i Offer
+	err := row.Scan(
+		&i.ID,
+		&i.RequestID,
+		&i.VendorID,
+		&i.BidPrice,
+		&i.CompletionTime,
+		&i.ServiceOptions,
+		&i.Description,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getOfferStats = `-- name: GetOfferStats :one
 SELECT
     COUNT(*) AS total_offers,

@@ -4,64 +4,159 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type OfferService struct {
-	repo repository.OfferRepository
-	sql  *sql.DB
+	db          *sql.DB
+	offerRepo   repository.OfferRepository
+	orderRepo   repository.OrderRepository
+	requestRepo repository.RequestRepository
 }
 
 func NewOfferService(
-	repo repository.OfferRepository,
-	sqlDB *sql.DB,
+	db *sql.DB,
+	offerRepo repository.OfferRepository,
+	orderRepo repository.OrderRepository,
+	requestRepo repository.RequestRepository,
 ) *OfferService {
 	return &OfferService{
-		repo: repo,
-		sql:  sqlDB,
+		db:          db,
+		offerRepo:   offerRepo,
+		orderRepo:   orderRepo,
+		requestRepo: requestRepo,
 	}
 }
 
-// Create new offer
 func (s *OfferService) Create(
 	ctx context.Context,
-	params db.CreateOfferParams,
-) (db.Offer, error) {
+	input CreateOfferInput,
+) (*OfferSummary, error) {
 
-	return s.repo.Create(ctx, params)
+	if input.BidPrice <= 0 {
+		return nil, errors.New("invalid bid price")
+	}
+
+	offer, err := s.offerRepo.Create(ctx, db.CreateOfferParams{
+		RequestID:      input.RequestID,
+		VendorID:       input.VendorID,
+		BidPrice:       strconv.FormatFloat(input.BidPrice, 'f', 2, 64),
+		CompletionTime: input.CompletionTime,
+		ServiceOptions: toNullJSON(input.ServiceOptions),
+		Description:    toNullString(input.Description),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return mapOffer(offer), nil
 }
 
-// Update offer (only allowed if PENDING - enforced by SQL)
 func (s *OfferService) Update(
 	ctx context.Context,
-	params db.UpdateOfferParams,
-) (db.Offer, error) {
+	input UpdateOfferInput,
+) (*OfferSummary, error) {
 
-	return s.repo.Update(ctx, params)
+	offer, err := s.offerRepo.Update(ctx, db.UpdateOfferParams{
+		ID:             input.OfferID,
+		BidPrice:       strconv.FormatFloat(input.BidPrice, 'f', 2, 64),
+		CompletionTime: input.CompletionTime,
+		ServiceOptions: toNullJSON(input.ServiceOptions),
+		Description:    toNullString(input.Description),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return mapOffer(offer), nil
 }
 
-// Withdraw offer (only allowed if PENDING - enforced by SQL)
 func (s *OfferService) Withdraw(
 	ctx context.Context,
 	offerID uuid.UUID,
 ) error {
-
-	return s.repo.Withdraw(ctx, offerID)
+	return s.offerRepo.Withdraw(ctx, offerID)
 }
 
-// List offers for a request
+func (s *OfferService) Accept(
+	ctx context.Context,
+	input AcceptOfferInput,
+) (*AcceptOfferResult, error) {
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	qtx := db.New(tx)
+
+	// Accept offer
+	rows, err := s.offerRepo.Accept(ctx, qtx, input.OfferID)
+	if err != nil {
+		return nil, err
+	}
+
+	if rows == 0 {
+		return nil, errors.New("offer already accepted or invalid")
+	}
+
+	// Get offer inside transaction
+	offer, err := qtx.GetOfferByID(ctx, input.OfferID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Reject other offers
+	err = s.offerRepo.RejectOthers(ctx, qtx, offer.RequestID, offer.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create order
+	order, err := qtx.CreateOrder(ctx, db.CreateOrderParams{
+		RequestID:  offer.RequestID,
+		OfferID:    offer.ID,
+		UserID:     input.UserID,
+		VendorID:   offer.VendorID,
+		FinalPrice: offer.BidPrice,
+		PickupTime: sql.NullTime{
+			Time:  offer.CompletionTime,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Mark request as ORDER_CREATED
+	err = qtx.SetRequestOrderCreated(ctx, offer.RequestID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return &AcceptOfferResult{
+		OrderID: order.ID,
+	}, nil
+}
+
 func (s *OfferService) ListByRequest(
 	ctx context.Context,
 	requestID uuid.UUID,
 ) ([]db.Offer, error) {
 
-	return s.repo.ListByRequest(ctx, requestID)
+	return s.offerRepo.ListByRequest(ctx, requestID)
 }
 
-// List vendor's own offers
 func (s *OfferService) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
@@ -69,10 +164,9 @@ func (s *OfferService) ListByVendor(
 	offset int32,
 ) ([]db.Offer, error) {
 
-	return s.repo.ListByVendor(ctx, vendorID, limit, offset)
+	return s.offerRepo.ListByVendor(ctx, vendorID, limit, offset)
 }
 
-// Admin listing with filters
 func (s *OfferService) ListAdmin(
 	ctx context.Context,
 	status *db.OfferStatus,
@@ -82,67 +176,63 @@ func (s *OfferService) ListAdmin(
 	offset int32,
 ) ([]db.Offer, error) {
 
-	return s.repo.ListAdmin(ctx, status, vendorID, requestID, limit, offset)
+	return s.offerRepo.ListAdmin(ctx, status, vendorID, requestID, limit, offset)
 }
 
-// Expire pending offers (background job)
 func (s *OfferService) Expire(ctx context.Context) error {
-	return s.repo.Expire(ctx)
+	return s.offerRepo.Expire(ctx)
 }
 
-// Offer statistics
 func (s *OfferService) GetStats(
 	ctx context.Context,
 ) (db.GetOfferStatsRow, error) {
 
-	return s.repo.GetStats(ctx)
+	return s.offerRepo.GetStats(ctx)
 }
 
-// AcceptOfferFlow
-func (s *OfferService) AcceptOfferFlow(
+func (s *OfferService) GetByID(
 	ctx context.Context,
 	offerID uuid.UUID,
-	requestID uuid.UUID,
-	orderParams db.CreateOrderParams,
-) error {
+) (*OfferSummary, error) {
 
-	tx, err := s.sql.BeginTx(ctx, nil)
+	offer, err := s.offerRepo.GetByID(ctx, offerID)
 	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	qtx := db.New(tx)
-
-	//Accept the selected offer (only if PENDING)
-	rowsAffected, err := qtx.AcceptOffer(ctx, offerID)
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return errors.New("offer not found or already processed")
+		return nil, err
 	}
 
-	//Reject all other offers for same request
-	err = qtx.RejectOtherOffers(ctx, db.RejectOtherOffersParams{
-		RequestID: requestID,
-		ID:        offerID,
-	})
-	if err != nil {
-		return err
-	}
+	return mapOffer(offer), nil
+}
 
-	//Create order
-	_, err = qtx.CreateOrder(ctx, orderParams)
-	if err != nil {
-		return err
+func toNullString(s *string) sql.NullString {
+	if s == nil {
+		return sql.NullString{}
 	}
-
-	//Update request status → ORDER_CREATED
-	err = qtx.SetRequestOrderCreated(ctx, requestID)
-	if err != nil {
-		return err
+	return sql.NullString{
+		String: *s,
+		Valid:  true,
 	}
+}
 
-	return tx.Commit()
+func mapOffer(o db.Offer) *OfferSummary {
+
+	price, _ := strconv.ParseFloat(o.BidPrice, 64)
+
+	return &OfferSummary{
+		ID:        o.ID,
+		RequestID: o.RequestID,
+		VendorID:  o.VendorID,
+		BidPrice:  price,
+		Status:    string(o.Status),
+		CreatedAt: o.CreatedAt,
+	}
+}
+
+func toNullJSON(b []byte) pqtype.NullRawMessage {
+	if b == nil {
+		return pqtype.NullRawMessage{}
+	}
+	return pqtype.NullRawMessage{
+		RawMessage: b,
+		Valid:      true,
+	}
 }
