@@ -1,10 +1,11 @@
-package handler
+package controller
 
 import (
 	"net/http"
 	"strconv"
 	"time"
 
+	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/service"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
@@ -204,17 +205,39 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 		return
 	}
 
+	var status *db.OfferStatus
 	if filter.Status != "" {
-		_ = &filter.Status
+		s := db.OfferStatus(filter.Status)
+		status = &s
+	}
+
+	var vendorID *uuid.UUID
+	if filter.VendorID != "" {
+		id, err := uuid.Parse(filter.VendorID)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid vendor_id")
+			return
+		}
+		vendorID = &id
+	}
+
+	var requestID *uuid.UUID
+	if filter.RequestID != "" {
+		id, err := uuid.Parse(filter.RequestID)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid request_id")
+			return
+		}
+		requestID = &id
 	}
 
 	limit, offset := parsePagination(c)
 
 	offers, err := h.service.ListAdmin(
 		c.Request.Context(),
-		statid,
-		nil,
-		nil,
+		status,
+		vendorID,
+		requestID,
 		limit,
 		offset,
 	)
@@ -223,5 +246,19 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, offers)
+	// Map DB → DTO
+	var response []dto.OfferResponseDTO
+	for _, o := range offers {
+		price, _ := strconv.ParseFloat(o.BidPrice, 64)
+
+		response = append(response, dto.OfferResponseDTO{
+			ID:             o.ID.String(),
+			RequestID:      o.RequestID.String(),
+			BidPrice:       price,
+			Status:         string(o.Status),
+			CompletionTime: o.CompletionTime.Format(time.RFC3339),
+		})
+	}
+
+	utils.Success(c, response)
 }

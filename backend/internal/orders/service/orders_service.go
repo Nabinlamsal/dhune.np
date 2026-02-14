@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
+	"time"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
@@ -19,80 +21,85 @@ func NewOrderService(repo repository.OrderRepository) *OrderService {
 	}
 }
 
-// basic operations
-// List user orders
-func (s *OrderService) ListByUser(
-	ctx context.Context,
-	userID uuid.UUID,
-	limit,
-	offset int32,
-) ([]db.Order, error) {
-
-	return s.repo.ListByUser(ctx, userID, limit, offset)
-}
-
-// List vendor orders
-func (s *OrderService) ListByVendor(
-	ctx context.Context,
-	vendorID uuid.UUID,
-	limit,
-	offset int32,
-) ([]db.Order, error) {
-
-	return s.repo.ListByVendor(ctx, vendorID, limit, offset)
-}
-
-// Get single order
+// get by id
 func (s *OrderService) GetByID(
 	ctx context.Context,
 	orderID uuid.UUID,
-) (db.Order, error) {
-
-	return s.repo.GetByID(ctx, orderID)
-}
-
-// Admin listing
-func (s *OrderService) ListAdmin(
-	ctx context.Context,
-	status *db.OrderStatus,
-	limit,
-	offset int32,
-) ([]db.Order, error) {
-
-	return s.repo.ListAdmin(ctx, status, limit, offset)
-}
-
-// Order statistics
-func (s *OrderService) GetStats(
-	ctx context.Context,
-) (db.GetOrderStatsRow, error) {
-
-	return s.repo.GetStats(ctx)
-}
-
-// status transition
-// Update order status with strict transition rules
-func (s *OrderService) UpdateStatus(
-	ctx context.Context,
-	orderID uuid.UUID,
-	newStatus db.OrderStatus,
-) error {
+) (*OrderSummary, error) {
 
 	order, err := s.repo.GetByID(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapOrder(order), nil
+}
+
+// list by user
+func (s *OrderService) ListByUser(
+	ctx context.Context,
+	userID uuid.UUID,
+	limit, offset int32,
+) ([]OrderSummary, error) {
+
+	orders, err := s.repo.ListByUser(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []OrderSummary
+	for _, o := range orders {
+		result = append(result, *mapOrder(o))
+	}
+
+	return result, nil
+}
+
+// list by vendor
+func (s *OrderService) ListByVendor(
+	ctx context.Context,
+	vendorID uuid.UUID,
+	limit, offset int32,
+) ([]OrderSummary, error) {
+
+	orders, err := s.repo.ListByVendor(ctx, vendorID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []OrderSummary
+	for _, o := range orders {
+		result = append(result, *mapOrder(o))
+	}
+
+	return result, nil
+}
+
+// update status
+func (s *OrderService) UpdateStatus(
+	ctx context.Context,
+	input UpdateOrderStatusInput,
+) error {
+
+	// 1️⃣ Get current order
+	order, err := s.repo.GetByID(ctx, input.OrderID)
 	if err != nil {
 		return err
 	}
 
-	if !isValidTransition(order.OrderStatus, newStatus) {
+	current := order.OrderStatus
+	next := db.OrderStatus(input.Status)
+
+	// 2️⃣ Validate transition
+	if !isValidTransition(current, next) {
 		return errors.New("invalid order status transition")
 	}
 
-	return s.repo.UpdateStatus(ctx, orderID, newStatus)
+	// 3️⃣ Update
+	return s.repo.UpdateStatus(ctx, input.OrderID, next)
 }
 
-//business actions
-
-// Cancel order (allowed only before IN_PROGRESS)
+// cancel order
 func (s *OrderService) Cancel(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -103,50 +110,81 @@ func (s *OrderService) Cancel(
 		return err
 	}
 
-	if order.OrderStatus == db.OrderStatusCOMPLETED ||
-		order.OrderStatus == db.OrderStatusCANCELLED ||
-		order.OrderStatus == db.OrderStatusPICKEDUP {
+	if order.OrderStatus != db.OrderStatusACCEPTED {
 		return errors.New("order cannot be cancelled")
 	}
 
-	return s.repo.UpdateStatus(ctx, orderID, db.OrderStatusCANCELLED)
+	return s.repo.Cancel(ctx, orderID)
 }
 
-// Mark order completed
-func (s *OrderService) MarkCompleted(
+// mark as paid
+func (s *OrderService) MarkPaid(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
 
-	order, err := s.repo.GetByID(ctx, orderID)
-	if err != nil {
-		return err
-	}
-
-	if order.OrderStatus != db.OrderStatusDELIVERING {
-		return errors.New("order must be delivering to mark completed")
-	}
-
-	return s.repo.UpdateStatus(ctx, orderID, db.OrderStatusCOMPLETED)
+	return s.repo.MarkPaid(ctx, orderID)
 }
 
-//// Open dispute (only allowed after completion)
-//func (s *OrderService) OpenDispute(
-//	ctx context.Context,
-//	orderID uuid.UUID,
-//) error {
-//
-//	order, err := s.repo.GetByID(ctx, orderID)
-//	if err != nil {
-//		return err
-//	}
-//
-//	if order.OrderStatus != db.OrderStatusCOMPLETED {
-//		return errors.New("dispute can only be opened after completion")
-//	}
-//
-//	return s.repo.UpdateStatus(ctx, orderID, db.OrderStatusDISPUTED)
-//}
+// mark as refunded
+func (s *OrderService) MarkRefunded(
+	ctx context.Context,
+	orderID uuid.UUID,
+) error {
+
+	return s.repo.MarkRefunded(ctx, orderID)
+}
+
+// admin order listing
+func (s *OrderService) ListAdmin(
+	ctx context.Context,
+	status *db.OrderStatus,
+	limit, offset int32,
+) ([]OrderSummary, error) {
+
+	orders, err := s.repo.ListAdmin(ctx, status, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []OrderSummary
+	for _, o := range orders {
+		result = append(result, *mapOrder(o))
+	}
+
+	return result, nil
+}
+
+func (s *OrderService) GetStats(
+	ctx context.Context,
+) (db.GetOrderStatsRow, error) {
+
+	return s.repo.GetStats(ctx)
+}
+
+// helper function
+func mapOrder(o db.Order) *OrderSummary {
+
+	price, _ := strconv.ParseFloat(o.FinalPrice, 64)
+
+	var pickup *time.Time
+	if o.PickupTime.Valid {
+		pickup = &o.PickupTime.Time
+	}
+
+	return &OrderSummary{
+		ID:            o.ID,
+		RequestID:     o.RequestID,
+		OfferID:       o.OfferID,
+		UserID:        o.UserID,
+		VendorID:      o.VendorID,
+		FinalPrice:    price,
+		OrderStatus:   string(o.OrderStatus),
+		PaymentStatus: string(o.PaymentStatus),
+		PickupTime:    pickup,
+		CreatedAt:     o.CreatedAt,
+	}
+}
 
 // transaction logic
 func isValidTransition(
