@@ -5,44 +5,59 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Nabinlamsal/dhune.np/internal/auth/middleware"
-	"github.com/Nabinlamsal/dhune.np/internal/bootstrap"
 	"github.com/gin-gonic/gin"
 
 	// config & db
 	"github.com/Nabinlamsal/dhune.np/internal/config"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 
-	// auth layer
+	// bootstrap
+	"github.com/Nabinlamsal/dhune.np/internal/bootstrap"
+
+	// middleware
+	"github.com/Nabinlamsal/dhune.np/internal/auth/middleware"
+
+	// AUTH
 	authcontroller "github.com/Nabinlamsal/dhune.np/internal/auth/controller"
 	authrepo "github.com/Nabinlamsal/dhune.np/internal/auth/repository"
 	authroutes "github.com/Nabinlamsal/dhune.np/internal/auth/routes"
 	authservice "github.com/Nabinlamsal/dhune.np/internal/auth/service"
 
-	// users layer
+	// USERS
 	usercontroller "github.com/Nabinlamsal/dhune.np/internal/users/controller"
 	userrepo "github.com/Nabinlamsal/dhune.np/internal/users/repository"
 	userroutes "github.com/Nabinlamsal/dhune.np/internal/users/routes"
 	userservice "github.com/Nabinlamsal/dhune.np/internal/users/service"
+
+	// CATALOG
+	categorycontroller "github.com/Nabinlamsal/dhune.np/internal/catalog/controller"
+	categoryrepo "github.com/Nabinlamsal/dhune.np/internal/catalog/repository"
+	categoryroutes "github.com/Nabinlamsal/dhune.np/internal/catalog/routes"
+	categoryservice "github.com/Nabinlamsal/dhune.np/internal/catalog/service"
+
+	// ORDERS MODULE (import once)
+	ordercontroller "github.com/Nabinlamsal/dhune.np/internal/orders/controller"
+	orderrepo "github.com/Nabinlamsal/dhune.np/internal/orders/repository"
+	orderroutes "github.com/Nabinlamsal/dhune.np/internal/orders/routes"
+	orderservice "github.com/Nabinlamsal/dhune.np/internal/orders/service"
 )
 
 func main() {
-	fmt.Println("Server running for Dhune.np")
 
-	// load env
+	fmt.Println("Dhune.np Backend Starting...")
+
 	config.LoadEnv()
 
-	// connect db
 	conn, err := config.ConnectDB(&config.AppConfig)
 	if err != nil {
-		log.Fatal("failed to connect database:", err)
+		log.Fatal("DB connection failed:", err)
 	}
 	defer conn.Close()
 
-	//seed admin
 	if err := bootstrap.SeedAdmin(context.Background(), conn); err != nil {
-		log.Fatal("failed to seed admin:", err)
+		log.Fatal("Admin seeding failed:", err)
 	}
+
 	queries := db.New(conn)
 
 	//repositories
@@ -50,41 +65,77 @@ func main() {
 	userRepo := userrepo.NewUserRepoImpl(queries)
 	commandRepo := userrepo.NewCommandRepoImpl(queries)
 
+	categoryRepo := categoryrepo.NewCategoryRepository(queries)
+
+	orderRepo := orderrepo.NewOrderRepository(queries)
+	requestRepo := orderrepo.NewRequestRepositoryImpl(queries)
+	offerRepo := orderrepo.NewOfferRepositoryImpl(queries)
+
 	//services
 	passwordService := authservice.Password()
 	jwtService := authservice.NewJWTService(config.AppConfig)
+
 	authService := authservice.NewAuthService(
 		authRepo,
 		passwordService,
 		jwtService,
 		conn,
 	)
+
 	userService := userservice.NewUserService(
 		commandRepo,
 		userRepo,
+	)
+
+	categoryService := categoryservice.NewCategoryService(categoryRepo)
+
+	orderService := orderservice.NewOrderService(orderRepo)
+
+	requestService := orderservice.NewRequestService(
+		conn,
+		requestRepo,
+		categoryService, // CategoryValidator injection
+	)
+
+	offerService := orderservice.NewOfferService(
+		conn,
+		offerRepo,
+		orderRepo,
+		requestRepo,
 	)
 
 	//controllers
 	authController := authcontroller.NewAuthController(authService)
 	userController := usercontroller.NewUserController(userService)
 
-	//router
+	categoryController := categorycontroller.NewCategoryHandler(categoryService)
+
+	// Orders sub-controllers (from same package)
+	requestController := ordercontroller.NewRequestHandler(requestService)
+	offerController := ordercontroller.NewOfferHandler(offerService)
+	orderController := ordercontroller.NewOrderHandler(orderService)
+
+	//routes
 	router := gin.Default()
-	//cors
 	router.Use(middleware.CORSMiddleware())
-	// health check
+
 	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "auth-service running",
-		})
+		c.JSON(200, gin.H{"status": "dhune backend running"})
 	})
 
-	//app routes
+	//routes
 	authroutes.RegisterAuthRoutes(router, authController, jwtService)
 	userroutes.RegisterAdminRoutes(router, userController, jwtService)
 
-	// start server
+	categoryroutes.RegisterCategoryRoutes(router, categoryController, jwtService)
+
+	orderroutes.RegisterRequestRoutes(router, requestController, jwtService)
+	orderroutes.RegisterOfferRoutes(router, offerController, jwtService)
+	orderroutes.RegisterOrderRoutes(router, orderController, jwtService)
+
+	//start server
 	log.Println("Server listening on port:", config.AppConfig.ServerPort)
+
 	if err := router.Run(":" + config.AppConfig.ServerPort); err != nil {
 		log.Fatal(err)
 	}

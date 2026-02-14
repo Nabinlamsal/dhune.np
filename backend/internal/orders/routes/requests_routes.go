@@ -10,7 +10,7 @@ import (
 
 func RegisterRequestRoutes(
 	router *gin.Engine,
-	requestHandler *handler.RequestHandler,
+	requestHandler *controller.RequestHandler,
 	jwtSvc service.JWTService,
 ) {
 
