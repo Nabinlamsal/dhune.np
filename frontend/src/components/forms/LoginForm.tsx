@@ -20,6 +20,7 @@ export function LoginForm({
 }: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
     const { mutate, isPending, error } = useLogin();
     const [emailOrPhone, setEmailOrPhone] = useState("")
+    const [authError, setAuthError] = useState<string | null>(null);
     const [password, setPassword] = useState("")
     return (
         <div className={cn("w-1/3 gap-6")}>
@@ -35,11 +36,31 @@ export function LoginForm({
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            mutate({
-                                email_or_phone: emailOrPhone,
-                                password,
-                            });
 
+                            setAuthError(null); // clear old errors
+
+                            mutate(
+                                {
+                                    email_or_phone: emailOrPhone,
+                                    password,
+                                },
+                                {
+                                    onSuccess: () => {
+                                        // form clear (optional)
+                                        setEmailOrPhone("");
+                                        setPassword("");
+                                    },
+                                    onError: (err: any) => {
+                                        if (err?.response?.status === 401) {
+                                            setAuthError(
+                                                "Your account is pending admin approval or credentials are incorrect."
+                                            );
+                                        } else {
+                                            setAuthError("Something went wrong. Please try again.");
+                                        }
+                                    },
+                                }
+                            );
                         }}>
                         <FieldGroup>
 
@@ -77,6 +98,11 @@ export function LoginForm({
 
                             {/* Login Buttons */}
                             <Field>
+                                {authError && (
+                                    <div className="bg-red-100 text-red-600 text-sm p-2 rounded-md">
+                                        {authError}
+                                    </div>
+                                )}
                                 <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit" disabled={isPending}>
                                     {isPending ? "Logging In>>" : "Login"}
                                 </Button>

@@ -26,6 +26,8 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
     const [email, setEmail] = useState("")
     const [phoneNumber, setPhoneNumber] = useState("")
     const [password, setPassword] = useState("")
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
         <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
@@ -44,14 +46,36 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                         className="flex flex-col gap-4"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            const formData = new FormData();
 
+                            setSuccessMessage(null);
+                            setErrorMessage(null);
+
+                            const formData = new FormData();
                             formData.append("role", "user");
                             formData.append("display_name", name);
                             formData.append("email", email);
                             formData.append("phone", phoneNumber);
                             formData.append("password", password);
-                            mutate(formData)
+
+                            mutate(formData, {
+                                onSuccess: () => {
+                                    // clear form
+                                    setName("");
+                                    setEmail("");
+                                    setPhoneNumber("");
+                                    setPassword("");
+
+                                    setSuccessMessage("Registration successful! Please login.");
+
+                                    // optional: auto switch to login after 2 sec
+                                    setTimeout(() => {
+                                        onBack();
+                                    }, 2000);
+                                },
+                                onError: () => {
+                                    setErrorMessage("Something went wrong. Please try again.");
+                                },
+                            });
                         }}>
                         <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
@@ -109,6 +133,17 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
 
                             {/* Submit Button */}
                             <Field className="col-span-full">
+                                {successMessage && (
+                                    <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
+                                        {successMessage}
+                                    </div>
+                                )}
+
+                                {errorMessage && (
+                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                                        {errorMessage}
+                                    </div>
+                                )}
                                 <Button
                                     type="submit"
                                     className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"

@@ -31,6 +31,8 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
     const [registrationNumber, setRegistrationNumber] = useState("");
     const [password, setPassword] = useState("");
     const [documentFile, setDocumentFile] = useState<File | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
         <div
@@ -76,7 +78,25 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                                 formData.append("document", documentFile);
                             }
 
-                            mutate(formData);
+                            mutate(formData, {
+                                onSuccess: () => {
+                                    setName("");
+                                    setOwner("");
+                                    setAddress("");
+                                    setPhoneNumber("");
+                                    setEmail("");
+                                    setRegistrationNumber("");
+                                    setPassword("");
+                                    setDocumentFile(null);
+
+                                    setSuccessMessage(
+                                        "Registration successful! Your vendor account is pending admin approval."
+                                    );
+                                },
+                                onError: () => {
+                                    setErrorMessage("Something went wrong. Please try again.");
+                                },
+                            });
                         }}
                     >
                         <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -214,6 +234,17 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
 
                             {/* Submit Button */}
                             <Field className="col-span-full">
+                                {successMessage && (
+                                    <div className="bg-yellow-100 text-yellow-800 p-2 rounded text-sm">
+                                        {successMessage}
+                                    </div>
+                                )}
+
+                                {errorMessage && (
+                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                                        {errorMessage}
+                                    </div>
+                                )}
                                 <Button
                                     type="submit"
                                     disabled={isPending}

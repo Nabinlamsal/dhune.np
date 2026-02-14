@@ -31,6 +31,8 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
     const [registrationNumber, setRegistrationNumber] = useState("")
     const [password, setPassword] = useState("");
     const [documentFile, setDocumentFile] = useState<File | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
         <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
@@ -64,7 +66,26 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
                             if (documentFile) {
                                 formData.append("document", documentFile);
                             }
-                            mutate(formData)
+                            mutate(formData, {
+                                onSuccess: () => {
+                                    // clear form
+                                    setName("");
+                                    setOwner("");
+                                    setPhoneNumber("");
+                                    setEmail("");
+                                    setBusinessType("");
+                                    setRegistrationNumber("");
+                                    setPassword("");
+                                    setDocumentFile(null);
+
+                                    setSuccessMessage(
+                                        "Registration successful! Your business account is pending admin approval."
+                                    );
+                                },
+                                onError: () => {
+                                    setErrorMessage("Something went wrong. Please try again.");
+                                },
+                            });
                         }}
                     >
 
@@ -181,6 +202,17 @@ export function BusinessSignupForm({ onBack }: { onBack: () => void }) {
 
                             {/* Submit Button */}
                             <Field className="col-span-full">
+                                {successMessage && (
+                                    <div className="bg-yellow-100 text-yellow-800 p-2 rounded text-sm">
+                                        {successMessage}
+                                    </div>
+                                )}
+
+                                {errorMessage && (
+                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                                        {errorMessage}
+                                    </div>
+                                )}
                                 <Button
                                     type="submit"
                                     disabled={isPending}
