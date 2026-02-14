@@ -2,12 +2,14 @@
 INSERT INTO categories (
     name,
     allowed_units,
+    description,
     is_active,
     created_at,
     updated_at
 ) VALUES (
              $1,
              $2,
+             $3,
              TRUE,
              NOW(),
              NOW()
@@ -30,6 +32,7 @@ UPDATE categories
 SET
     name = $2,
     allowed_units = $3,
+    description=$4,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;

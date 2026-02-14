@@ -44,11 +44,21 @@ func (s *RequestService) Create(
 		return nil, errors.New("request must contain at least one service")
 	}
 
+	// Validate all services BEFORE starting transaction
+	for _, svc := range input.Services {
+		if err := s.validator.ValidateCategory(
+			ctx,
+			svc.CategoryID,
+			string(svc.SelectedUnit),
+		); err != nil {
+			return nil, err
+		}
+	}
+
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	defer tx.Rollback()
 
 	qtx := db.New(tx)
@@ -84,13 +94,12 @@ func (s *RequestService) Create(
 			}
 		}
 
-		err := s.validator.ValidateCategory(
-			ctx,
-			svc.CategoryID,
-			string(svc.SelectedUnit),
-		)
-		if err != nil {
-			return nil, err
+		var items pqtype.NullRawMessage
+		if svc.ItemsJSON != nil {
+			items = pqtype.NullRawMessage{
+				RawMessage: svc.ItemsJSON,
+				Valid:      true,
+			}
 		}
 
 		_, err = txRepo.AddService(ctx, db.AddRequestServiceParams{
@@ -98,7 +107,7 @@ func (s *RequestService) Create(
 			CategoryID:    svc.CategoryID,
 			SelectedUnit:  svc.SelectedUnit,
 			QuantityValue: svc.QuantityValue,
-			ItemsJson:     pqtype.NullRawMessage{RawMessage: svc.ItemsJSON, Valid: true},
+			ItemsJson:     items,
 			Description:   desc,
 		})
 		if err != nil {
@@ -146,6 +155,7 @@ func (s *RequestService) GetDetail(
 	}
 
 	for _, r := range rows {
+
 		if !r.ServiceID.Valid {
 			continue
 		}

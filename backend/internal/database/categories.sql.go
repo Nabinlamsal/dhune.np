@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -16,12 +17,14 @@ const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (
     name,
     allowed_units,
+    description,
     is_active,
     created_at,
     updated_at
 ) VALUES (
              $1,
              $2,
+             $3,
              TRUE,
              NOW(),
              NOW()
@@ -32,10 +35,11 @@ RETURNING id, name, description, allowed_units, is_active, created_at, updated_a
 type CreateCategoryParams struct {
 	Name         string
 	AllowedUnits []PricingUnit
+	Description  sql.NullString
 }
 
 func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error) {
-	row := q.db.QueryRowContext(ctx, createCategory, arg.Name, pq.Array(arg.AllowedUnits))
+	row := q.db.QueryRowContext(ctx, createCategory, arg.Name, pq.Array(arg.AllowedUnits), arg.Description)
 	var i Category
 	err := row.Scan(
 		&i.ID,
@@ -131,6 +135,7 @@ UPDATE categories
 SET
     name = $2,
     allowed_units = $3,
+    description=$4,
     updated_at = NOW()
 WHERE id = $1
 RETURNING id, name, description, allowed_units, is_active, created_at, updated_at
@@ -140,10 +145,16 @@ type UpdateCategoryParams struct {
 	ID           uuid.UUID
 	Name         string
 	AllowedUnits []PricingUnit
+	Description  sql.NullString
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
-	row := q.db.QueryRowContext(ctx, updateCategory, arg.ID, arg.Name, pq.Array(arg.AllowedUnits))
+	row := q.db.QueryRowContext(ctx, updateCategory,
+		arg.ID,
+		arg.Name,
+		pq.Array(arg.AllowedUnits),
+		arg.Description,
+	)
 	var i Category
 	err := row.Scan(
 		&i.ID,

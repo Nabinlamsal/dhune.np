@@ -20,6 +20,7 @@ func NewCategoryHandler(service *service.CategoryService) *CategoryHandler {
 
 type CreateCategoryDTO struct {
 	Name         string   `json:"name" binding:"required"`
+	Description  string   `json:"description"`
 	AllowedUnits []string `json:"allowed_units" binding:"required"`
 }
 
@@ -34,6 +35,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	result, err := h.service.Create(c.Request.Context(), service.CreateCategoryInput{
 		Name:         req.Name,
 		AllowedUnits: req.AllowedUnits,
+		Description:  req.Description,
 	})
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
@@ -70,6 +72,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		ID:           id,
 		Name:         req.Name,
 		AllowedUnits: req.AllowedUnits,
+		Description:  req.Description,
 	})
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())

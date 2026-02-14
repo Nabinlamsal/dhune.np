@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/Nabinlamsal/dhune.np/internal/catalog/repository"
@@ -34,6 +35,10 @@ func (s *CategoryService) Create(
 	cat, err := s.repo.Create(ctx, db.CreateCategoryParams{
 		Name:         input.Name,
 		AllowedUnits: units,
+		Description: sql.NullString{
+			String: input.Description,
+			Valid:  input.Description != "",
+		},
 	})
 	if err != nil {
 		return nil, err
@@ -53,8 +58,12 @@ func (s *CategoryService) Update(
 	}
 
 	cat, err := s.repo.Update(ctx, db.UpdateCategoryParams{
-		ID:           input.ID,
-		Name:         input.Name,
+		ID:   input.ID,
+		Name: input.Name,
+		Description: sql.NullString{
+			String: input.Description,
+			Valid:  input.Description != "",
+		},
 		AllowedUnits: units,
 	})
 	if err != nil {
