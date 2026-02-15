@@ -1,6 +1,7 @@
 import { api } from "@/src/libs/api";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
-import { AdminUsersPayload, AdminUserSummary, ApiResponse } from "@/src/types/users/admin-user-summary";
+import { AdminUsersPayload, AdminUserSummary } from "@/src/types/users/admin-user-summary";
+import { ApiResponse } from "@/src/types/api";
 import { AdminUserFilter } from "@/src/types/users/filter";
 
 export const getUsersFiltered = async (

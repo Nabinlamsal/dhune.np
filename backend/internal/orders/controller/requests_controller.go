@@ -28,7 +28,7 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		return
 	}
 
-	userID := c.MustGet("user_id").(uuid.UUID)
+	userID := c.MustGet("user_id").(string)
 
 	pickupFrom, err := time.Parse(time.RFC3339, req.PickupTimeFrom)
 	if err != nil {
@@ -67,6 +67,7 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		}
 
 		services = append(services, service.CreateRequestServiceInput{
+			userID:        userID,
 			CategoryID:    categoryID,
 			SelectedUnit:  db.PricingUnit(s.SelectedUnit),
 			QuantityValue: s.QuantityValue,
@@ -76,7 +77,6 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	}
 
 	input := service.CreateRequestInput{
-		UserID:         userID,
 		PickupAddress:  req.PickupAddress,
 		PickupTimeFrom: pickupFrom,
 		PickupTimeTo:   pickupTo,

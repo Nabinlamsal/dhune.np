@@ -1,10 +1,5 @@
 import { Role } from "../auth/identity";
 import { ApprovalStatus } from "./user.enums";
-export interface ApiResponse<T> {
-    success: boolean;
-    data: T;
-}
-
 //for admin table
 export interface AdminUserSummary {
     ID: string;
