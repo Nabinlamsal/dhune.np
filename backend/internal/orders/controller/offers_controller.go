@@ -29,7 +29,13 @@ func (h *OfferHandler) Create(c *gin.Context) {
 		return
 	}
 
-	vendorID := c.MustGet("user_id").(uuid.UUID)
+	vendorIDStr := c.MustGet("user_id").(string)
+
+	vendorID, err := uuid.Parse(vendorIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 
 	requestID, _ := uuid.Parse(req.RequestID)
 

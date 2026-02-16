@@ -35,7 +35,13 @@ func (h *OrderHandler) GetByID(c *gin.Context) {
 }
 func (h *OrderHandler) ListMy(c *gin.Context) {
 
-	userID := c.MustGet("user_id").(uuid.UUID)
+	userIDStr := c.MustGet("user_id").(string)
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 	limit, offset := parsePagination(c)
 
 	orders, err := h.service.ListByUser(
@@ -54,7 +60,13 @@ func (h *OrderHandler) ListMy(c *gin.Context) {
 
 func (h *OrderHandler) ListVendor(c *gin.Context) {
 
-	vendorID := c.MustGet("user_id").(uuid.UUID)
+	vendorIDStr := c.MustGet("user_id").(string)
+
+	vendorID, err := uuid.Parse(vendorIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 	limit, offset := parsePagination(c)
 
 	orders, err := h.service.ListByVendor(

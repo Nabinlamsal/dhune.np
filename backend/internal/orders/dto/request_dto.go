@@ -36,3 +36,9 @@ type RequestAdminFilterDTO struct {
 type MessageResponseDTO struct {
 	Message string `json:"message"`
 }
+type RequestSummaryDTO struct {
+	ID            string `json:"id"`
+	PickupAddress string `json:"pickup_address"`
+	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
+}

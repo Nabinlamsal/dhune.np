@@ -30,19 +30,16 @@ func parsePagination(c *gin.Context) (int32, int32) {
 
 func (h *RequestHandler) mapSummaryList(
 	requests []service.RequestSummary,
-) []dto.RequestResponseDTO {
+) []dto.RequestSummaryDTO {
 
-	var response []dto.RequestResponseDTO
+	var response []dto.RequestSummaryDTO
 
 	for _, r := range requests {
-		response = append(response, dto.RequestResponseDTO{
-			ID:             r.ID.String(),
-			PickupAddress:  r.PickupAddress,
-			PickupTimeFrom: "", // summary does not contain times
-			PickupTimeTo:   "",
-			PaymentMethod:  "",
-			Status:         string(r.Status),
-			CreatedAt:      r.CreatedAt.Format(time.RFC3339),
+		response = append(response, dto.RequestSummaryDTO{
+			ID:            r.ID.String(),
+			PickupAddress: r.PickupAddress,
+			Status:        string(r.Status),
+			CreatedAt:     r.CreatedAt.Format(time.RFC3339),
 		})
 	}
 

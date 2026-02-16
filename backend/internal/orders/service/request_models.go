@@ -8,7 +8,7 @@ import (
 )
 
 type CreateRequestInput struct {
-	UserID         string
+	UserID         uuid.UUID
 	PickupAddress  string
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
@@ -19,7 +19,7 @@ type CreateRequestInput struct {
 }
 
 type CreateRequestServiceInput struct {
-	CategoryID    string
+	CategoryID    uuid.UUID
 	SelectedUnit  db.PricingUnit
 	QuantityValue float64
 	ItemsJSON     []byte
@@ -36,7 +36,7 @@ type RequestServiceItem struct {
 
 type RequestDetail struct {
 	ID             uuid.UUID
-	UserID         string
+	UserID         uuid.UUID
 	PickupAddress  string
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
@@ -48,7 +48,7 @@ type RequestDetail struct {
 }
 type RequestSummary struct {
 	ID            uuid.UUID
-	UserID        string
+	UserID        uuid.UUID
 	PickupAddress string
 	Status        db.RequestsStatus
 	CreatedAt     time.Time

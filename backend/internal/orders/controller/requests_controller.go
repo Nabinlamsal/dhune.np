@@ -28,8 +28,13 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		return
 	}
 
-	userID := c.MustGet("user_id").(string)
+	userIDStr := c.MustGet("user_id").(string)
 
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 	pickupFrom, err := time.Parse(time.RFC3339, req.PickupTimeFrom)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, "invalid pickup_time_from")
@@ -67,7 +72,6 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		}
 
 		services = append(services, service.CreateRequestServiceInput{
-			userID:        userID,
 			CategoryID:    categoryID,
 			SelectedUnit:  db.PricingUnit(s.SelectedUnit),
 			QuantityValue: s.QuantityValue,
@@ -77,6 +81,7 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	}
 
 	input := service.CreateRequestInput{
+		UserID:         userID,
 		PickupAddress:  req.PickupAddress,
 		PickupTimeFrom: pickupFrom,
 		PickupTimeTo:   pickupTo,
@@ -124,7 +129,13 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 	})
 }
 func (h *RequestHandler) ListMy(c *gin.Context) {
-	userID := c.MustGet("user_id").(uuid.UUID)
+	userIDStr := c.MustGet("user_id").(string)
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 
 	limit, offset := parsePagination(c)
 
