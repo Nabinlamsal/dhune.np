@@ -27,6 +27,9 @@ FROM categories
 WHERE is_active = TRUE
 ORDER BY name ASC;
 
+-- name: ListAllCategories :many
+SELECT * FROM categories ORDER BY name ASC;
+
 -- name: UpdateCategory :one
 UPDATE categories
 SET

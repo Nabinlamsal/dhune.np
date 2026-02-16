@@ -112,6 +112,41 @@ func (q *Queries) ListActiveCategories(ctx context.Context) ([]Category, error) 
 	return items, nil
 }
 
+const listAllCategories = `-- name: ListAllCategories :many
+SELECT id, name, description, allowed_units, is_active, created_at, updated_at FROM categories ORDER BY name ASC
+`
+
+func (q *Queries) ListAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, listAllCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			pq.Array(&i.AllowedUnits),
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setCategoryActiveStatus = `-- name: SetCategoryActiveStatus :exec
 UPDATE categories
 SET

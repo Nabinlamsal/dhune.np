@@ -55,6 +55,16 @@ func (h *CategoryHandler) ListActive(c *gin.Context) {
 	utils.Success(c, result)
 }
 
+func (h *CategoryHandler) ListAll(c *gin.Context) {
+	result, err := h.service.ListActive(c.Request.Context())
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, result)
+}
+
 func (h *CategoryHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {

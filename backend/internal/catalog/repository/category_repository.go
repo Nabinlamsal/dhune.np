@@ -13,6 +13,7 @@ type CategoryRepository interface {
 	ListActive(ctx context.Context) ([]db.Category, error)
 	Update(ctx context.Context, params db.UpdateCategoryParams) (db.Category, error)
 	SetActiveStatus(ctx context.Context, id uuid.UUID, isActive bool) error
+	ListAll(ctx context.Context) ([]db.Category, error)
 }
 
 type categoryRepo struct {
@@ -43,6 +44,9 @@ func (r *categoryRepo) ListActive(
 	return r.q.ListActiveCategories(ctx)
 }
 
+func (r *categoryRepo) ListAll(ctx context.Context) ([]db.Category, error) {
+	return r.q.ListAllCategories(ctx)
+}
 func (r *categoryRepo) Update(
 	ctx context.Context,
 	params db.UpdateCategoryParams,

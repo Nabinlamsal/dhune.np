@@ -90,6 +90,23 @@ func (s *CategoryService) ListActive(
 	return result, nil
 }
 
+func (s *CategoryService) ListAll(
+	ctx context.Context,
+) ([]CategoryOutput, error) {
+
+	rows, err := s.repo.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []CategoryOutput
+	for _, c := range rows {
+		result = append(result, *mapCategory(c))
+	}
+
+	return result, nil
+}
+
 func (s *CategoryService) SetActive(
 	ctx context.Context,
 	id uuid.UUID,
