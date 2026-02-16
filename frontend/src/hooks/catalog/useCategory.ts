@@ -32,13 +32,8 @@ export function useUpdateCategory() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({
-            id,
-            payload,
-        }: {
-            id: string;
-            payload: UpdateCategoryPayload;
-        }) => updateCategory(id, payload),
+        mutationFn: (data: { id: string } & UpdateCategoryPayload) =>
+            updateCategory(data.id, data),
 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
