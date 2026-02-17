@@ -42,11 +42,29 @@ func (r *requestRepo) ListMarketplace(ctx context.Context, limit, offset int32) 
 	})
 }
 
-func (r *requestRepo) ListAdmin(ctx context.Context, status *db.RequestsStatus, limit, offset int32) ([]db.Request, error) {
+func (r *requestRepo) ListAdmin(
+	ctx context.Context,
+	status *db.RequestsStatus,
+	limit, offset int32,
+) ([]db.Request, error) {
+
+	var nullableStatus db.NullRequestsStatus
+
+	if status != nil {
+		nullableStatus = db.NullRequestsStatus{
+			RequestsStatus: *status,
+			Valid:          true,
+		}
+	} else {
+		nullableStatus = db.NullRequestsStatus{
+			Valid: false,
+		}
+	}
+
 	return r.q.ListRequestsAdmin(ctx, db.ListRequestsAdminParams{
-		Column1: status,
-		Limit:   limit,
-		Offset:  offset,
+		Status: nullableStatus,
+		Limit:  limit,
+		Offset: offset,
 	})
 }
 

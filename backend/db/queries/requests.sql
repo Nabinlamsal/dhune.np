@@ -61,11 +61,15 @@ LIMIT $1 OFFSET $2;
 
 -- Used by: Admin Panel
 -- name: ListRequestsAdmin :many
-SELECT *
+SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to,
+       payment_method, status, expires_at, created_at, updated_at
 FROM requests
-WHERE ($1 IS NULL OR status = $1)
+WHERE (
+          sqlc.narg(status)::requests_status IS NULL
+              OR status = sqlc.narg(status)::requests_status
+          )
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $1 OFFSET $2;
 
 
 -- Used by: User

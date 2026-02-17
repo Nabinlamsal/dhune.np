@@ -291,22 +291,26 @@ func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketpla
 }
 
 const listRequestsAdmin = `-- name: ListRequestsAdmin :many
-SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at
+SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to,
+       payment_method, status, expires_at, created_at, updated_at
 FROM requests
-WHERE ($1 IS NULL OR status = $1)
+WHERE (
+          $3::requests_status IS NULL
+              OR status = $3::requests_status
+          )
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $1 OFFSET $2
 `
 
 type ListRequestsAdminParams struct {
-	Column1 interface{}
-	Limit   int32
-	Offset  int32
+	Limit  int32
+	Offset int32
+	Status NullRequestsStatus
 }
 
 // Used by: Admin Panel
 func (q *Queries) ListRequestsAdmin(ctx context.Context, arg ListRequestsAdminParams) ([]Request, error) {
-	rows, err := q.db.QueryContext(ctx, listRequestsAdmin, arg.Column1, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listRequestsAdmin, arg.Limit, arg.Offset, arg.Status)
 	if err != nil {
 		return nil, err
 	}
