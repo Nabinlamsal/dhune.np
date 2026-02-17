@@ -23,7 +23,7 @@ func RegisterCategoryRoutes(
 		middleware.JWTAuthMiddleware(jwtSvc),
 		middleware.AdminOnly(),
 	)
-	admin.GET("categories", categoryHandler.ListAll)
+	admin.GET("", categoryHandler.ListAll)
 	admin.POST("", categoryHandler.Create)
 	admin.PUT("/:id", categoryHandler.Update)
 	admin.PATCH("/:id/deactivate", categoryHandler.Deactivate)

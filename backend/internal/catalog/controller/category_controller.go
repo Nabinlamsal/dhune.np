@@ -56,7 +56,7 @@ func (h *CategoryHandler) ListActive(c *gin.Context) {
 }
 
 func (h *CategoryHandler) ListAll(c *gin.Context) {
-	result, err := h.service.ListActive(c.Request.Context())
+	result, err := h.service.ListAll(c.Request.Context())
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
