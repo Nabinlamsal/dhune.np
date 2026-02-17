@@ -1,6 +1,6 @@
 "use client";
 
-import { cancelRequest, createRequest, getAdminRequests, getMarketplaceRequests, getMyRequests } from "@/src/services/orders/request_service";
+import { cancelRequest, createRequest, getAdminRequests, getMarketplaceRequests, getMyRequests, getRequestById } from "@/src/services/orders/request_service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //create req
@@ -67,7 +67,3 @@ export const useAdminRequests = (
         queryFn: () => getAdminRequests(status, limit, offset),
     });
 };
-
-function getRequestById(id: string): any {
-    throw new Error("Function not implemented.");
-}

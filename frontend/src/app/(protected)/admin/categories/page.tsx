@@ -17,10 +17,6 @@ import { Category } from "@/src/types/catalog/category";
 import { createCategory, updateCategory } from "@/src/services/catalog/category_service";
 import { PricingUnit } from "@/src/types/catalog/category-enums";
 
-/* ========================= */
-/* PAGE */
-/* ========================= */
-
 export default function AdminCategoriesPage() {
     const router = useRouter();
 
@@ -38,8 +34,7 @@ export default function AdminCategoriesPage() {
     const PRICING_UNITS: PricingUnit[] = ["KG", "SQFT", "ITEMS"];
     const [units, setUnits] = useState<PricingUnit[]>([]);
     const categories = data ?? [];
-    /* ---------- reset ---------- */
-
+    //reset
     const resetForm = () => {
         setName("");
         setDescription("");
@@ -47,8 +42,7 @@ export default function AdminCategoriesPage() {
         setEditing(null);
     };
 
-    /* ---------- submit ---------- */
-
+    //submit
     const handleSubmit = async () => {
         if (!name.trim()) return;
 
@@ -71,31 +65,44 @@ export default function AdminCategoriesPage() {
         setOpen(false);
     };
 
-    /* ---------- columns ---------- */
-
+    //columns
     const columns = [
         { key: "name", header: "Category Name" },
-        { key: "description", header: "Description" },
+
+        {
+            key: "description",
+            header: "Description",
+            render: (c: Category) => c.description || "-",
+        },
+
         {
             key: "allowed_units",
             header: "Allowed Units",
             render: (c: Category) => c.allowed_units.join(", "),
         },
+
         {
             key: "is_active",
             header: "Status",
             render: (c: Category) =>
                 c.is_active ? (
-                    <span className="text-green-600 font-medium">Active</span>
+                    <span className="text-green-600 font-medium">
+                        Active
+                    </span>
                 ) : (
-                    <span className="text-red-500 font-medium">Inactive</span>
+                    <span className="text-gray-700 font-medium">
+                        Inactive
+                    </span>
                 ),
         },
+
         {
             key: "actions",
             header: "Actions",
             render: (c: Category) => (
                 <div className="flex gap-2">
+
+                    {/* Edit always allowed */}
                     <Button
                         size="sm"
                         variant="outline"
@@ -110,7 +117,8 @@ export default function AdminCategoriesPage() {
                         Edit
                     </Button>
 
-                    {c.is_active && (
+                    {/* Deactivate or Reactivate */}
+                    {c.is_active ? (
                         <Button
                             size="sm"
                             variant="destructive"
@@ -120,12 +128,19 @@ export default function AdminCategoriesPage() {
                         >
                             Deactivate
                         </Button>
+                    ) : (
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled
+                        >
+                            Reactivate
+                        </Button>
                     )}
                 </div>
             ),
         },
     ];
-
     return (
         <>
             {/* Header */}

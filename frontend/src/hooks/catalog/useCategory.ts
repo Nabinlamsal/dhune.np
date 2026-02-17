@@ -13,6 +13,15 @@ export function useCategories() {
         },
     });
 }
+export function useActiveCategories() {
+    return useQuery<Category[]>({
+        queryKey: ["categories"],
+        queryFn: async () => {
+            const res = await getCategories();
+            return res.data;
+        },
+    });
+}
 
 export function useCreateCategory() {
     const queryClient = useQueryClient();

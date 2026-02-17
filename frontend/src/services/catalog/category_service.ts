@@ -8,10 +8,16 @@ import {
 } from "@/src/types/catalog/category";
 
 export const getCategories = async (): Promise<ListCategoriesResponse> => {
-    return api<ListCategoriesResponse>("/categories", {
+    return api<ListCategoriesResponse>("/admin/categories", {
         method: "GET",
     });
 };
+export const getActiveCategories = async (): Promise<ListCategoriesResponse> => {
+    return api<ListCategoriesResponse>("/categories/active", {
+        method: "GET",
+    });
+};
+
 
 export const createCategory = async (
     payload: CreateCategoryPayload
