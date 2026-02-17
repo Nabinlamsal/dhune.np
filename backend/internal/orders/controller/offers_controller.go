@@ -60,10 +60,11 @@ func (h *OfferHandler) Create(c *gin.Context) {
 	}
 
 	utils.Created(c, dto.OfferResponseDTO{
-		ID:        result.ID.String(),
-		RequestID: result.RequestID.String(),
-		BidPrice:  result.BidPrice,
-		Status:    result.Status,
+		ID:             result.ID.String(),
+		RequestID:      result.RequestID.String(),
+		BidPrice:       result.BidPrice,
+		Status:         result.Status,
+		CompletionTime: result.CompletionTime.Format(time.RFC3339),
 	})
 }
 func (h *OfferHandler) Update(c *gin.Context) {
@@ -100,10 +101,11 @@ func (h *OfferHandler) Update(c *gin.Context) {
 	}
 
 	utils.Success(c, dto.OfferResponseDTO{
-		ID:        result.ID.String(),
-		RequestID: result.RequestID.String(),
-		BidPrice:  result.BidPrice,
-		Status:    result.Status,
+		ID:             result.ID.String(),
+		RequestID:      result.RequestID.String(),
+		BidPrice:       result.BidPrice,
+		Status:         result.Status,
+		CompletionTime: result.CompletionTime.Format(time.RFC3339),
 	})
 }
 func (h *OfferHandler) Withdraw(c *gin.Context) {
@@ -124,6 +126,7 @@ func (h *OfferHandler) Withdraw(c *gin.Context) {
 		Message: "offer withdrawn successfully",
 	})
 }
+
 func (h *OfferHandler) Accept(c *gin.Context) {
 
 	var req dto.AcceptOfferDTO
@@ -132,27 +135,34 @@ func (h *OfferHandler) Accept(c *gin.Context) {
 		return
 	}
 
-	userID := c.MustGet("user_id").(uuid.UUID)
-	offerID, _ := uuid.Parse(req.OfferID)
+	userIDStr := c.MustGet("user_id").(string)
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	offerID, err := uuid.Parse(req.OfferID)
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid offer id")
+		return
+	}
 
 	input := service.AcceptOfferInput{
 		OfferID: offerID,
 		UserID:  userID,
 	}
 
-	_, err := h.service.Accept(c.Request.Context(), input)
+	result, err := h.service.Accept(c.Request.Context(), input)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.Success(c, dto.AcceptedOfferResponseDTO{
-		OfferResponseDTO: dto.OfferResponseDTO{
-			ID: req.OfferID,
-		},
+	utils.Success(c, gin.H{
+		"order_id": result.OrderID.String(),
 	})
 }
-
 func (h *OfferHandler) ListByRequest(c *gin.Context) {
 
 	requestID, err := uuid.Parse(c.Param("request_id"))
@@ -185,8 +195,12 @@ func (h *OfferHandler) ListByRequest(c *gin.Context) {
 }
 func (h *OfferHandler) ListMyOffers(c *gin.Context) {
 
-	vendorID := c.MustGet("user_id").(uuid.UUID)
-
+	vendorIDStr := c.MustGet("user_id").(string)
+	vendorID, err := uuid.Parse(vendorIDStr)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
 	limit, offset := parsePagination(c)
 
 	offers, err := h.service.ListByVendor(
@@ -211,30 +225,32 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 		return
 	}
 
-	var status *db.OfferStatus
+	var status db.NullOfferStatus
 	if filter.Status != "" {
-		s := db.OfferStatus(filter.Status)
-		status = &s
+		status = db.NullOfferStatus{
+			OfferStatus: db.OfferStatus(filter.Status),
+			Valid:       true,
+		}
 	}
 
-	var vendorID *uuid.UUID
+	var vendorID uuid.NullUUID
 	if filter.VendorID != "" {
 		id, err := uuid.Parse(filter.VendorID)
 		if err != nil {
 			utils.Error(c, http.StatusBadRequest, "invalid vendor_id")
 			return
 		}
-		vendorID = &id
+		vendorID = uuid.NullUUID{UUID: id, Valid: true}
 	}
 
-	var requestID *uuid.UUID
+	var requestID uuid.NullUUID
 	if filter.RequestID != "" {
 		id, err := uuid.Parse(filter.RequestID)
 		if err != nil {
 			utils.Error(c, http.StatusBadRequest, "invalid request_id")
 			return
 		}
-		requestID = &id
+		requestID = uuid.NullUUID{UUID: id, Valid: true}
 	}
 
 	limit, offset := parsePagination(c)
@@ -252,19 +268,22 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 		return
 	}
 
-	// Map DB → DTO
-	var response []dto.OfferResponseDTO
-	for _, o := range offers {
-		price, _ := strconv.ParseFloat(o.BidPrice, 64)
+	utils.Success(c, offers)
+}
+func (h *OfferHandler) Stats(c *gin.Context) {
 
-		response = append(response, dto.OfferResponseDTO{
-			ID:             o.ID.String(),
-			RequestID:      o.RequestID.String(),
-			BidPrice:       price,
-			Status:         string(o.Status),
-			CompletionTime: o.CompletionTime.Format(time.RFC3339),
-		})
+	stats, err := h.service.GetStats(c.Request.Context())
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	utils.Success(c, response)
+	utils.Success(c, gin.H{
+		"total_offers":     stats.TotalOffers,
+		"pending_offers":   stats.PendingOffers,
+		"accepted_offers":  stats.AcceptedOffers,
+		"rejected_offers":  stats.RejectedOffers,
+		"withdrawn_offers": stats.WithdrawnOffers,
+		"expired_offers":   stats.ExpiredOffers,
+	})
 }

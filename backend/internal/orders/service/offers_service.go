@@ -42,6 +42,18 @@ func (s *OfferService) Create(
 		return nil, errors.New("invalid bid price")
 	}
 
+	// Validate request exists & open
+	requestRows, err := s.requestRepo.GetWithServices(ctx, input.RequestID)
+	if err != nil || len(requestRows) == 0 {
+		return nil, errors.New("request not found")
+	}
+
+	request := requestRows[0]
+
+	if request.Status != db.RequestsStatusOPEN {
+		return nil, errors.New("cannot bid on closed request")
+	}
+
 	offer, err := s.offerRepo.Create(ctx, db.CreateOfferParams{
 		RequestID:      input.RequestID,
 		VendorID:       input.VendorID,
@@ -96,23 +108,23 @@ func (s *OfferService) Accept(
 
 	qtx := db.New(tx)
 
-	// Accept offer
-	rows, err := s.offerRepo.Accept(ctx, qtx, input.OfferID)
+	// Accept offer (returns updated row)
+	offer, err := s.offerRepo.Accept(ctx, qtx, input.OfferID)
 	if err != nil {
-		return nil, err
-	}
-
-	if rows == 0 {
 		return nil, errors.New("offer already accepted or invalid")
 	}
 
-	// Get offer inside transaction
-	offer, err := qtx.GetOfferByID(ctx, input.OfferID)
+	// Validate request belongs to user
+	request, err := s.requestRepo.GetWithServices(ctx, offer.RequestID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Reject other offers
+	if request[0].UserID != input.UserID {
+		return nil, errors.New("unauthorized accept")
+	}
+
+	// Reject others
 	err = s.offerRepo.RejectOthers(ctx, qtx, offer.RequestID, offer.ID)
 	if err != nil {
 		return nil, err
@@ -135,8 +147,7 @@ func (s *OfferService) Accept(
 	}
 
 	// Mark request as ORDER_CREATED
-	err = qtx.SetRequestOrderCreated(ctx, offer.RequestID)
-	if err != nil {
+	if err := qtx.SetRequestOrderCreated(ctx, offer.RequestID); err != nil {
 		return nil, err
 	}
 
@@ -169,14 +180,24 @@ func (s *OfferService) ListByVendor(
 
 func (s *OfferService) ListAdmin(
 	ctx context.Context,
-	status *db.OfferStatus,
-	vendorID *uuid.UUID,
-	requestID *uuid.UUID,
+	status db.NullOfferStatus,
+	vendorID uuid.NullUUID,
+	requestID uuid.NullUUID,
 	limit,
 	offset int32,
-) ([]db.Offer, error) {
+) ([]OfferSummary, error) {
 
-	return s.offerRepo.ListAdmin(ctx, status, vendorID, requestID, limit, offset)
+	offers, err := s.offerRepo.ListAdmin(ctx, status, vendorID, requestID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []OfferSummary
+	for _, o := range offers {
+		result = append(result, *mapOffer(o))
+	}
+
+	return result, nil
 }
 
 func (s *OfferService) Expire(ctx context.Context) error {
@@ -218,12 +239,13 @@ func mapOffer(o db.Offer) *OfferSummary {
 	price, _ := strconv.ParseFloat(o.BidPrice, 64)
 
 	return &OfferSummary{
-		ID:        o.ID,
-		RequestID: o.RequestID,
-		VendorID:  o.VendorID,
-		BidPrice:  price,
-		Status:    string(o.Status),
-		CreatedAt: o.CreatedAt,
+		ID:             o.ID,
+		RequestID:      o.RequestID,
+		VendorID:       o.VendorID,
+		BidPrice:       price,
+		Status:         string(o.Status),
+		CompletionTime: o.CompletionTime,
+		CreatedAt:      o.CreatedAt,
 	}
 }
 

@@ -67,34 +67,19 @@ func (r *offerRepository) ListByVendor(
 
 func (r *offerRepository) ListAdmin(
 	ctx context.Context,
-	status *db.OfferStatus,
-	vendorID *uuid.UUID,
-	requestID *uuid.UUID,
+	status db.NullOfferStatus,
+	vendorID uuid.NullUUID,
+	requestID uuid.NullUUID,
 	limit,
 	offset int32,
 ) ([]db.Offer, error) {
 
-	var s interface{}
-	if status != nil {
-		s = *status
-	}
-
-	var v uuid.UUID
-	if vendorID != nil {
-		v = *vendorID
-	}
-
-	var req uuid.UUID
-	if requestID != nil {
-		req = *requestID
-	}
-
 	return r.q.ListOffersAdmin(ctx, db.ListOffersAdminParams{
-		Column1: s,
-		Column2: v,
-		Column3: req,
-		Limit:   limit,
-		Offset:  offset,
+		Limit:     limit,
+		Offset:    offset,
+		Status:    status,
+		VendorID:  vendorID,
+		RequestID: requestID,
 	})
 }
 
@@ -103,7 +88,8 @@ func (r *offerRepository) Accept(
 	ctx context.Context,
 	tx *db.Queries,
 	offerID uuid.UUID,
-) (int64, error) {
+) (db.Offer, error) {
+
 	return tx.AcceptOffer(ctx, offerID)
 }
 

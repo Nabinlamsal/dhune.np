@@ -29,7 +29,7 @@ RETURNING *;
 -- Used by: Vendor (Withdraw Bid)
 -- name: WithdrawOffer :exec
 UPDATE offers
-SET status = 'REJECTED',
+SET status = 'WITHDRAWN',
     updated_at = now()
 WHERE id = $1
   AND status = 'PENDING';
@@ -56,13 +56,13 @@ LIMIT $2 OFFSET $3;
 
 
 -- Used inside: Offer Acceptance Transaction (Concurrency Safe)
--- name: AcceptOffer :execrows
+-- name: AcceptOffer :one
 UPDATE offers
 SET status = 'ACCEPTED',
     updated_at = now()
 WHERE id = $1
-  AND status = 'PENDING';
-
+  AND status = 'PENDING'
+RETURNING *;
 
 
 -- Used inside: Offer Acceptance Transaction (Reject Others)
@@ -81,8 +81,8 @@ WHERE request_id = $1
 UPDATE offers
 SET status = 'EXPIRED',
     updated_at = now()
-WHERE status = 'PENDING';
-
+WHERE status = 'PENDING'
+  AND completion_time < now();
 
 
 -- Used by: Admin Dashboard
@@ -92,6 +92,7 @@ SELECT
     COUNT(*) FILTER (WHERE status = 'PENDING') AS pending_offers,
     COUNT(*) FILTER (WHERE status = 'ACCEPTED') AS accepted_offers,
     COUNT(*) FILTER (WHERE status = 'REJECTED') AS rejected_offers,
+    COUNT(*) FILTER (WHERE status = 'WITHDRAWN') AS withdrawn_offers,
     COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_offers
 FROM offers;
 
@@ -99,11 +100,20 @@ FROM offers;
 -- name: ListOffersAdmin :many
 SELECT *
 FROM offers
-WHERE ($1 IS NULL OR status = $1)
-  AND ($2 IS NULL OR vendor_id = $2)
-  AND ($3 IS NULL OR request_id = $3)
+WHERE (
+    sqlc.narg(status)::offer_status IS NULL
+        OR status = sqlc.narg(status)::offer_status
+    )
+  AND (
+    sqlc.narg(vendor_id)::uuid IS NULL
+        OR vendor_id = sqlc.narg(vendor_id)::uuid
+    )
+  AND (
+    sqlc.narg(request_id)::uuid IS NULL
+        OR request_id = sqlc.narg(request_id)::uuid
+    )
 ORDER BY created_at DESC
-LIMIT $4 OFFSET $5;
+LIMIT $1 OFFSET $2;
 
 -- name: GetOfferByID :one
 SELECT *

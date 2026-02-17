@@ -19,7 +19,7 @@ func RegisterOfferRoutes(
 
 	vendor := offers.Group("")
 	vendor.Use(authMiddleware.VendorOnly())
-	
+
 	vendor.POST("/", offerHandler.Create)
 	vendor.PUT("/:id", offerHandler.Update)
 	vendor.DELETE("/:id", offerHandler.Withdraw)
@@ -33,4 +33,5 @@ func RegisterOfferRoutes(
 	admin.Use(authMiddleware.AdminOnly())
 
 	admin.GET("/", offerHandler.ListAdmin)
+	admin.GET("/stats", offerHandler.Stats)
 }

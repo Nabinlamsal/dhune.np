@@ -17,9 +17,7 @@ type OfferResponseDTO struct {
 	BidPrice       float64 `json:"bid_price"`
 	Status         string  `json:"status"`
 	CompletionTime string  `json:"completion_time"`
-	Description    string  `json:"description"`
-
-	Vendor UserSummaryDTO `json:"vendor"`
+	Description    string  `json:"description,omitempty"`
 }
 type AcceptOfferDTO struct {
 	OfferID string `json:"offer_id" binding:"required,uuid"`
@@ -34,4 +32,12 @@ type OfferAdminFilterDTO struct {
 type AcceptedOfferResponseDTO struct {
 	OfferResponseDTO
 	User UserSummaryDTO `json:"user"`
+}
+type OfferStatsDTO struct {
+	Total     int64 `json:"total"`
+	Pending   int64 `json:"pending"`
+	Accepted  int64 `json:"accepted"`
+	Rejected  int64 `json:"rejected"`
+	Withdrawn int64 `json:"withdrawn"`
+	Expired   int64 `json:"expired"`
 }

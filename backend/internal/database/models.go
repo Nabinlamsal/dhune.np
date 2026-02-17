@@ -17,10 +17,11 @@ import (
 type OfferStatus string
 
 const (
-	OfferStatusPENDING  OfferStatus = "PENDING"
-	OfferStatusACCEPTED OfferStatus = "ACCEPTED"
-	OfferStatusREJECTED OfferStatus = "REJECTED"
-	OfferStatusEXPIRED  OfferStatus = "EXPIRED"
+	OfferStatusPENDING   OfferStatus = "PENDING"
+	OfferStatusACCEPTED  OfferStatus = "ACCEPTED"
+	OfferStatusREJECTED  OfferStatus = "REJECTED"
+	OfferStatusEXPIRED   OfferStatus = "EXPIRED"
+	OfferStatusWITHDRAWN OfferStatus = "WITHDRAWN"
 )
 
 func (e *OfferStatus) Scan(src interface{}) error {

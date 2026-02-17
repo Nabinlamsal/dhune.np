@@ -24,12 +24,13 @@ type UpdateOfferInput struct {
 }
 
 type OfferSummary struct {
-	ID        uuid.UUID
-	RequestID uuid.UUID
-	VendorID  uuid.UUID
-	BidPrice  float64
-	Status    string
-	CreatedAt time.Time
+	ID             uuid.UUID
+	RequestID      uuid.UUID
+	VendorID       uuid.UUID
+	BidPrice       float64
+	Status         string
+	CompletionTime time.Time
+	CreatedAt      time.Time
 }
 
 type AcceptOfferInput struct {

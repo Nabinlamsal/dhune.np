@@ -14,21 +14,32 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
-const acceptOffer = `-- name: AcceptOffer :execrows
+const acceptOffer = `-- name: AcceptOffer :one
 UPDATE offers
 SET status = 'ACCEPTED',
     updated_at = now()
 WHERE id = $1
   AND status = 'PENDING'
+RETURNING id, request_id, vendor_id, bid_price, completion_time, service_options, description, status, created_at, updated_at
 `
 
 // Used inside: Offer Acceptance Transaction (Concurrency Safe)
-func (q *Queries) AcceptOffer(ctx context.Context, id uuid.UUID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, acceptOffer, id)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+func (q *Queries) AcceptOffer(ctx context.Context, id uuid.UUID) (Offer, error) {
+	row := q.db.QueryRowContext(ctx, acceptOffer, id)
+	var i Offer
+	err := row.Scan(
+		&i.ID,
+		&i.RequestID,
+		&i.VendorID,
+		&i.BidPrice,
+		&i.CompletionTime,
+		&i.ServiceOptions,
+		&i.Description,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const createOffer = `-- name: CreateOffer :one
@@ -83,6 +94,7 @@ UPDATE offers
 SET status = 'EXPIRED',
     updated_at = now()
 WHERE status = 'PENDING'
+  AND completion_time < now()
 `
 
 // Not exposed as public API (Background Expiry Job)
@@ -121,16 +133,18 @@ SELECT
     COUNT(*) FILTER (WHERE status = 'PENDING') AS pending_offers,
     COUNT(*) FILTER (WHERE status = 'ACCEPTED') AS accepted_offers,
     COUNT(*) FILTER (WHERE status = 'REJECTED') AS rejected_offers,
+    COUNT(*) FILTER (WHERE status = 'WITHDRAWN') AS withdrawn_offers,
     COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_offers
 FROM offers
 `
 
 type GetOfferStatsRow struct {
-	TotalOffers    int64
-	PendingOffers  int64
-	AcceptedOffers int64
-	RejectedOffers int64
-	ExpiredOffers  int64
+	TotalOffers     int64
+	PendingOffers   int64
+	AcceptedOffers  int64
+	RejectedOffers  int64
+	WithdrawnOffers int64
+	ExpiredOffers   int64
 }
 
 // Used by: Admin Dashboard
@@ -142,6 +156,7 @@ func (q *Queries) GetOfferStats(ctx context.Context) (GetOfferStatsRow, error) {
 		&i.PendingOffers,
 		&i.AcceptedOffers,
 		&i.RejectedOffers,
+		&i.WithdrawnOffers,
 		&i.ExpiredOffers,
 	)
 	return i, err
@@ -150,29 +165,38 @@ func (q *Queries) GetOfferStats(ctx context.Context) (GetOfferStatsRow, error) {
 const listOffersAdmin = `-- name: ListOffersAdmin :many
 SELECT id, request_id, vendor_id, bid_price, completion_time, service_options, description, status, created_at, updated_at
 FROM offers
-WHERE ($1 IS NULL OR status = $1)
-  AND ($2 IS NULL OR vendor_id = $2)
-  AND ($3 IS NULL OR request_id = $3)
+WHERE (
+    $3::offer_status IS NULL
+        OR status = $3::offer_status
+    )
+  AND (
+    $4::uuid IS NULL
+        OR vendor_id = $4::uuid
+    )
+  AND (
+    $5::uuid IS NULL
+        OR request_id = $5::uuid
+    )
 ORDER BY created_at DESC
-LIMIT $4 OFFSET $5
+LIMIT $1 OFFSET $2
 `
 
 type ListOffersAdminParams struct {
-	Column1 interface{}
-	Column2 interface{}
-	Column3 interface{}
-	Limit   int32
-	Offset  int32
+	Limit     int32
+	Offset    int32
+	Status    NullOfferStatus
+	VendorID  uuid.NullUUID
+	RequestID uuid.NullUUID
 }
 
 // Used by: Admin Panel (Global Offer Listing with Filters)
 func (q *Queries) ListOffersAdmin(ctx context.Context, arg ListOffersAdminParams) ([]Offer, error) {
 	rows, err := q.db.QueryContext(ctx, listOffersAdmin,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
 		arg.Limit,
 		arg.Offset,
+		arg.Status,
+		arg.VendorID,
+		arg.RequestID,
 	)
 	if err != nil {
 		return nil, err
@@ -364,7 +388,7 @@ func (q *Queries) UpdateOffer(ctx context.Context, arg UpdateOfferParams) (Offer
 
 const withdrawOffer = `-- name: WithdrawOffer :exec
 UPDATE offers
-SET status = 'REJECTED',
+SET status = 'WITHDRAWN',
     updated_at = now()
 WHERE id = $1
   AND status = 'PENDING'
