@@ -81,7 +81,7 @@ func (s *OrderService) UpdateStatus(
 	input UpdateOrderStatusInput,
 ) error {
 
-	// 1️⃣ Get current order
+	//Get current order
 	order, err := s.repo.GetByID(ctx, input.OrderID)
 	if err != nil {
 		return err
@@ -90,12 +90,12 @@ func (s *OrderService) UpdateStatus(
 	current := order.OrderStatus
 	next := db.OrderStatus(input.Status)
 
-	// 2️⃣ Validate transition
+	//Validate transition
 	if !isValidTransition(current, next) {
 		return errors.New("invalid order status transition")
 	}
 
-	// 3️⃣ Update
+	// 3Update
 	return s.repo.UpdateStatus(ctx, input.OrderID, next)
 }
 
@@ -138,11 +138,20 @@ func (s *OrderService) MarkRefunded(
 // admin order listing
 func (s *OrderService) ListAdmin(
 	ctx context.Context,
-	status *db.OrderStatus,
+	status *string,
 	limit, offset int32,
 ) ([]OrderSummary, error) {
 
-	orders, err := s.repo.ListAdmin(ctx, status, limit, offset)
+	var dbStatus db.NullOrderStatus
+
+	if status != nil {
+		dbStatus = db.NullOrderStatus{
+			OrderStatus: db.OrderStatus(*status),
+			Valid:       true,
+		}
+	}
+
+	orders, err := s.repo.ListAdmin(ctx, dbStatus, limit, offset)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 
-	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/service"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -133,11 +132,9 @@ func (h *OrderHandler) Cancel(c *gin.Context) {
 }
 func (h *OrderHandler) ListAdmin(c *gin.Context) {
 
-	var status *db.OrderStatus
-
+	var status *string
 	if s := c.Query("status"); s != "" {
-		tmp := db.OrderStatus(s)
-		status = &tmp
+		status = &s
 	}
 
 	limit, offset := parsePagination(c)
@@ -155,6 +152,7 @@ func (h *OrderHandler) ListAdmin(c *gin.Context) {
 
 	utils.Success(c, orders)
 }
+
 func (h *OrderHandler) GetStats(c *gin.Context) {
 
 	stats, err := h.service.GetStats(c.Request.Context())

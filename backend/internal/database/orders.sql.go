@@ -158,20 +158,23 @@ func (q *Queries) GetOrderStats(ctx context.Context) (GetOrderStatsRow, error) {
 const listOrdersAdmin = `-- name: ListOrdersAdmin :many
 SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
 FROM orders
-WHERE ($1 IS NULL OR status = $1)
+WHERE (
+          $3::order_status IS NULL
+              OR order_status = $3::order_status
+          )
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $1 OFFSET $2
 `
 
 type ListOrdersAdminParams struct {
-	Column1 interface{}
-	Limit   int32
-	Offset  int32
+	Limit  int32
+	Offset int32
+	Status NullOrderStatus
 }
 
 // Used by: Admin Dashboard (Global Orders with Filter)
 func (q *Queries) ListOrdersAdmin(ctx context.Context, arg ListOrdersAdminParams) ([]Order, error) {
-	rows, err := q.db.QueryContext(ctx, listOrdersAdmin, arg.Column1, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listOrdersAdmin, arg.Limit, arg.Offset, arg.Status)
 	if err != nil {
 		return nil, err
 	}

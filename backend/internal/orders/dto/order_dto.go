@@ -27,3 +27,9 @@ type OrderAdminFilterDTO struct {
 	Limit  int32  `form:"limit"`
 	Offset int32  `form:"offset"`
 }
+type OrderDetailResponseDTO struct {
+	Order   OrderResponseDTO  `json:"order"`
+	Request RequestDetailsDTO `json:"request"`
+	User    UserSummaryDTO    `json:"user"`
+	Vendor  UserSummaryDTO    `json:"vendor"`
+}

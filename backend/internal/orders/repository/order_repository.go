@@ -21,7 +21,7 @@ type OrderRepository interface {
 	MarkPaid(ctx context.Context, orderID uuid.UUID) error
 	MarkRefunded(ctx context.Context, orderID uuid.UUID) error
 
-	ListAdmin(ctx context.Context, status *db.OrderStatus, limit, offset int32) ([]db.Order, error)
+	ListAdmin(ctx context.Context, status db.NullOrderStatus, limit, offset int32) ([]db.Order, error)
 
 	GetStats(ctx context.Context) (db.GetOrderStatsRow, error)
 }

@@ -102,15 +102,13 @@ func (r *orderRepository) MarkRefunded(
 // Admin listing with optional status filter
 func (r *orderRepository) ListAdmin(
 	ctx context.Context,
-	status *db.OrderStatus,
-	limit,
-	offset int32,
+	status db.NullOrderStatus,
+	limit, offset int32,
 ) ([]db.Order, error) {
-
 	return r.q.ListOrdersAdmin(ctx, db.ListOrdersAdminParams{
-		Column1: status,
-		Limit:   limit,
-		Offset:  offset,
+		Status: status,
+		Limit:  limit,
+		Offset: offset,
 	})
 }
 

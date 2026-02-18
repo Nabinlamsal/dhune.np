@@ -85,10 +85,12 @@ WHERE id = $1
 -- name: ListOrdersAdmin :many
 SELECT *
 FROM orders
-WHERE ($1 IS NULL OR status = $1)
+WHERE (
+          sqlc.narg(status)::order_status IS NULL
+              OR order_status = sqlc.narg(status)::order_status
+          )
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
-
+LIMIT $1 OFFSET $2;
 
 -- Used by: Admin Dashboard (Order Stats)
 -- name: GetOrderStats :one

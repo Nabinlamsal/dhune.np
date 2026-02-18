@@ -12,7 +12,6 @@ type RequestRepository interface {
 	AddService(ctx context.Context, params db.AddRequestServiceParams) (db.RequestService, error)
 
 	GetWithServices(ctx context.Context, requestID uuid.UUID) ([]db.GetRequestWithServicesRow, error)
-
 	ListByUser(ctx context.Context, userID uuid.UUID, limit, offset int32) ([]db.Request, error)
 	ListMarketplace(ctx context.Context, limit, offset int32) ([]db.Request, error)
 	ListAdmin(ctx context.Context, status *db.RequestsStatus, limit, offset int32) ([]db.Request, error)
@@ -21,6 +20,5 @@ type RequestRepository interface {
 	SetOrderCreated(ctx context.Context, requestID uuid.UUID) error
 
 	Expire(ctx context.Context) error
-
 	GetStats(ctx context.Context) (db.GetRequestStatsRow, error)
 }

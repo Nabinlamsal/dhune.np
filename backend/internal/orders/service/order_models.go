@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 
+	"github.com/Nabinlamsal/dhune.np/internal/orders/dto"
 	"github.com/google/uuid"
 )
 
@@ -22,4 +23,10 @@ type OrderSummary struct {
 type UpdateOrderStatusInput struct {
 	OrderID uuid.UUID
 	Status  string
+}
+type OrderDetail struct {
+	Order   OrderSummary
+	Request RequestDetail
+	User    dto.UserSummaryDTO
+	Vendor  dto.UserSummaryDTO
 }
