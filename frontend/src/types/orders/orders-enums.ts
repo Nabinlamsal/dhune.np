@@ -12,3 +12,16 @@ export type OfferStatus =
     | "REJECTED"
     | "WITHDRAWN"
     | "EXPIRED"
+
+export type OrderStatus =
+    | "ACCEPTED"
+    | "PICKED_UP"
+    | "IN_PROGRESS"
+    | "DELIVERING"
+    | "COMPLETED"
+    | "CANCELLED";
+
+export type PaymentStatus =
+    | "PAID"
+    | "UNPAID"
+    | "REFUNDED"
