@@ -242,22 +242,28 @@ func (q *Queries) GetRequestWithServices(ctx context.Context, id uuid.UUID) ([]G
 }
 
 const listMarketplaceRequests = `-- name: ListMarketplaceRequests :many
-SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at
-FROM requests
-WHERE status = 'OPEN'
-  AND (expires_at IS NULL OR expires_at > now())
-ORDER BY created_at DESC
+SELECT DISTINCT r.id, r.user_id, r.pickup_address, r.pickup_time_from, r.pickup_time_to, r.payment_method, r.status, r.expires_at, r.created_at, r.updated_at
+FROM requests r
+    LEFT JOIN request_services rs ON rs.request_id = r.id
+WHERE r.status = 'OPEN'
+  AND (r.expires_at IS NULL OR r.expires_at > now())
+  AND (
+    $3::uuid IS NULL
+        OR rs.category_id = $3::uuid
+    )
+ORDER BY r.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListMarketplaceRequestsParams struct {
-	Limit  int32
-	Offset int32
+	Limit      int32
+	Offset     int32
+	CategoryID uuid.NullUUID
 }
 
 // Used by Vendor Dashboard
 func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketplaceRequestsParams) ([]Request, error) {
-	rows, err := q.db.QueryContext(ctx, listMarketplaceRequests, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listMarketplaceRequests, arg.Limit, arg.Offset, arg.CategoryID)
 	if err != nil {
 		return nil, err
 	}

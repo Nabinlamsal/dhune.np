@@ -29,9 +29,12 @@ func RegisterOfferRoutes(
 	user.POST("/accept", offerHandler.Accept)
 	user.GET("/request/:request_id", offerHandler.ListByRequest)
 
-	admin := offers.Group("/admin")
-	admin.Use(authMiddleware.AdminOnly())
+	admin := router.Group("/admin/offers")
+	admin.Use(
+		authMiddleware.JWTAuthMiddleware(jwtService),
+		authMiddleware.AdminOnly(),
+	)
 
-	admin.GET("/offers", offerHandler.ListAdmin)
-	admin.GET("/offers/stats", offerHandler.Stats)
+	admin.GET("", offerHandler.ListAdmin)
+	admin.GET("/stats", offerHandler.Stats)
 }

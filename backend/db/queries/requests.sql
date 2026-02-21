@@ -51,11 +51,16 @@ LIMIT $2 OFFSET $3;
 
 -- Used by Vendor Dashboard
 -- name: ListMarketplaceRequests :many
-SELECT *
-FROM requests
-WHERE status = 'OPEN'
-  AND (expires_at IS NULL OR expires_at > now())
-ORDER BY created_at DESC
+SELECT DISTINCT r.*
+FROM requests r
+    LEFT JOIN request_services rs ON rs.request_id = r.id
+WHERE r.status = 'OPEN'
+  AND (r.expires_at IS NULL OR r.expires_at > now())
+  AND (
+    sqlc.narg(category_id)::uuid IS NULL
+        OR rs.category_id = sqlc.narg(category_id)::uuid
+    )
+ORDER BY r.created_at DESC
 LIMIT $1 OFFSET $2;
 
 

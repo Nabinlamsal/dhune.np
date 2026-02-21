@@ -153,19 +153,27 @@ func (h *RequestHandler) ListMy(c *gin.Context) {
 	utils.Success(c, h.mapSummaryList(requests))
 }
 func (h *RequestHandler) ListMarketplace(c *gin.Context) {
+
+	categoryStr := c.Query("category_id")
+
+	var categoryID *uuid.UUID
+	if categoryStr != "" {
+		id, err := uuid.Parse(categoryStr)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid category_id")
+			return
+		}
+		categoryID = &id
+	}
+
 	limit, offset := parsePagination(c)
 
 	requests, err := h.service.ListMarketplace(
 		c.Request.Context(),
+		categoryID,
 		limit,
 		offset,
 	)
-	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	utils.Success(c, h.mapSummaryList(requests))
 }
 func (h *RequestHandler) ListAdmin(c *gin.Context) {
 	var status *db.RequestsStatus

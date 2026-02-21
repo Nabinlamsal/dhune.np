@@ -210,11 +210,20 @@ func (s *RequestService) ListByUser(
 // Marketplace listing
 func (s *RequestService) ListMarketplace(
 	ctx context.Context,
+	categoryID *uuid.UUID,
 	limit,
 	offset int32,
 ) ([]RequestSummary, error) {
 
-	rows, err := s.repo.ListMarketplace(ctx, limit, offset)
+	var dbCategory uuid.NullUUID
+	if categoryID != nil {
+		dbCategory = uuid.NullUUID{
+			UUID:  *categoryID,
+			Valid: true,
+		}
+	}
+
+	rows, err := s.repo.ListMarketplace(ctx, dbCategory, limit, offset)
 	if err != nil {
 		return nil, err
 	}
