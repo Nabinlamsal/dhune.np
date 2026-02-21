@@ -10,6 +10,10 @@ import (
 
 func JWTAuthMiddleware(jwtSvc service.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
 
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {

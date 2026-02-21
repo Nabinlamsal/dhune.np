@@ -7,6 +7,11 @@ import (
 
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
 		role := c.GetString("role")
 
 		if role != "admin" {
@@ -18,6 +23,10 @@ func AdminOnly() gin.HandlerFunc {
 }
 func VendorOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
 		role := c.GetString("role")
 
 		if role != "vendor" {

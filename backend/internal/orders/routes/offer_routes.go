@@ -32,6 +32,6 @@ func RegisterOfferRoutes(
 	admin := offers.Group("/admin")
 	admin.Use(authMiddleware.AdminOnly())
 
-	admin.GET("/", offerHandler.ListAdmin)
-	admin.GET("/stats", offerHandler.Stats)
+	admin.GET("/offers", offerHandler.ListAdmin)
+	admin.GET("/offers/stats", offerHandler.Stats)
 }
