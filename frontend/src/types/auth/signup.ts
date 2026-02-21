@@ -1,4 +1,4 @@
-import { UserStatus, Role } from "./identity";
+import {Role } from "./identity";
 export type SignupDocument = {
     document_type: string; //registration, tax etc
     document_url: string;

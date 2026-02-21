@@ -14,6 +14,7 @@ export type OfferStatus =
     | "EXPIRED"
 
 export type OrderStatus =
+    | "ALL"
     | "ACCEPTED"
     | "PICKED_UP"
     | "IN_PROGRESS"

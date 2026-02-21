@@ -89,7 +89,7 @@ export const getAdminOffers = async (
 export const getAdminOfferStats =
     async (): Promise<OfferStatsResponse> => {
         return api<OfferStatsResponse>(
-            "/offers/admin/stats",
+            "/admin/offers",
             { method: "GET" }
         );
     };
@@ -97,7 +97,7 @@ export const getAdminOfferStats =
 export const getVendorOfferStats =
     async (): Promise<OfferStatsResponse> => {
         return api<OfferStatsResponse>(
-            "/offers/stats",
+            "/admin/offers/stats",
             { method: "GET" }
         );
     };

@@ -4,16 +4,16 @@ import { UserDocument } from "./document";
 
 //base user model
 export interface AdminUserProfile {
-    id: string;
-    display_name: string;
-    email: string;
-    phone: string;
-    role: Role;
-    is_active: boolean;
-    is_verified: boolean;
-    created_at: string;
+    ID: string;
+    DisplayName: string;
+    Email: string;
+    Phone: string;
+    Role: Role;
+    IsActive: boolean;
+    IsVerified: boolean;
+    CreatedAt: string;
 
-    business_profile?: BusinessProfile;
-    vendor_profile?: VendorProfile;
-    documents?: UserDocument[];
+    BusinessProfile?: BusinessProfile | null;
+    VendorProfile?: VendorProfile | null;
+    Documents?: UserDocument[];
 }

@@ -16,8 +16,8 @@ import {
 } from "@/src/hooks/orders/useOrder"
 
 import { OrderListItem } from "@/src/types/orders/orders"
+import { OrderStatus } from "@/src/types/orders/orders-enums"
 
-/* ---------------- Status Mapping ---------------- */
 
 function mapOrderStatusToBadge(status: string): Status {
     switch (status) {
@@ -48,19 +48,8 @@ function mapPaymentStatusToBadge(status: string): Status {
     }
 }
 
-/* ---------------- Page ---------------- */
-
-type AdminOrderFilter =
-    | "ALL"
-    | "ACCEPTED"
-    | "PICKED_UP"
-    | "IN_PROGRESS"
-    | "DELIVERING"
-    | "COMPLETED"
-    | "CANCELLED"
-
 export default function AdminOrdersPage() {
-    const [filter, setFilter] = useState<AdminOrderFilter>("ALL")
+    const [filter, setFilter] = useState<OrderStatus>("ALL")
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
     /* ---------------- API Calls ---------------- */
@@ -183,7 +172,7 @@ export default function AdminOrdersPage() {
                     { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 active={filter}
-                onChange={(v) => setFilter(v as AdminOrderFilter)}
+                onChange={(v) => setFilter(v as OrderStatus)}
             />
 
             {/* Table */}
