@@ -35,7 +35,12 @@ func (r *requestRepo) ListByUser(ctx context.Context, userID uuid.UUID, limit, o
 	})
 }
 
-func (r *requestRepo) ListMarketplace(ctx context.Context, categoryId uuid.NullUUID, limit, offset int32) ([]db.Request, error) {
+func (r *requestRepo) ListMarketplace(
+	ctx context.Context,
+	categoryId uuid.NullUUID,
+	limit, offset int32,
+) ([]db.ListMarketplaceRequestsRow, error) {
+
 	return r.q.ListMarketplaceRequests(ctx, db.ListMarketplaceRequestsParams{
 		CategoryID: categoryId,
 		Limit:      limit,

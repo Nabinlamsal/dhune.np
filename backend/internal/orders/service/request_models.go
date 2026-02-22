@@ -53,3 +53,14 @@ type RequestSummary struct {
 	Status        db.RequestsStatus
 	CreatedAt     time.Time
 }
+
+type MarketplaceRequestSummary struct {
+	ID             uuid.UUID
+	PickupAddress  string
+	PickupTimeFrom time.Time
+	PickupTimeTo   time.Time
+	ExpiresAt      time.Time
+	CreatedAt      time.Time
+	ServiceCount   int64
+	TotalQuantity  float64
+}

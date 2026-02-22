@@ -228,18 +228,20 @@ func (s *RequestService) ListMarketplace(
 		return nil, err
 	}
 
-	var result []RequestSummary
+	var result []MarketplaceRequestSummary
 
 	for _, r := range rows {
-		result = append(result, RequestSummary{
-			ID:            r.ID,
-			UserID:        r.UserID,
-			PickupAddress: r.PickupAddress,
-			Status:        r.Status,
-			CreatedAt:     r.CreatedAt,
+		result = append(result, MarketplaceRequestSummary{
+			ID:             r.ID,
+			PickupAddress:  r.PickupAddress,
+			PickupTimeFrom: r.PickupTimeFrom,
+			PickupTimeTo:   r.PickupTimeTo,
+			ExpiresAt:      r.ExpiresAt,
+			CreatedAt:      r.CreatedAt,
+			ServiceCount:   r.ServiceCount,
+			TotalQuantity:  r.TotalQuantity,
 		})
 	}
-
 	return result, nil
 }
 

@@ -51,15 +51,28 @@ LIMIT $2 OFFSET $3;
 
 -- Used by Vendor Dashboard
 -- name: ListMarketplaceRequests :many
-SELECT DISTINCT r.*
+SELECT
+    r.id,
+    r.pickup_address,
+    r.pickup_time_from,
+    r.pickup_time_to,
+    r.expires_at,
+    r.created_at,
+
+    COUNT(rs.id) AS service_count,
+    COALESCE(SUM(rs.quantity_value), 0)::double precision AS total_quantity
+
 FROM requests r
-    LEFT JOIN request_services rs ON rs.request_id = r.id
+         LEFT JOIN request_services rs ON rs.request_id = r.id
+
 WHERE r.status = 'OPEN'
-  AND (r.expires_at IS NULL OR r.expires_at > now())
+  AND r.expires_at > now()
   AND (
     sqlc.narg(category_id)::uuid IS NULL
         OR rs.category_id = sqlc.narg(category_id)::uuid
     )
+
+GROUP BY r.id
 ORDER BY r.created_at DESC
 LIMIT $1 OFFSET $2;
 
