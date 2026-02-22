@@ -347,25 +347,25 @@ export default function AdminOffersPage() {
             <div className="flex flex-4 gap-7 mb-6">
                 <StatCard
                     title="Total Offers"
-                    value={String(stats?.data.total_offers ?? 0)}
+                    value={String(stats?.data?.total_offers ?? 0)}
                     trend=""
                     description="All submitted offers"
                 />
                 <StatCard
                     title="Pending Offers"
-                    value={String(stats?.data.pending_offers ?? 0)}
+                    value={String(stats?.data?.pending_offers ?? 0)}
                     trend=""
                     description="Awaiting user action"
                 />
                 <StatCard
                     title="Accepted Offers"
-                    value={String(stats?.data.accepted_offers ?? 0)}
+                    value={String(stats?.data?.accepted_offers ?? 0)}
                     trend=""
                     description="Converted to orders"
                 />
                 <StatCard
                     title="Rejected Offers"
-                    value={String(stats?.data.rejected_offers ?? 0)}
+                    value={String(stats?.data?.rejected_offers ?? 0)}
                     trend=""
                     description="Declined by users"
                 />
@@ -392,15 +392,20 @@ export default function AdminOffersPage() {
                 <div className="p-6 text-gray-500">
                     Loading offers…
                 </div>
-            ) : (
-                <DataTable
-                    columns={columns}
-                    data={offers}
-                    onRowClick={(row: Offer) =>
-                        setSelectedOffer(row)
-                    }
-                />
-            )}
+            ) : offers.length == 0 ? (
+                <div className="text-sm text-gray-500 p-6">
+                    No offers found
+                </div>
+            )
+                : (
+                    <DataTable
+                        columns={columns}
+                        data={offers}
+                        onRowClick={(row: Offer) =>
+                            setSelectedOffer(row)
+                        }
+                    />
+                )}
 
             {/* Pagination */}
             <div className="flex justify-end gap-2 mt-4">

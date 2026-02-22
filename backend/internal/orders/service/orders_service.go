@@ -59,10 +59,24 @@ func (s *OrderService) ListByUser(
 func (s *OrderService) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
+	status *string,
+	sortBy string,
 	limit, offset int32,
 ) ([]OrderSummary, error) {
+	var dbStatus db.NullOrderStatus
 
-	orders, err := s.repo.ListByVendor(ctx, vendorID, limit, offset)
+	if status != nil {
+		dbStatus = db.NullOrderStatus{
+			OrderStatus: db.OrderStatus(*status),
+			Valid:       true,
+		}
+	}
+
+	if sortBy == "" {
+		sortBy = "newest"
+	}
+
+	orders, err := s.repo.ListByVendor(ctx, vendorID, dbStatus, sortBy, limit, offset)
 	if err != nil {
 		return nil, err
 	}

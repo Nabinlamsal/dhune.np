@@ -18,9 +18,6 @@ export default function VendorLayout({
 
                 {/* Main Content */}
                 <div className="flex flex-1 flex-col overflow-hidden">
-                    {/* Topbar */}
-                    <Topbar />
-
                     {/* Page Content */}
                     <main className="flex-1 overflow-y-auto p-8">
                         {children}

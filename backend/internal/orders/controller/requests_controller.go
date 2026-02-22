@@ -174,7 +174,13 @@ func (h *RequestHandler) ListMarketplace(c *gin.Context) {
 		limit,
 		offset,
 	)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, h.mapSummaryList(requests))
 }
+
 func (h *RequestHandler) ListAdmin(c *gin.Context) {
 	var status *db.RequestsStatus
 

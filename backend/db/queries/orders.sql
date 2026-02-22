@@ -20,15 +20,6 @@ ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
 
--- Used by: Vendor (My Jobs)
--- name: ListOrdersByVendor :many
-SELECT *
-FROM orders
-WHERE vendor_id = $1
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
-
-
 -- Used by: User / Vendor / Admin (Order Detail Page)
 -- name: GetOrderByID :one
 SELECT *
@@ -91,6 +82,22 @@ WHERE (
           )
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
+
+-- name: ListOrdersByVendor :many
+SELECT *
+FROM orders
+WHERE vendor_id = $1
+  AND (
+    sqlc.narg(status)::order_status IS NULL
+        OR order_status = sqlc.narg(status)::order_status
+    )
+ORDER BY
+    CASE
+        WHEN sqlc.arg(sort_by) = 'pickup'
+            THEN pickup_time
+        END ASC,
+    created_at DESC
+LIMIT $2 OFFSET $3;
 
 -- Used by: Admin Dashboard (Order Stats)
 -- name: GetOrderStats :one

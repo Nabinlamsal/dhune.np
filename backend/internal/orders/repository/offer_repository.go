@@ -13,8 +13,15 @@ type OfferRepository interface {
 	Withdraw(ctx context.Context, offerID uuid.UUID) error
 
 	ListByRequest(ctx context.Context, requestID uuid.UUID) ([]db.Offer, error)
-	ListByVendor(ctx context.Context, vendorID uuid.UUID, limit, offset int32) ([]db.Offer, error)
-
+	ListByVendor(
+		ctx context.Context,
+		vendorID uuid.UUID,
+		status db.NullOfferStatus,
+		sortBy string,
+		limit int32,
+		offset int32,
+	) ([]db.Offer, error)
+	
 	ListAdmin(
 		ctx context.Context,
 		status db.NullOfferStatus,

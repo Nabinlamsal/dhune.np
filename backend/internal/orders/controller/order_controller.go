@@ -66,11 +66,21 @@ func (h *OrderHandler) ListVendor(c *gin.Context) {
 		utils.Error(c, http.StatusUnauthorized, "invalid user id")
 		return
 	}
+	statusStr := c.Query("status")
+	sortBy := c.DefaultQuery("sort", "newest")
+
+	var status *string
+	if statusStr != "" {
+		status = &statusStr
+	}
+
 	limit, offset := parsePagination(c)
 
 	orders, err := h.service.ListByVendor(
 		c.Request.Context(),
 		vendorID,
+		status,
+		sortBy,
 		limit,
 		offset,
 	)

@@ -203,9 +203,19 @@ func (h *OfferHandler) ListMyOffers(c *gin.Context) {
 	}
 	limit, offset := parsePagination(c)
 
+	statusStr := c.Query("status")
+	sortBy := c.DefaultQuery("sort", "newest")
+
+	var status *string
+	if statusStr != "" {
+		status = &statusStr
+	}
+
 	offers, err := h.service.ListByVendor(
 		c.Request.Context(),
 		vendorID,
+		status,
+		sortBy,
 		limit,
 		offset,
 	)

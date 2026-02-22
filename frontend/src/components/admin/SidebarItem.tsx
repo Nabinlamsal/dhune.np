@@ -8,6 +8,7 @@ interface SidebarItemProps {
   icon: React.ReactNode
   label: string
   active?: boolean
+  collapsed?: boolean
 }
 
 export default function SidebarItem({
@@ -15,6 +16,7 @@ export default function SidebarItem({
   icon,
   label,
   active,
+  collapsed,
 }: SidebarItemProps) {
   return (
     <Link

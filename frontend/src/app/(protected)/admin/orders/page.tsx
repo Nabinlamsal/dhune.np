@@ -52,8 +52,6 @@ export default function AdminOrdersPage() {
     const [filter, setFilter] = useState<OrderStatus>("ALL")
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
-    /* ---------------- API Calls ---------------- */
-
     const {
         data: ordersResponse,
         isLoading: isOrdersLoading,
@@ -68,51 +66,56 @@ export default function AdminOrdersPage() {
 
     const orders = ordersResponse?.data ?? []
     const stats = statsResponse?.data
-    const selectedOrder = selectedOrderResponse?.data
-
+    const selectedOrder = selectedOrderResponse
 
     const columns = [
-        { key: "id", header: "Order ID" },
+        {
+            key: "id",
+            header: "Order ID",
+        },
         {
             key: "user",
             header: "User",
-            render: (o: OrderListItem) => o.user?.DisplayName ?? "—",
+            render: (o: OrderListItem) =>
+                o.user?.DisplayName ?? "—",
         },
         {
             key: "vendor",
             header: "Vendor",
-            render: (o: OrderListItem) => o.vendor?.DisplayName ?? "—",
+            render: (o: OrderListItem) =>
+                o.vendor?.DisplayName ?? "—",
         },
         {
-            key: "finalPrice",
+            key: "final_price",
             header: "Amount",
-            render: (o: OrderListItem) => `Rs. ${o.finalPrice}`,
+            render: (o: OrderListItem) =>
+                `Rs. ${o.final_price}`,
         },
         {
-            key: "paymentStatus",
+            key: "payment_status",
             header: "Payment",
             render: (o: OrderListItem) => (
                 <StatusBadge
-                    status={mapPaymentStatusToBadge(o.paymentStatus)}
+                    status={mapPaymentStatusToBadge(o.payment_status)}
                 />
             ),
         },
         {
-            key: "orderStatus",
+            key: "order_status",
             header: "Order Status",
             render: (o: OrderListItem) => (
                 <StatusBadge
-                    status={mapOrderStatusToBadge(o.orderStatus)}
+                    status={mapOrderStatusToBadge(o.order_status)}
                 />
             ),
         },
         {
-            key: "createdAt",
+            key: "created_at",
             header: "Created",
             render: (o: OrderListItem) =>
-                new Date(o.createdAt).toLocaleDateString(),
+                new Date(o.created_at).toLocaleDateString(),
         },
-    ]
+    ];
 
     return (
         <>
@@ -210,29 +213,25 @@ export default function AdminOrdersPage() {
 
                 {selectedOrder && (
                     <div className="space-y-4 text-sm">
-                        <Detail label="Order ID" value={selectedOrder.id} />
-                        <Detail label="User" value={selectedOrder.user?.DisplayName} />
-                        <Detail label="Vendor" value={selectedOrder.vendor?.DisplayName} />
+                        <Detail label="Order ID" value={selectedOrder.data.order?.id} />
+                        <Detail label="User" value={selectedOrder.data.user?.DisplayName} />
+                        <Detail label="Vendor" value={selectedOrder.data.vendor?.DisplayName} />
                         <Detail
                             label="Amount"
-                            value={`Rs. ${selectedOrder.finalPrice}`}
+                            value={`Rs. ${selectedOrder.data.order.final_price}`}
                         />
                         <Detail
                             label="Payment Status"
-                            value={selectedOrder.paymentStatus}
+                            value={selectedOrder.data.order.payment_status}
                         />
                         <Detail
                             label="Order Status"
-                            value={selectedOrder.orderStatus}
-                        />
-                        <Detail
-                            label="Pickup Time"
-                            value={selectedOrder.pickupTime}
+                            value={selectedOrder.data.order.order_status}
                         />
                         <Detail
                             label="Created At"
                             value={new Date(
-                                selectedOrder.createdAt
+                                selectedOrder.data.order.created_at
                             ).toLocaleString()}
                         />
                     </div>

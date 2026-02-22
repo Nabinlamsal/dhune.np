@@ -171,11 +171,32 @@ func (s *OfferService) ListByRequest(
 func (s *OfferService) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
+	status *string,
+	sortBy string,
 	limit,
 	offset int32,
 ) ([]db.Offer, error) {
+	var dbStatus db.NullOfferStatus
 
-	return s.offerRepo.ListByVendor(ctx, vendorID, limit, offset)
+	if status != nil {
+		dbStatus = db.NullOfferStatus{
+			OfferStatus: db.OfferStatus(*status),
+			Valid:       true,
+		}
+	}
+
+	if sortBy == "" {
+		sortBy = "newest"
+	}
+
+	return s.offerRepo.ListByVendor(
+		ctx,
+		vendorID,
+		dbStatus,
+		sortBy,
+		limit,
+		offset,
+	)
 }
 
 func (s *OfferService) ListAdmin(

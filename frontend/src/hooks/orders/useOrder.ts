@@ -2,6 +2,7 @@
 
 import { getMyOrders, cancelOrder, getVendorOrders, updateOrderStatus, getOrderById, getAdminOrders, getOrderStats } from "@/src/services/orders/order_service";
 import { CancelOrderPayload, UpdateOrderStatusPayload } from "@/src/types/orders/orders";
+import { OrderStatus } from "@/src/types/orders/orders-enums";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 export const useMyOrders = (limit = 10, offset = 0) => {
@@ -29,10 +30,29 @@ export const useCancelOrder = () => {
     });
 };
 
-export const useVendorOrders = (limit = 10, offset = 0) => {
+export const useVendorOrders = ({
+    status,
+    sort = "newest",
+    limit = 10,
+    offset = 0,
+}: {
+    status?: OrderStatus;
+    sort?: "newest" | "pickup";
+    limit?: number;
+    offset?: number;
+}) => {
     return useQuery({
-        queryKey: ["orders", "vendor", limit, offset],
-        queryFn: () => getVendorOrders(limit, offset),
+        queryKey: ["vendor-orders", status, sort, limit, offset],
+        queryFn: async () => {
+            const res = await getVendorOrders({
+                status,
+                sort,
+                limit,
+                offset,
+            });
+
+            return res.data;
+        },
     });
 };
 

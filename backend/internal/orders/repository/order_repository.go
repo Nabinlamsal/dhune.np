@@ -11,7 +11,8 @@ type OrderRepository interface {
 	Create(ctx context.Context, params db.CreateOrderParams) (db.Order, error)
 
 	ListByUser(ctx context.Context, userID uuid.UUID, limit, offset int32) ([]db.Order, error)
-	ListByVendor(ctx context.Context, vendorID uuid.UUID, limit, offset int32) ([]db.Order, error)
+	ListByVendor(ctx context.Context, vendorID uuid.UUID, status db.NullOrderStatus,
+		sortBy string, limit, offset int32) ([]db.Order, error)
 
 	GetByID(ctx context.Context, orderID uuid.UUID) (db.Order, error)
 

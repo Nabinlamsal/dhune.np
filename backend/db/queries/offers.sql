@@ -50,10 +50,17 @@ ORDER BY created_at DESC;
 SELECT *
 FROM offers
 WHERE vendor_id = $1
-ORDER BY created_at DESC
+  AND (
+    sqlc.narg(status)::offer_status IS NULL
+        OR status = sqlc.narg(status)::offer_status
+    )
+ORDER BY
+    CASE
+        WHEN sqlc.arg(sort_by) = 'expiring'
+            THEN completion_time
+        END ASC,
+    created_at DESC
 LIMIT $2 OFFSET $3;
-
-
 
 -- Used inside: Offer Acceptance Transaction (Concurrency Safe)
 -- name: AcceptOffer :one

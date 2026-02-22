@@ -264,7 +264,16 @@ const listOrdersByVendor = `-- name: ListOrdersByVendor :many
 SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
 FROM orders
 WHERE vendor_id = $1
-ORDER BY created_at DESC
+  AND (
+    $4::order_status IS NULL
+        OR order_status = $4::order_status
+    )
+ORDER BY
+    CASE
+        WHEN $5 = 'pickup'
+            THEN pickup_time
+        END ASC,
+    created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -272,11 +281,18 @@ type ListOrdersByVendorParams struct {
 	VendorID uuid.UUID
 	Limit    int32
 	Offset   int32
+	Status   NullOrderStatus
+	SortBy   interface{}
 }
 
-// Used by: Vendor (My Jobs)
 func (q *Queries) ListOrdersByVendor(ctx context.Context, arg ListOrdersByVendorParams) ([]Order, error) {
-	rows, err := q.db.QueryContext(ctx, listOrdersByVendor, arg.VendorID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listOrdersByVendor,
+		arg.VendorID,
+		arg.Limit,
+		arg.Offset,
+		arg.Status,
+		arg.SortBy,
+	)
 	if err != nil {
 		return nil, err
 	}

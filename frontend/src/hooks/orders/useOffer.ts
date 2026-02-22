@@ -53,12 +53,31 @@ export const useWithdrawOffer = () => {
     });
 };
 
-export const useMyOffers = (limit = 10, offset = 0) =>
-    useQuery({
-        queryKey: ["my-offers", limit, offset],
-        queryFn: () => getMyOffers(limit, offset),
-    });
+export const useVendorOffers = ({
+    status,
+    sort = "newest",
+    limit = 10,
+    offset = 0,
+}: {
+    status?: OfferStatus;
+    sort?: "newest" | "expiring";
+    limit?: number;
+    offset?: number;
+}) => {
+    return useQuery({
+        queryKey: ["vendor-offers", status, sort, limit, offset],
+        queryFn: async () => {
+            const res = await getMyOffers({
+                status,
+                sort,
+                limit,
+                offset,
+            });
 
+            return res.data;
+        },
+    });
+};
 //user
 export const useOffersByRequest = (
     requestId: string

@@ -38,13 +38,30 @@ export const withdrawOffer = async (
 };
 
 export const getMyOffers = async (
-    limit = 10,
-    offset = 0
+    options?: {
+        status?: OfferStatus;
+        sort?: "newest" | "expiring";
+        limit?: number;
+        offset?: number;
+    }
 ): Promise<ListOffersResponse> => {
-    return api<ListOffersResponse>(
-        `/offers/my?limit=${limit}&offset=${offset}`,
-        { method: "GET" }
-    );
+
+    const {
+        status,
+        sort = "newest",
+        limit = 10,
+        offset = 0
+    } = options || {};
+
+    let url = `/offers/my?limit=${limit}&offset=${offset}&sort=${sort}`;
+
+    if (status) {
+        url += `&status=${status}`;
+    }
+
+    return api<ListOffersResponse>(url, {
+        method: "GET",
+    });
 };
 
 
@@ -75,7 +92,7 @@ export const getAdminOffers = async (
     limit = 10,
     offset = 0
 ): Promise<ListOffersResponse> => {
-    let url = `/offers/admin?limit=${limit}&offset=${offset}`;
+    let url = `/admin/offers?limit=${limit}&offset=${offset}`;
 
     if (status) url += `&status=${status}`;
     if (vendorId) url += `&vendor_id=${vendorId}`;

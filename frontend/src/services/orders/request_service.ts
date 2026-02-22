@@ -42,13 +42,28 @@ export const cancelRequest = async (
 
 //all requests for vendor
 export const getMarketplaceRequests = async (
-    limit = 10,
-    offset = 0
+    options?: {
+        categoryId?: string;
+        limit?: number;
+        offset?: number;
+    }
 ): Promise<ListMarketplaceResponse> => {
-    return api<ListMarketplaceResponse>(
-        `/marketplace/requests?limit=${limit}&offset=${offset}`,
-        { method: "GET" }
-    );
+
+    const {
+        categoryId,
+        limit = 10,
+        offset = 0
+    } = options || {};
+
+    let url = `/marketplace/requests?limit=${limit}&offset=${offset}`;
+
+    if (categoryId) {
+        url += `&category_id=${categoryId}`;
+    }
+
+    return api<ListMarketplaceResponse>(url, {
+        method: "GET",
+    });
 };
 
 //requests for admin

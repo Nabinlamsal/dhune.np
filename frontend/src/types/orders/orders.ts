@@ -1,45 +1,35 @@
 import { ApiResponse } from "../api";
 import { AdminUserSummary } from "../users/admin-user-summary";
 import { OrderStatus, PaymentStatus } from "./orders-enums";
+import { RequestDetail } from "./requests";
 
 export interface OrderListItem {
     id: string;
-    requestId: string;
-    offerId: string;
-
-    finalPrice: number;
-
-    orderStatus: OrderStatus;
-    paymentStatus: PaymentStatus;
-
-    createdAt: string;
+    request_id: string;
+    offer_id: string;
+    final_price: number;
+    order_status: OrderStatus;
+    payment_status: PaymentStatus;
+    created_at: string;
 
     user?: AdminUserSummary;
     vendor?: AdminUserSummary;
 }
 
-export interface OrderDetail {
-    id: string;
+export interface OrderDetailResponse {
+    order: {
+        id: string;
+        request_id: string;
+        offer_id: string;
+        final_price: number;
+        order_status: OrderStatus;
+        payment_status: PaymentStatus;
+        created_at: string;
+    };
 
-    requestId: string;
-    offerId: string;
-
-    finalPrice: number;
-
-    orderStatus: OrderStatus;
-    paymentStatus: PaymentStatus;
-
-    pickupTime?: string;
-    deliveryTime?: string;
-
-    createdAt: string;
-
+    request: RequestDetail;
     user: AdminUserSummary;
     vendor: AdminUserSummary;
-
-    pickupAddress?: string;
-    pickupTimeFrom?: string;
-    pickupTimeTo?: string;
 }
 
 export interface OrderStats {
@@ -61,6 +51,6 @@ export interface CancelOrderPayload {
 }
 
 export type ListOrdersResponse = ApiResponse<OrderListItem[]>;
-export type OrderResponse = ApiResponse<OrderDetail>;
+export type OrderResponse = ApiResponse<OrderDetailResponse>;
 export type OrderStatsResponse = ApiResponse<OrderStats>;
 export type OrderMessageResponse = ApiResponse<{ message: string }>;

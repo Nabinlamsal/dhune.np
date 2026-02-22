@@ -1,6 +1,6 @@
 import { api } from "@/src/libs/api";
 import { ApiResponse } from "@/src/types/api";
-import { OrderListItem, CancelOrderPayload, UpdateOrderStatusPayload, OrderDetail, OrderStats } from "@/src/types/orders/orders";
+import { OrderListItem, CancelOrderPayload, UpdateOrderStatusPayload, OrderDetailResponse, OrderStats } from "@/src/types/orders/orders";
 
 
 
@@ -29,15 +29,32 @@ export const cancelOrder = async (
     );
 };
 
-// GET /vendor/orders
+//get vendor orders
 export const getVendorOrders = async (
-    limit = 10,
-    offset = 0
+    options?: {
+        status?: string;
+        sort?: "newest" | "pickup";
+        limit?: number;
+        offset?: number;
+    }
 ): Promise<ApiResponse<OrderListItem[]>> => {
-    return api<ApiResponse<OrderListItem[]>>(
-        `/vendor/orders?limit=${limit}&offset=${offset}`,
-        { method: "GET" }
-    );
+
+    const {
+        status,
+        sort = "newest",
+        limit = 10,
+        offset = 0
+    } = options || {};
+
+    let url = `/vendor/orders?limit=${limit}&offset=${offset}&sort=${sort}`;
+
+    if (status) {
+        url += `&status=${status}`;
+    }
+
+    return api<ApiResponse<OrderListItem[]>>(url, {
+        method: "GET",
+    });
 };
 
 // PATCH /vendor/orders/:id/status
@@ -57,8 +74,8 @@ export const updateOrderStatus = async (
 // GET /orders/:id
 export const getOrderById = async (
     orderId: string
-): Promise<ApiResponse<OrderDetail>> => {
-    return api<ApiResponse<OrderDetail>>(
+): Promise<ApiResponse<OrderDetailResponse>> => {
+    return api<ApiResponse<OrderDetailResponse>>(
         `/orders/${orderId}`,
         { method: "GET" }
     );

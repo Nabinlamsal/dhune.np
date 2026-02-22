@@ -54,12 +54,16 @@ func (r *offerRepository) GetByID(ctx context.Context, offerID uuid.UUID) (db.Of
 func (r *offerRepository) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
-	limit,
+	status db.NullOfferStatus,
+	sortBy string,
+	limit int32,
 	offset int32,
 ) ([]db.Offer, error) {
 
 	return r.q.ListOffersByVendor(ctx, db.ListOffersByVendorParams{
 		VendorID: vendorID,
+		Status:   status,
+		SortBy:   sortBy,
 		Limit:    limit,
 		Offset:   offset,
 	})

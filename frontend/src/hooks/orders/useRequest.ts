@@ -49,13 +49,28 @@ export const useCancelRequest = () => {
 };
 
 //vendor requests
-export const useVendorRequests = (limit = 10, offset = 0) => {
+export const useMarketplaceRequests = ({
+    categoryId,
+    limit = 10,
+    offset = 0,
+}: {
+    categoryId?: string;
+    limit?: number;
+    offset?: number;
+}) => {
     return useQuery({
-        queryKey: ["vendor-requests", limit, offset],
-        queryFn: () => getMarketplaceRequests(limit, offset),
+        queryKey: ["marketplace-requests", categoryId, limit, offset],
+        queryFn: async () => {
+            const res = await getMarketplaceRequests({
+                categoryId,
+                limit,
+                offset,
+            });
+
+            return res.data;
+        },
     });
 };
-
 //admin requests
 export const useAdminRequests = (
     status?: string,
