@@ -178,7 +178,7 @@ func (h *RequestHandler) ListMarketplace(c *gin.Context) {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, h.mapSummaryList(requests))
+	utils.Success(c, h.mapMarketplaceSummaryList(requests))
 }
 
 func (h *RequestHandler) ListAdmin(c *gin.Context) {

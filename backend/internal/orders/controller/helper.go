@@ -74,6 +74,40 @@ func (h *RequestHandler) mapDetailToDTO(
 		Services: services,
 	}
 }
+func (h *RequestHandler) mapMarketplaceSummaryList(
+	requests []service.MarketplaceRequestSummary,
+) []dto.MarketplaceRequestSummaryDTO {
+
+	var response []dto.MarketplaceRequestSummaryDTO
+
+	for _, r := range requests {
+
+		var services []dto.MarketplaceServiceDTO
+
+		for _, s := range r.Services {
+			services = append(services, dto.MarketplaceServiceDTO{
+				CategoryID:    s.CategoryID.String(),
+				CategoryName:  s.CategoryName,
+				SelectedUnit:  string(s.SelectedUnit),
+				QuantityValue: s.QuantityValue,
+			})
+		}
+
+		response = append(response, dto.MarketplaceRequestSummaryDTO{
+			ID:             r.ID.String(),
+			PickupAddress:  r.PickupAddress,
+			PickupTimeFrom: r.PickupTimeFrom.Format(time.RFC3339),
+			PickupTimeTo:   r.PickupTimeTo.Format(time.RFC3339),
+			ExpiresAt:      r.ExpiresAt.Format(time.RFC3339),
+			CreatedAt:      r.CreatedAt.Format(time.RFC3339),
+			ServiceCount:   r.ServiceCount,
+			TotalQuantity:  r.TotalQuantity,
+			Services:       services,
+		})
+	}
+
+	return response
+}
 
 func derefString(s *string) string {
 	if s == nil {

@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/Nabinlamsal/dhune.np/internal/catalog/service"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
@@ -64,12 +66,11 @@ func (s *RequestService) Create(
 	qtx := db.New(tx)
 	txRepo := repository.NewRequestRepositoryImpl(qtx)
 
-	var expires sql.NullTime
-	if input.ExpiresAt != nil {
-		expires = sql.NullTime{
-			Time:  *input.ExpiresAt,
-			Valid: true,
-		}
+	expiryTime := time.Now().Add(2 * time.Hour)
+
+	expires := sql.NullTime{
+		Time:  expiryTime,
+		Valid: true,
 	}
 
 	req, err := txRepo.Create(ctx, db.CreateRequestParams{
@@ -101,7 +102,6 @@ func (s *RequestService) Create(
 				Valid:      true,
 			}
 		}
-
 		_, err = txRepo.AddService(ctx, db.AddRequestServiceParams{
 			RequestID:     req.ID,
 			CategoryID:    svc.CategoryID,
@@ -213,7 +213,7 @@ func (s *RequestService) ListMarketplace(
 	categoryID *uuid.UUID,
 	limit,
 	offset int32,
-) ([]RequestSummary, error) {
+) ([]MarketplaceRequestSummary, error) {
 
 	var dbCategory uuid.NullUUID
 	if categoryID != nil {
@@ -231,17 +231,31 @@ func (s *RequestService) ListMarketplace(
 	var result []MarketplaceRequestSummary
 
 	for _, r := range rows {
+		var services []MarketplaceServiceItem
+		if r.ServicesJson != nil {
+			if err := json.Unmarshal(r.ServicesJson, &services); err != nil {
+				return nil, err
+			}
+		}
+
+		var expires time.Time
+		if r.ExpiresAt.Valid {
+			expires = r.ExpiresAt.Time
+		}
+
 		result = append(result, MarketplaceRequestSummary{
 			ID:             r.ID,
 			PickupAddress:  r.PickupAddress,
 			PickupTimeFrom: r.PickupTimeFrom,
 			PickupTimeTo:   r.PickupTimeTo,
-			ExpiresAt:      r.ExpiresAt,
+			ExpiresAt:      expires,
 			CreatedAt:      r.CreatedAt,
 			ServiceCount:   r.ServiceCount,
 			TotalQuantity:  r.TotalQuantity,
+			Services:       services,
 		})
 	}
+
 	return result, nil
 }
 

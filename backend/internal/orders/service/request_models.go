@@ -53,7 +53,12 @@ type RequestSummary struct {
 	Status        db.RequestsStatus
 	CreatedAt     time.Time
 }
-
+type MarketplaceServiceItem struct {
+	CategoryID    uuid.UUID      `json:"category_id"`
+	CategoryName  string         `json:"category_name"`
+	SelectedUnit  db.PricingUnit `json:"selected_unit"`
+	QuantityValue float64        `json:"quantity_value"`
+}
 type MarketplaceRequestSummary struct {
 	ID             uuid.UUID
 	PickupAddress  string
@@ -63,4 +68,5 @@ type MarketplaceRequestSummary struct {
 	CreatedAt      time.Time
 	ServiceCount   int64
 	TotalQuantity  float64
+	Services       []MarketplaceServiceItem
 }

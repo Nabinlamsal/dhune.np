@@ -60,10 +60,23 @@ SELECT
     r.created_at,
 
     COUNT(rs.id) AS service_count,
-    COALESCE(SUM(rs.quantity_value), 0)::double precision AS total_quantity
+    COALESCE(SUM(rs.quantity_value), 0)::double precision AS total_quantity,
+
+    COALESCE(
+                    jsonb_agg(
+                    jsonb_build_object(
+                            'category_id', rs.category_id,
+                            'category_name', c.name,
+                            'selected_unit', rs.selected_unit,
+                            'quantity_value', rs.quantity_value
+                    )
+                            ) FILTER (WHERE rs.id IS NOT NULL),
+                    '[]'::jsonb
+    )::jsonb AS services_json
 
 FROM requests r
          LEFT JOIN request_services rs ON rs.request_id = r.id
+         LEFT JOIN categories c ON c.id = rs.category_id
 
 WHERE r.status = 'OPEN'
   AND r.expires_at > now()

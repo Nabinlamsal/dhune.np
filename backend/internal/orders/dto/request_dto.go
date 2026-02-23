@@ -1,11 +1,5 @@
 package dto
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-)
-
 type CreateRequestDTO struct {
 	PickupAddress  string              `json:"pickup_address" binding:"required"`
 	PickupTimeFrom string              `json:"pickup_time_from" binding:"required"`
@@ -48,13 +42,20 @@ type RequestSummaryDTO struct {
 	Status        string `json:"status"`
 	CreatedAt     string `json:"created_at"`
 }
+type MarketplaceServiceDTO struct {
+	CategoryID    string  `json:"category_id"`
+	CategoryName  string  `json:"category_name"`
+	SelectedUnit  string  `json:"selected_unit"`
+	QuantityValue float64 `json:"quantity_value"`
+}
 type MarketplaceRequestSummaryDTO struct {
-	ID             uuid.UUID `json:"id"`
-	PickupAddress  string    `json:"pickup_address"`
-	PickupTimeFrom time.Time `json:"pickup_time_from"`
-	PickupTimeTo   time.Time `json:"pickup_time_to"`
-	ExpiresAt      time.Time `json:"expires_at"`
-	CreatedAt      time.Time `json:"created_at"`
-	ServiceCount   int64     `json:"service_count"`
-	TotalQuantity  float64   `json:"total_quantity"`
+	ID             string                  `json:"id"`
+	PickupAddress  string                  `json:"pickup_address"`
+	PickupTimeFrom string                  `json:"pickup_time_from"`
+	PickupTimeTo   string                  `json:"pickup_time_to"`
+	ExpiresAt      string                  `json:"expires_at"`
+	CreatedAt      string                  `json:"created_at"`
+	ServiceCount   int64                   `json:"service_count"`
+	TotalQuantity  float64                 `json:"total_quantity"`
+	Services       []MarketplaceServiceDTO `json:"services"`
 }
