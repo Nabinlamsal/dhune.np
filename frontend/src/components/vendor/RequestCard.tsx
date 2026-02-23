@@ -4,29 +4,41 @@ import { Clock, MapPin, Package } from "lucide-react"
 import { Button } from "@/src/components/ui/button"
 import { StatusBadge } from "@/src/components/common/StatusBadge"
 
+interface MarketplaceServiceItem {
+    category_id: string
+    category_name: string
+    selected_unit: string
+    quantity_value: number
+}
+
 interface RequestCardProps {
     id: string
-    categorySummary: string
-    quantitySummary: string
     pickupAddress: string
-    completionTime: string
-    expiresInMinutes?: number
+    pickupTimeFrom: string
+    pickupTimeTo: string
+    expiresAt: string
+    services: MarketplaceServiceItem[]
     onView: () => void
     onBid: () => void
 }
 
 export default function RequestCard({
     id,
-    categorySummary,
-    quantitySummary,
     pickupAddress,
-    completionTime,
-    expiresInMinutes,
+    pickupTimeFrom,
+    pickupTimeTo,
+    expiresAt,
+    services,
     onView,
     onBid,
 }: RequestCardProps) {
 
-    const isUrgent = expiresInMinutes && expiresInMinutes <= 30
+    const expiresDate = new Date(expiresAt)
+    const now = new Date()
+    const diffMs = expiresDate.getTime() - now.getTime()
+    const expiresInMinutes = Math.floor(diffMs / (1000 * 60))
+
+    const isUrgent = expiresInMinutes <= 30
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between">
@@ -38,24 +50,34 @@ export default function RequestCard({
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="font-semibold text-lg text-gray-900">
-                            {categorySummary}
+                            Laundry Request
                         </h3>
                         <p className="text-xs text-gray-400">
                             Request ID: {id.slice(0, 8)}...
                         </p>
                     </div>
 
-                    {expiresInMinutes !== undefined && (
-                        <StatusBadge
-                            status={isUrgent ? "error" : "info"}
-                        />
-                    )}
+                    <StatusBadge
+                        status={isUrgent ? "error" : "info"}
+                    />
                 </div>
 
-                {/* Quantity */}
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Package size={16} />
-                    <span>{quantitySummary}</span>
+                {/* Services Breakdown */}
+                <div className="space-y-1">
+                    {services.map((service) => (
+                        <div
+                            key={service.category_id}
+                            className="flex items-center gap-2 text-sm text-gray-700"
+                        >
+                            <Package size={16} />
+                            <span>
+                                {service.category_name} —{" "}
+                                <span className="font-medium">
+                                    {service.quantity_value} {service.selected_unit}
+                                </span>
+                            </span>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Location */}
@@ -64,14 +86,23 @@ export default function RequestCard({
                     <span>{pickupAddress}</span>
                 </div>
 
-                {/* Completion */}
+                {/* Pickup Window */}
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Clock size={16} />
                     <span>
-                        Complete by:{" "}
+                        Pickup:{" "}
                         <span className="font-medium">
-                            {new Date(completionTime).toLocaleString()}
+                            {new Date(pickupTimeFrom).toLocaleString()} –{" "}
+                            {new Date(pickupTimeTo).toLocaleTimeString()}
                         </span>
+                    </span>
+                </div>
+
+                {/* Expiry */}
+                <div className="text-sm text-gray-500">
+                    Expires in{" "}
+                    <span className={`font-medium ${isUrgent ? "text-red-600" : ""}`}>
+                        {expiresInMinutes} minutes
                     </span>
                 </div>
             </div>

@@ -4,31 +4,23 @@ import { useState } from "react"
 import RequestCard from "@/src/components/vendor/RequestCard"
 import { FilterTabs } from "@/src/components/common/FilterTabs"
 import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
+import { useMarketplaceRequests } from "@/src/hooks/orders/useRequest"
 
 export default function VendorMarketplacePage() {
 
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [filter, setFilter] = useState("OPEN")
+    const [page, setPage] = useState(0)
 
-    // Temporary mock data
-    const mockRequests = [
-        {
-            id: "abc123456789",
-            categorySummary: "Laundry + Ironing",
-            quantitySummary: "12 kg total",
-            pickupAddress: "Kathmandu, Nepal",
-            completionTime: new Date().toISOString(),
-            expiresInMinutes: 25,
-        },
-        {
-            id: "def987654321",
-            categorySummary: "Dry Cleaning",
-            quantitySummary: "8 items",
-            pickupAddress: "Lalitpur, Nepal",
-            completionTime: new Date().toISOString(),
-            expiresInMinutes: 90,
-        },
-    ]
+    const limit = 9
+    const offset = page * limit
+
+    const { data, isLoading } = useMarketplaceRequests({
+        limit,
+        offset,
+    })
+
+    const requests = data || []
 
     return (
         <>
@@ -55,10 +47,27 @@ export default function VendorMarketplacePage() {
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-                {mockRequests.map((r) => (
+                {isLoading && (
+                    <p className="text-gray-500 col-span-full">
+                        Loading requests...
+                    </p>
+                )}
+
+                {!isLoading && requests.length === 0 && (
+                    <p className="text-gray-500 col-span-full">
+                        No open requests available.
+                    </p>
+                )}
+
+                {requests.map((r) => (
                     <RequestCard
                         key={r.id}
-                        {...r}
+                        id={r.id}
+                        pickupAddress={r.pickup_address}
+                        pickupTimeFrom={r.pickup_time_from}
+                        pickupTimeTo={r.pickup_time_to}
+                        expiresAt={r.expires_at}
+                        services={r.services}
                         onView={() => setSelectedId(r.id)}
                         onBid={() => alert("Open Bid Modal")}
                     />
@@ -66,15 +75,25 @@ export default function VendorMarketplacePage() {
 
             </div>
 
-            {/* Pagination Placeholder */}
+            {/* Pagination */}
             <div className="flex justify-center mt-10 gap-2">
-                <button className="px-4 py-2 border rounded-lg text-sm">
+                <button
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                    className="px-4 py-2 border rounded-lg text-sm disabled:opacity-50"
+                >
                     Previous
                 </button>
+
                 <button className="px-4 py-2 border rounded-lg text-sm bg-orange-500 text-white">
-                    1
+                    {page + 1}
                 </button>
-                <button className="px-4 py-2 border rounded-lg text-sm">
+
+                <button
+                    disabled={requests.length < limit}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-4 py-2 border rounded-lg text-sm disabled:opacity-50"
+                >
                     Next
                 </button>
             </div>

@@ -39,6 +39,26 @@ export interface RequestDetail {
     services: RequestServiceItem[];
 }
 
+//marketplace
+export interface MarketplaceServiceItem {
+    category_id: string;
+    category_name: string;
+    selected_unit: PricingUnit;
+    quantity_value: number;
+}
+
+export interface MarketplaceRequest {
+    id: string;
+    pickup_address: string;
+    pickup_time_from: string;
+    pickup_time_to: string;
+    expires_at: string;
+    created_at: string;
+    service_count: number;
+    total_quantity: number;
+    services: MarketplaceServiceItem[];
+}
+
 //responces short hand types
 export type CreateRequestResponse = ApiResponse<RequestDetail>;
 
@@ -46,7 +66,7 @@ export type GetRequestResponse = ApiResponse<RequestDetail>;
 
 export type ListMyRequestsResponse = ApiResponse<RequestSummary[]>;
 
-export type ListMarketplaceResponse = ApiResponse<RequestSummary[]>;
+export type ListMarketplaceResponse = ApiResponse<MarketplaceRequest[]>;
 
 export type ListAdminRequestsResponse = ApiResponse<RequestSummary[]>;
 
