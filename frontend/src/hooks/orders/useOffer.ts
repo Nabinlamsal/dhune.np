@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     createOffer,
@@ -13,6 +14,7 @@ import {
     getVendorOfferStats,
 } from "@/src/services/orders/offer_service";
 import { OfferStatus } from "@/src/types/orders/orders-enums";
+import { toast } from "sonner"
 
 //vendor
 export const useCreateOffer = () => {
@@ -21,9 +23,13 @@ export const useCreateOffer = () => {
     return useMutation({
         mutationFn: createOffer,
         onSuccess: () => {
+            toast.success("Offer submitted Successfylly. Wait for User Responce!")
             qc.invalidateQueries({ queryKey: ["my-offers"] });
             qc.invalidateQueries({ queryKey: ["offers-by-request"] });
             qc.invalidateQueries({ queryKey: ["admin-offers"] });
+        },
+        onError: (error: any) => {
+            toast.error("Failed to Submit Offer!")
         },
     });
 };

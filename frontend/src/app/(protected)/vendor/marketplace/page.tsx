@@ -1,14 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import RequestCard from "@/src/components/vendor/RequestCard"
 import { FilterTabs } from "@/src/components/common/FilterTabs"
 import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
+import { Button } from "@/src/components/ui/button"
 import { useMarketplaceRequests } from "@/src/hooks/orders/useRequest"
+import { MarketplaceRequest } from "@/src/types/orders/requests"
+import VendorSendOfferModal from "@/src/components/vendor/VendorSendOfferModal"
+import { Detail } from "@/src/components/common/DetailItem"
 
 export default function VendorMarketplacePage() {
 
     const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [offerRequestId, setOfferRequestId] = useState<string | null>(null)
     const [filter, setFilter] = useState("OPEN")
     const [page, setPage] = useState(0)
 
@@ -20,7 +25,12 @@ export default function VendorMarketplacePage() {
         offset,
     })
 
-    const requests = data || []
+    const requests: MarketplaceRequest[] = data || []
+
+    const selectedRequest = useMemo(
+        () => requests.find(r => r.id === selectedId),
+        [selectedId, requests]
+    )
 
     return (
         <>
@@ -34,7 +44,7 @@ export default function VendorMarketplacePage() {
                 </p>
             </div>
 
-            {/* Status Filter */}
+            {/* Filter */}
             <FilterTabs
                 tabs={[
                     { label: "Open Requests", value: "OPEN" },
@@ -69,7 +79,7 @@ export default function VendorMarketplacePage() {
                         expiresAt={r.expires_at}
                         services={r.services}
                         onView={() => setSelectedId(r.id)}
-                        onBid={() => alert("Open Bid Modal")}
+                        onBid={() => setOfferRequestId(r.id)} //direct open
                     />
                 ))}
 
@@ -98,19 +108,96 @@ export default function VendorMarketplacePage() {
                 </button>
             </div>
 
-            {/* Drawer */}
+            {/* Details Drawer */}
             <DetailsDrawer
-                open={!!selectedId}
+                open={!!selectedRequest}
                 onClose={() => setSelectedId(null)}
                 title="Request Details"
             >
-                <div className="space-y-3 text-sm">
-                    <p>Full request details will render here.</p>
-                    <p>Services breakdown.</p>
-                    <p>Pickup window.</p>
-                    <p>Payment method.</p>
-                </div>
+                {selectedRequest && (
+                    <div className="space-y-6 text-sm">
+
+                        <Detail
+                            label="Pickup Address"
+                            value={selectedRequest.pickup_address}
+                        />
+
+                        <Detail
+                            label="Pickup Window"
+                            value={`${new Date(
+                                selectedRequest.pickup_time_from
+                            ).toLocaleString()} - ${new Date(
+                                selectedRequest.pickup_time_to
+                            ).toLocaleString()}`}
+                        />
+
+                        <Detail
+                            label="Expires At"
+                            value={new Date(
+                                selectedRequest.expires_at
+                            ).toLocaleString()}
+                        />
+
+                        <Detail
+                            label="Created At"
+                            value={new Date(
+                                selectedRequest.created_at
+                            ).toLocaleString()}
+                        />
+
+                        <Detail
+                            label="Total Quantity"
+                            value={`${selectedRequest.total_quantity}`}
+                        />
+
+                        <Detail
+                            label="Service Count"
+                            value={`${selectedRequest.service_count}`}
+                        />
+
+                        {/* Services */}
+                        <div className="pt-4">
+                            <h4 className="font-semibold mb-2">
+                                Requested Services
+                            </h4>
+
+                            <div className="space-y-2">
+                                {selectedRequest.services.map((s, i) => (
+                                    <div key={i} className="border rounded-md p-3">
+                                        <Detail
+                                            label="Category"
+                                            value={s.category_name}
+                                        />
+                                        <Detail
+                                            label="Quantity"
+                                            value={`${s.quantity_value} ${s.selected_unit}`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Action */}
+                        <div className="pt-6 flex justify-end">
+                            <Button
+                                onClick={() => {
+                                    setOfferRequestId(selectedRequest.id)
+                                }}
+                            >
+                                Send Offer
+                            </Button>
+                        </div>
+
+                    </div>
+                )}
             </DetailsDrawer>
+
+            {/* Offer Modal */}
+            <VendorSendOfferModal
+                requestId={offerRequestId}
+                open={!!offerRequestId}
+                onClose={() => setOfferRequestId(null)}
+            />
         </>
     )
 }

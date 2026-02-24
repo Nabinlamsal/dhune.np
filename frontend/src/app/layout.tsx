@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito } from "next/font/google";
-import "./globals.css";
-import Navbar from "../components/Navbar";
+import "./globals.css";;
 import { Providers } from "./providers";
+import { Toaster } from "sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +34,7 @@ export default function RootLayout({
       <body className={`${nunito.variable} ${geistSans.variable} ${geistMono.variable} font-sans antialiased`
       }>
         <Providers>
+          <Toaster position="top-right" richColors />
           {children}
         </Providers>
       </body >

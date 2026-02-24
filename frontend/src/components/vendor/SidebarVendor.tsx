@@ -26,8 +26,8 @@ export default function SidebarVendor() {
     const menu = [
         { href: "/vendor", label: "Dashboard", icon: <LayoutDashboard /> },
         { href: "/vendor/marketplace", label: "Marketplace", icon: <Store /> },
-        { href: "/vendor/offers", label: "My Offers", icon: <Gavel /> },
-        { href: "/vendor/orders", label: "My Orders", icon: <ShoppingBag /> },
+        { href: "/vendor/my-offers", label: "My Offers", icon: <Gavel /> },
+        { href: "/vendor/my-orders", label: "My Orders", icon: <ShoppingBag /> },
     ];
 
     return (

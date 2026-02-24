@@ -91,7 +91,7 @@ export default function RequestCard({
                     <Clock size={16} />
                     <span>
                         Pickup:{" "}
-                        <span className="font-medium">
+                        <span className="font-medium text-blue-950">
                             {new Date(pickupTimeFrom).toLocaleString()} –{" "}
                             {new Date(pickupTimeTo).toLocaleTimeString()}
                         </span>
@@ -99,9 +99,9 @@ export default function RequestCard({
                 </div>
 
                 {/* Expiry */}
-                <div className="text-sm text-gray-500">
+                <div className="text-sm font-medium text-gray-900">
                     Expires in{" "}
-                    <span className={`font-medium ${isUrgent ? "text-red-600" : ""}`}>
+                    <span className={`font-medium text-red-600`}>
                         {expiresInMinutes} minutes
                     </span>
                 </div>
@@ -111,7 +111,7 @@ export default function RequestCard({
             <div className="flex gap-3 mt-6">
                 <Button
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 bg-gray-100"
                     onClick={onView}
                 >
                     View Details
