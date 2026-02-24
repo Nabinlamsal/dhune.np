@@ -193,6 +193,7 @@ func (h *OfferHandler) ListByRequest(c *gin.Context) {
 
 	utils.Success(c, response)
 }
+
 func (h *OfferHandler) ListMyOffers(c *gin.Context) {
 
 	vendorIDStr := c.MustGet("user_id").(string)
@@ -201,11 +202,11 @@ func (h *OfferHandler) ListMyOffers(c *gin.Context) {
 		utils.Error(c, http.StatusUnauthorized, "invalid user id")
 		return
 	}
+
 	limit, offset := parsePagination(c)
 
 	statusStr := c.Query("status")
 	sortBy := c.DefaultQuery("sort", "newest")
-
 	var status *string
 	if statusStr != "" {
 		status = &statusStr
@@ -224,7 +225,21 @@ func (h *OfferHandler) ListMyOffers(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, offers)
+	var response []dto.OfferResponseDTO
+
+	for _, o := range offers {
+		price, _ := strconv.ParseFloat(o.BidPrice, 64)
+		response = append(response, dto.OfferResponseDTO{
+			ID:             o.ID.String(),
+			RequestID:      o.RequestID.String(),
+			BidPrice:       price,
+			Status:         string(o.Status),
+			CompletionTime: o.CompletionTime.Format(time.RFC3339),
+			Description:    o.Description.String,
+		})
+	}
+
+	utils.Success(c, response)
 }
 
 func (h *OfferHandler) ListAdmin(c *gin.Context) {
