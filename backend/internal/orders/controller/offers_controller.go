@@ -295,20 +295,41 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 
 	utils.Success(c, offers)
 }
-func (h *OfferHandler) Stats(c *gin.Context) {
+func (h *OfferHandler) AdminStats(c *gin.Context) {
 
-	stats, err := h.service.GetStats(c.Request.Context())
+	stats, err := h.service.GetAdminStats(c.Request.Context())
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.Success(c, gin.H{
-		"total_offers":     stats.TotalOffers,
-		"pending_offers":   stats.PendingOffers,
-		"accepted_offers":  stats.AcceptedOffers,
-		"rejected_offers":  stats.RejectedOffers,
-		"withdrawn_offers": stats.WithdrawnOffers,
-		"expired_offers":   stats.ExpiredOffers,
-	})
+	utils.Success(c, stats)
+}
+func (h *OfferHandler) VendorStats(c *gin.Context) {
+
+	vendorID := c.MustGet("user_id").(string)
+
+	stats, err := h.service.GetVendorStats(
+		c.Request.Context(),
+		uuid.MustParse(vendorID),
+	)
+
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, stats)
+}
+
+func (h *OfferHandler) RequestStats(c *gin.Context) {
+	requestID, err := uuid.Parse(c.Param("request_id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid request id")
+	}
+	stats, err := h.service.GetRequestStats(c.Request.Context(), requestID)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+	}
+	utils.Success(c, stats)
 }

@@ -127,18 +127,35 @@ func (q *Queries) GetOfferByID(ctx context.Context, id uuid.UUID) (Offer, error)
 	return i, err
 }
 
-const getOfferStats = `-- name: GetOfferStats :one
+const getOfferStatsFiltered = `-- name: GetOfferStatsFiltered :one
 SELECT
     COUNT(*) AS total_offers,
-    COUNT(*) FILTER (WHERE status = 'PENDING') AS pending_offers,
-    COUNT(*) FILTER (WHERE status = 'ACCEPTED') AS accepted_offers,
-    COUNT(*) FILTER (WHERE status = 'REJECTED') AS rejected_offers,
+
+    COUNT(*) FILTER (WHERE status = 'PENDING')   AS pending_offers,
+    COUNT(*) FILTER (WHERE status = 'ACCEPTED')  AS accepted_offers,
+    COUNT(*) FILTER (WHERE status = 'REJECTED')  AS rejected_offers,
     COUNT(*) FILTER (WHERE status = 'WITHDRAWN') AS withdrawn_offers,
-    COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_offers
+    COUNT(*) FILTER (WHERE status = 'EXPIRED')   AS expired_offers
+
 FROM offers
+WHERE
+    (
+        $1::uuid IS NULL
+            OR vendor_id = $1::uuid
+        )
+  AND
+    (
+        $2::uuid IS NULL
+            OR request_id = $2::uuid
+        )
 `
 
-type GetOfferStatsRow struct {
+type GetOfferStatsFilteredParams struct {
+	VendorID  uuid.NullUUID
+	RequestID uuid.NullUUID
+}
+
+type GetOfferStatsFilteredRow struct {
 	TotalOffers     int64
 	PendingOffers   int64
 	AcceptedOffers  int64
@@ -147,10 +164,10 @@ type GetOfferStatsRow struct {
 	ExpiredOffers   int64
 }
 
-// Used by: Admin Dashboard
-func (q *Queries) GetOfferStats(ctx context.Context) (GetOfferStatsRow, error) {
-	row := q.db.QueryRowContext(ctx, getOfferStats)
-	var i GetOfferStatsRow
+// Used by: Admin, Users and Vendors
+func (q *Queries) GetOfferStatsFiltered(ctx context.Context, arg GetOfferStatsFilteredParams) (GetOfferStatsFilteredRow, error) {
+	row := q.db.QueryRowContext(ctx, getOfferStatsFiltered, arg.VendorID, arg.RequestID)
+	var i GetOfferStatsFilteredRow
 	err := row.Scan(
 		&i.TotalOffers,
 		&i.PendingOffers,

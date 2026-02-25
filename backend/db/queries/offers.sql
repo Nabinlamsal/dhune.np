@@ -92,16 +92,29 @@ WHERE status = 'PENDING'
   AND completion_time < now();
 
 
--- Used by: Admin Dashboard
--- name: GetOfferStats :one
+-- Used by: Admin, Users and Vendors
+-- name: GetOfferStatsFiltered :one
 SELECT
     COUNT(*) AS total_offers,
-    COUNT(*) FILTER (WHERE status = 'PENDING') AS pending_offers,
-    COUNT(*) FILTER (WHERE status = 'ACCEPTED') AS accepted_offers,
-    COUNT(*) FILTER (WHERE status = 'REJECTED') AS rejected_offers,
+
+    COUNT(*) FILTER (WHERE status = 'PENDING')   AS pending_offers,
+    COUNT(*) FILTER (WHERE status = 'ACCEPTED')  AS accepted_offers,
+    COUNT(*) FILTER (WHERE status = 'REJECTED')  AS rejected_offers,
     COUNT(*) FILTER (WHERE status = 'WITHDRAWN') AS withdrawn_offers,
-    COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_offers
-FROM offers;
+    COUNT(*) FILTER (WHERE status = 'EXPIRED')   AS expired_offers
+
+FROM offers
+WHERE
+    (
+        sqlc.narg(vendor_id)::uuid IS NULL
+            OR vendor_id = sqlc.narg(vendor_id)::uuid
+        )
+  AND
+    (
+        sqlc.narg(request_id)::uuid IS NULL
+            OR request_id = sqlc.narg(request_id)::uuid
+        );
+
 
 -- Used by: Admin Panel (Global Offer Listing with Filters)
 -- name: ListOffersAdmin :many

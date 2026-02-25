@@ -225,11 +225,45 @@ func (s *OfferService) Expire(ctx context.Context) error {
 	return s.offerRepo.Expire(ctx)
 }
 
-func (s *OfferService) GetStats(
+func (s *OfferService) GetAdminStats(
 	ctx context.Context,
-) (db.GetOfferStatsRow, error) {
+) (db.GetOfferStatsFilteredRow, error) {
 
-	return s.offerRepo.GetStats(ctx)
+	return s.offerRepo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{},
+		uuid.NullUUID{},
+	)
+}
+
+func (s *OfferService) GetVendorStats(
+	ctx context.Context,
+	vendorID uuid.UUID,
+) (db.GetOfferStatsFilteredRow, error) {
+
+	return s.offerRepo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{
+			UUID:  vendorID,
+			Valid: true,
+		},
+		uuid.NullUUID{},
+	)
+}
+
+func (s *OfferService) GetRequestStats(
+	ctx context.Context,
+	requestID uuid.UUID,
+) (db.GetOfferStatsFilteredRow, error) {
+
+	return s.offerRepo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{},
+		uuid.NullUUID{
+			UUID:  requestID,
+			Valid: true,
+		},
+	)
 }
 
 func (s *OfferService) GetByID(

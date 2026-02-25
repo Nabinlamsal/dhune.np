@@ -21,7 +21,7 @@ type OfferRepository interface {
 		limit int32,
 		offset int32,
 	) ([]db.Offer, error)
-	
+
 	ListAdmin(
 		ctx context.Context,
 		status db.NullOfferStatus,
@@ -37,5 +37,9 @@ type OfferRepository interface {
 	RejectOthers(ctx context.Context, tx *db.Queries, requestID, acceptedOfferID uuid.UUID) error
 
 	Expire(ctx context.Context) error
-	GetStats(ctx context.Context) (db.GetOfferStatsRow, error)
+	GetStatsFiltered(
+		ctx context.Context,
+		vendorID uuid.NullUUID,
+		requestID uuid.NullUUID,
+	) (db.GetOfferStatsFilteredRow, error)
 }

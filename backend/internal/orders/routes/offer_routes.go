@@ -24,10 +24,12 @@ func RegisterOfferRoutes(
 	vendor.PUT("/:id", offerHandler.Update)
 	vendor.DELETE("/:id", offerHandler.Withdraw)
 	vendor.GET("/my", offerHandler.ListMyOffers)
+	vendor.GET("/me/stats", offerHandler.VendorStats)
 
 	user := offers.Group("")
 	user.POST("/accept", offerHandler.Accept)
 	user.GET("/request/:request_id", offerHandler.ListByRequest)
+	user.GET("/:id/offers", offerHandler.RequestStats)
 
 	admin := router.Group("/admin/offers")
 	admin.Use(
@@ -36,5 +38,5 @@ func RegisterOfferRoutes(
 	)
 
 	admin.GET("", offerHandler.ListAdmin)
-	admin.GET("/stats", offerHandler.Stats)
+	admin.GET("/stats", offerHandler.AdminStats)
 }
