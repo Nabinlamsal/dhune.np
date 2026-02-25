@@ -122,9 +122,17 @@ func (r *orderRepository) ListAdmin(
 }
 
 // Order statistics
-func (r *orderRepository) GetStats(
+func (r *orderRepository) GetStatsFiltered(
 	ctx context.Context,
-) (db.GetOrderStatsRow, error) {
+	userID uuid.NullUUID,
+	vendorID uuid.NullUUID,
+) (db.GetOrderStatsFilteredRow, error) {
 
-	return r.q.GetOrderStats(ctx)
+	return r.q.GetOrderStatsFiltered(
+		ctx,
+		db.GetOrderStatsFilteredParams{
+			UserID:   userID,
+			VendorID: vendorID,
+		},
+	)
 }

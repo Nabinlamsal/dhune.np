@@ -24,5 +24,9 @@ type OrderRepository interface {
 
 	ListAdmin(ctx context.Context, status db.NullOrderStatus, limit, offset int32) ([]db.Order, error)
 
-	GetStats(ctx context.Context) (db.GetOrderStatsRow, error)
+	GetStatsFiltered(
+		ctx context.Context,
+		userID uuid.NullUUID,
+		vendorID uuid.NullUUID,
+	) (db.GetOrderStatsFilteredRow, error)
 }

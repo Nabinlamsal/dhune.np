@@ -178,11 +178,44 @@ func (s *OrderService) ListAdmin(
 	return result, nil
 }
 
-func (s *OrderService) GetStats(
+func (s *OrderService) GetUserStats(
 	ctx context.Context,
-) (db.GetOrderStatsRow, error) {
+	userID uuid.UUID,
+) (db.GetOrderStatsFilteredRow, error) {
 
-	return s.repo.GetStats(ctx)
+	return s.repo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{
+			UUID:  userID,
+			Valid: true,
+		},
+		uuid.NullUUID{},
+	)
+}
+func (s *OrderService) GetVendorStats(
+	ctx context.Context,
+	vendorID uuid.UUID,
+) (db.GetOrderStatsFilteredRow, error) {
+
+	return s.repo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{},
+		uuid.NullUUID{
+			UUID:  vendorID,
+			Valid: true,
+		},
+	)
+}
+
+func (s *OrderService) GetAdminStats(
+	ctx context.Context,
+) (db.GetOrderStatsFilteredRow, error) {
+
+	return s.repo.GetStatsFiltered(
+		ctx,
+		uuid.NullUUID{},
+		uuid.NullUUID{},
+	)
 }
 
 // helper function

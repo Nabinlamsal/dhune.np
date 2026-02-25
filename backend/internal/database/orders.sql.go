@@ -117,19 +117,36 @@ func (q *Queries) GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error)
 	return i, err
 }
 
-const getOrderStats = `-- name: GetOrderStats :one
+const getOrderStatsFiltered = `-- name: GetOrderStatsFiltered :one
 SELECT
     COUNT(*) AS total_orders,
-    COUNT(*) FILTER (WHERE order_status = 'ACCEPTED') AS accepted_orders,
-    COUNT(*) FILTER (WHERE order_status = 'PICKED_UP') AS picked_up_orders,
+
+    COUNT(*) FILTER (WHERE order_status = 'ACCEPTED')    AS accepted_orders,
+    COUNT(*) FILTER (WHERE order_status = 'PICKED_UP')   AS picked_up_orders,
     COUNT(*) FILTER (WHERE order_status = 'IN_PROGRESS') AS in_progress_orders,
-    COUNT(*) FILTER (WHERE order_status = 'DELIVERING') AS delivering_orders,
-    COUNT(*) FILTER (WHERE order_status = 'COMPLETED') AS completed_orders,
-    COUNT(*) FILTER (WHERE order_status = 'CANCELLED') AS cancelled_orders
+    COUNT(*) FILTER (WHERE order_status = 'DELIVERING')  AS delivering_orders,
+    COUNT(*) FILTER (WHERE order_status = 'COMPLETED')   AS completed_orders,
+    COUNT(*) FILTER (WHERE order_status = 'CANCELLED')   AS cancelled_orders
+
 FROM orders
+WHERE
+    (
+        $1::uuid IS NULL
+            OR user_id = $1::uuid
+        )
+  AND
+    (
+        $2::uuid IS NULL
+            OR vendor_id = $2::uuid
+        )
 `
 
-type GetOrderStatsRow struct {
+type GetOrderStatsFilteredParams struct {
+	UserID   uuid.NullUUID
+	VendorID uuid.NullUUID
+}
+
+type GetOrderStatsFilteredRow struct {
 	TotalOrders      int64
 	AcceptedOrders   int64
 	PickedUpOrders   int64
@@ -140,9 +157,9 @@ type GetOrderStatsRow struct {
 }
 
 // Used by: Admin Dashboard (Order Stats)
-func (q *Queries) GetOrderStats(ctx context.Context) (GetOrderStatsRow, error) {
-	row := q.db.QueryRowContext(ctx, getOrderStats)
-	var i GetOrderStatsRow
+func (q *Queries) GetOrderStatsFiltered(ctx context.Context, arg GetOrderStatsFilteredParams) (GetOrderStatsFilteredRow, error) {
+	row := q.db.QueryRowContext(ctx, getOrderStatsFiltered, arg.UserID, arg.VendorID)
+	var i GetOrderStatsFilteredRow
 	err := row.Scan(
 		&i.TotalOrders,
 		&i.AcceptedOrders,

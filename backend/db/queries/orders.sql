@@ -100,13 +100,25 @@ ORDER BY
 LIMIT $2 OFFSET $3;
 
 -- Used by: Admin Dashboard (Order Stats)
--- name: GetOrderStats :one
+-- name: GetOrderStatsFiltered :one
 SELECT
     COUNT(*) AS total_orders,
-    COUNT(*) FILTER (WHERE order_status = 'ACCEPTED') AS accepted_orders,
-    COUNT(*) FILTER (WHERE order_status = 'PICKED_UP') AS picked_up_orders,
+
+    COUNT(*) FILTER (WHERE order_status = 'ACCEPTED')    AS accepted_orders,
+    COUNT(*) FILTER (WHERE order_status = 'PICKED_UP')   AS picked_up_orders,
     COUNT(*) FILTER (WHERE order_status = 'IN_PROGRESS') AS in_progress_orders,
-    COUNT(*) FILTER (WHERE order_status = 'DELIVERING') AS delivering_orders,
-    COUNT(*) FILTER (WHERE order_status = 'COMPLETED') AS completed_orders,
-    COUNT(*) FILTER (WHERE order_status = 'CANCELLED') AS cancelled_orders
-FROM orders;
+    COUNT(*) FILTER (WHERE order_status = 'DELIVERING')  AS delivering_orders,
+    COUNT(*) FILTER (WHERE order_status = 'COMPLETED')   AS completed_orders,
+    COUNT(*) FILTER (WHERE order_status = 'CANCELLED')   AS cancelled_orders
+
+FROM orders
+WHERE
+    (
+        sqlc.narg(user_id)::uuid IS NULL
+            OR user_id = sqlc.narg(user_id)::uuid
+        )
+  AND
+    (
+        sqlc.narg(vendor_id)::uuid IS NULL
+            OR vendor_id = sqlc.narg(vendor_id)::uuid
+        );

@@ -20,6 +20,7 @@ func RegisterOrderRoutes(
 	user.GET("/my", orderHandler.ListMy)
 	user.GET("/:id", orderHandler.GetByID)
 	user.PATCH("/:id/cancel", orderHandler.Cancel)
+	user.GET("/me/stats", orderHandler.MyStats)
 
 	// VENDOR routes
 	vendor := router.Group("/vendor/orders")
@@ -30,6 +31,7 @@ func RegisterOrderRoutes(
 
 	vendor.GET("", orderHandler.ListVendor)
 	vendor.PATCH("/:id/status", orderHandler.UpdateStatus)
+	vendor.GET("/stats", orderHandler.VendorStats)
 
 	// ADMIN routes
 	admin := router.Group("/admin/orders")
@@ -39,5 +41,5 @@ func RegisterOrderRoutes(
 	)
 
 	admin.GET("", orderHandler.ListAdmin)
-	admin.GET("/stats", orderHandler.GetStats)
+	admin.GET("/orders/stats", orderHandler.AdminStats)
 }

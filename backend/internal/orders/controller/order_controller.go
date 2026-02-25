@@ -163,11 +163,44 @@ func (h *OrderHandler) ListAdmin(c *gin.Context) {
 	utils.Success(c, orders)
 }
 
-func (h *OrderHandler) GetStats(c *gin.Context) {
+func (h *OrderHandler) MyStats(c *gin.Context) {
 
-	stats, err := h.service.GetStats(c.Request.Context())
+	userID := c.MustGet("user_id").(string)
+
+	stats, err := h.service.GetUserStats(
+		c.Request.Context(),
+		uuid.MustParse(userID),
+	)
+
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, err.Error())
+		utils.Error(c, 500, err.Error())
+		return
+	}
+
+	utils.Success(c, stats)
+}
+func (h *OrderHandler) VendorStats(c *gin.Context) {
+
+	vendorID := c.MustGet("user_id").(string)
+
+	stats, err := h.service.GetVendorStats(
+		c.Request.Context(),
+		uuid.MustParse(vendorID),
+	)
+
+	if err != nil {
+		utils.Error(c, 500, err.Error())
+		return
+	}
+
+	utils.Success(c, stats)
+}
+func (h *OrderHandler) AdminStats(c *gin.Context) {
+
+	stats, err := h.service.GetAdminStats(c.Request.Context())
+
+	if err != nil {
+		utils.Error(c, 500, err.Error())
 		return
 	}
 
