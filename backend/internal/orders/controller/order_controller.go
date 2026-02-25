@@ -177,7 +177,15 @@ func (h *OrderHandler) MyStats(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_orders":       stats.TotalOrders,
+		"accepted_orders":    stats.AcceptedOrders,
+		"picked_up_orders":   stats.PickedUpOrders,
+		"in_progress_orders": stats.InProgressOrders,
+		"delivering_orders":  stats.DeliveringOrders,
+		"completed_orders":   stats.CompletedOrders,
+		"cancelled_orders":   stats.CancelledOrders,
+	})
 }
 func (h *OrderHandler) VendorStats(c *gin.Context) {
 
@@ -193,7 +201,15 @@ func (h *OrderHandler) VendorStats(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_orders":       stats.TotalOrders,
+		"accepted_orders":    stats.AcceptedOrders,
+		"picked_up_orders":   stats.PickedUpOrders,
+		"in_progress_orders": stats.InProgressOrders,
+		"delivering_orders":  stats.DeliveringOrders,
+		"completed_orders":   stats.CompletedOrders,
+		"cancelled_orders":   stats.CancelledOrders,
+	})
 }
 func (h *OrderHandler) AdminStats(c *gin.Context) {
 
@@ -204,5 +220,13 @@ func (h *OrderHandler) AdminStats(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_orders":       stats.TotalOrders,
+		"accepted_orders":    stats.AcceptedOrders,
+		"picked_up_orders":   stats.PickedUpOrders,
+		"in_progress_orders": stats.InProgressOrders,
+		"delivering_orders":  stats.DeliveringOrders,
+		"completed_orders":   stats.CompletedOrders,
+		"cancelled_orders":   stats.CancelledOrders,
+	})
 }

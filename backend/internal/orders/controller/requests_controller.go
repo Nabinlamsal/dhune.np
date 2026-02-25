@@ -220,7 +220,13 @@ func (h *RequestHandler) GetUserStats(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, stats)
+	utils.Success(ctx, gin.H{
+		"total_requests":         stats.TotalRequests,
+		"open_requests":          stats.OpenRequests,
+		"expired_requests":       stats.ExpiredRequests,
+		"cancelled_requests":     stats.CancelledRequests,
+		"order_created_requests": stats.OrderCreatedRequests,
+	})
 }
 func (h *RequestHandler) GetAdminStats(ctx *gin.Context) {
 
@@ -233,5 +239,11 @@ func (h *RequestHandler) GetAdminStats(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, stats)
+	utils.Success(ctx, gin.H{
+		"total_requests":         stats.TotalRequests,
+		"open_requests":          stats.OpenRequests,
+		"expired_requests":       stats.ExpiredRequests,
+		"cancelled_requests":     stats.CancelledRequests,
+		"order_created_requests": stats.OrderCreatedRequests,
+	})
 }

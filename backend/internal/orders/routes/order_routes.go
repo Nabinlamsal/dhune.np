@@ -41,5 +41,5 @@ func RegisterOrderRoutes(
 	)
 
 	admin.GET("", orderHandler.ListAdmin)
-	admin.GET("/orders/stats", orderHandler.AdminStats)
+	admin.GET("/stats", orderHandler.AdminStats)
 }

@@ -120,7 +120,14 @@ func (r *offerRepository) Expire(ctx context.Context) error {
 func (r *offerRepository) GetStatsFiltered(
 	ctx context.Context,
 	vendorID uuid.NullUUID,
-	requestID uuid,
-) (db.GetOfferStatsFilteredParams, error) {
-	r.q.GetOfferStatsFiltered(ctx, vendorID, requestID)
+	requestID uuid.NullUUID,
+) (db.GetOfferStatsFilteredRow, error) {
+
+	return r.q.GetOfferStatsFiltered(
+		ctx,
+		db.GetOfferStatsFilteredParams{
+			VendorID:  vendorID,
+			RequestID: requestID,
+		},
+	)
 }

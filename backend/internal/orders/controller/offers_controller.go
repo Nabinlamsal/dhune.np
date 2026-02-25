@@ -303,7 +303,14 @@ func (h *OfferHandler) AdminStats(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_offers":     stats.TotalOffers,
+		"pending_offers":   stats.PendingOffers,
+		"accepted_offers":  stats.AcceptedOffers,
+		"rejected_offers":  stats.RejectedOffers,
+		"withdrawn_offers": stats.WithdrawnOffers,
+		"expired_offers":   stats.ExpiredOffers,
+	})
 }
 func (h *OfferHandler) VendorStats(c *gin.Context) {
 
@@ -319,7 +326,14 @@ func (h *OfferHandler) VendorStats(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_offers":     stats.TotalOffers,
+		"pending_offers":   stats.PendingOffers,
+		"accepted_offers":  stats.AcceptedOffers,
+		"rejected_offers":  stats.RejectedOffers,
+		"withdrawn_offers": stats.WithdrawnOffers,
+		"expired_offers":   stats.ExpiredOffers,
+	})
 }
 
 func (h *OfferHandler) RequestStats(c *gin.Context) {
@@ -331,5 +345,12 @@ func (h *OfferHandler) RequestStats(c *gin.Context) {
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 	}
-	utils.Success(c, stats)
+	utils.Success(c, gin.H{
+		"total_offers":     stats.TotalOffers,
+		"pending_offers":   stats.PendingOffers,
+		"accepted_offers":  stats.AcceptedOffers,
+		"rejected_offers":  stats.RejectedOffers,
+		"withdrawn_offers": stats.WithdrawnOffers,
+		"expired_offers":   stats.ExpiredOffers,
+	})
 }
