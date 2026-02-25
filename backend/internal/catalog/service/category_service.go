@@ -115,6 +115,10 @@ func (s *CategoryService) SetActive(
 	return s.repo.SetActiveStatus(ctx, id, active)
 }
 
+func (s *CategoryService) DeleteCategory(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, id)
+}
+
 func (s *CategoryService) ValidateCategory(
 	ctx context.Context,
 	categoryID uuid.UUID,

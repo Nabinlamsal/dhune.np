@@ -132,11 +132,18 @@ WHERE status = 'OPEN'
 
 
 -- Used by: Admin Dashboard
--- name: GetRequestStats :one
+-- name: GetRequestStatsFiltered :one
 SELECT
     COUNT(*) AS total_requests,
-    COUNT(*) FILTER (WHERE status = 'OPEN') AS open_requests,
-    COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_requests,
-    COUNT(*) FILTER (WHERE status = 'CANCELLED') AS cancelled_requests,
+
+    COUNT(*) FILTER (WHERE status = 'OPEN')          AS open_requests,
+    COUNT(*) FILTER (WHERE status = 'EXPIRED')       AS expired_requests,
+    COUNT(*) FILTER (WHERE status = 'CANCELLED')     AS cancelled_requests,
     COUNT(*) FILTER (WHERE status = 'ORDER_CREATED') AS order_created_requests
-FROM requests;
+
+FROM requests
+WHERE
+    (
+        sqlc.narg(user_id)::uuid IS NULL
+            OR user_id = sqlc.narg(user_id)::uuid
+    );

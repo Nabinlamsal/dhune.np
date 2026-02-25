@@ -27,4 +27,6 @@ func RegisterCategoryRoutes(
 	admin.POST("", categoryHandler.Create)
 	admin.PUT("/:id", categoryHandler.Update)
 	admin.PATCH("/:id/deactivate", categoryHandler.Deactivate)
+	admin.PATCH(":id/reactivate", categoryHandler.ReActivate)
+	admin.DELETE("/:id", categoryHandler.Delete)
 }

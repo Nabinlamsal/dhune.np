@@ -106,3 +106,29 @@ func (h *CategoryHandler) Deactivate(c *gin.Context) {
 
 	utils.Success(c, gin.H{"message": "category deactivated"})
 }
+func (h *CategoryHandler) ReActivate(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	if err := h.service.SetActive(c.Request.Context(), id, true); err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "category reactivate"})
+}
+
+func (h *CategoryHandler) Delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid id")
+	}
+	if err := h.service.DeleteCategory(c.Request.Context(), id); err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+	}
+
+	utils.Success(c, gin.H{"message": "category deleted successfully"})
+}

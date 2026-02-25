@@ -40,6 +40,10 @@ SET
 WHERE id = $1
 RETURNING *;
 
+-- name: DeleteCategory :exec
+DELETE FROM categories
+WHERE id =$1;
+
 -- name: SetCategoryActiveStatus :exec
 UPDATE categories
 SET

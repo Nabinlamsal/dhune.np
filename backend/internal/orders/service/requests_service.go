@@ -319,10 +319,22 @@ func (s *RequestService) Expire(ctx context.Context) error {
 	return s.repo.Expire(ctx)
 }
 
-// Request statistics
-func (s *RequestService) GetStats(
+// user req stats
+func (s *RequestService) GetUserStats(
 	ctx context.Context,
-) (db.GetRequestStatsRow, error) {
+	userID uuid.UUID,
+) (db.GetRequestStatsFilteredRow, error) {
 
-	return s.repo.GetStats(ctx)
+	return s.repo.GetStatsFiltered(ctx, uuid.NullUUID{
+		UUID:  userID,
+		Valid: true,
+	})
+}
+
+// admin req stats
+func (s *RequestService) GetAdminStats(
+	ctx context.Context,
+) (db.GetRequestStatsFilteredRow, error) {
+
+	return s.repo.GetStatsFiltered(ctx, uuid.NullUUID{})
 }

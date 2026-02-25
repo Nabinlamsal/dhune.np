@@ -204,3 +204,34 @@ func (h *RequestHandler) ListAdmin(c *gin.Context) {
 
 	utils.Success(c, h.mapSummaryList(requests))
 }
+func (h *RequestHandler) GetUserStats(ctx *gin.Context) {
+
+	userID := ctx.MustGet("user_id").(string)
+
+	stats, err := h.service.GetUserStats(
+		ctx,
+		uuid.MustParse(userID),
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, stats)
+}
+func (h *RequestHandler) GetAdminStats(ctx *gin.Context) {
+
+	stats, err := h.service.GetAdminStats(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, stats)
+}

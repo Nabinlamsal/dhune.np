@@ -86,6 +86,6 @@ func (r *requestRepo) Expire(ctx context.Context) error {
 	return r.q.ExpireRequests(ctx)
 }
 
-func (r *requestRepo) GetStats(ctx context.Context) (db.GetRequestStatsRow, error) {
-	return r.q.GetRequestStats(ctx)
+func (r *requestRepo) GetStatsFiltered(ctx context.Context, userID uuid.NullUUID) (db.GetRequestStatsFilteredRow, error) {
+	return r.q.GetRequestStatsFiltered(ctx, userID)
 }

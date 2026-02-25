@@ -1,23 +1,27 @@
 package dto
 
 type CreateOfferDTO struct {
-	RequestID      string  `json:"request_id" binding:"required,uuid"`
-	BidPrice       float64 `json:"bid_price" binding:"required,gt=0"`
-	CompletionTime string  `json:"completion_time" binding:"required"`
-	Description    string  `json:"description"`
+	RequestID      string   `json:"request_id" binding:"required,uuid"`
+	BidPrice       float64  `json:"bid_price" binding:"required,gt=0"`
+	CompletionTime string   `json:"completion_time" binding:"required"`
+	Description    string   `json:"description"`
+	ServiceOptions []string `json:"service_options"`
 }
+
 type UpdateOfferDTO struct {
-	BidPrice       float64 `json:"bid_price" binding:"required,gt=0"`
-	CompletionTime string  `json:"completion_time" binding:"required"`
-	Description    string  `json:"description"`
+	BidPrice       float64  `json:"bid_price" binding:"required,gt=0"`
+	CompletionTime string   `json:"completion_time" binding:"required"`
+	Description    string   `json:"description"`
+	ServiceOptions []string `json:"service_options"`
 }
 type OfferResponseDTO struct {
-	ID             string  `json:"id"`
-	RequestID      string  `json:"request_id"`
-	BidPrice       float64 `json:"bid_price"`
-	Status         string  `json:"status"`
-	CompletionTime string  `json:"completion_time"`
-	Description    string  `json:"description,omitempty"`
+	ID             string   `json:"id"`
+	RequestID      string   `json:"request_id"`
+	BidPrice       float64  `json:"bid_price"`
+	Status         string   `json:"status"`
+	CompletionTime string   `json:"completion_time"`
+	ServiceOptions []string `json:"service_options"`
+	Description    string   `json:"description,omitempty"`
 }
 type AcceptOfferDTO struct {
 	OfferID string `json:"offer_id" binding:"required,uuid"`

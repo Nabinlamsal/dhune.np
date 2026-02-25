@@ -14,6 +14,7 @@ type CategoryRepository interface {
 	Update(ctx context.Context, params db.UpdateCategoryParams) (db.Category, error)
 	SetActiveStatus(ctx context.Context, id uuid.UUID, isActive bool) error
 	ListAll(ctx context.Context) ([]db.Category, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type categoryRepo struct {
@@ -63,4 +64,8 @@ func (r *categoryRepo) SetActiveStatus(
 		ID:       id,
 		IsActive: isActive,
 	})
+}
+
+func (r *categoryRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.q.DeleteCategory(ctx, id)
 }

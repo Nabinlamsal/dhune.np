@@ -135,17 +135,24 @@ func (q *Queries) ExpireRequests(ctx context.Context) error {
 	return err
 }
 
-const getRequestStats = `-- name: GetRequestStats :one
+const getRequestStatsFiltered = `-- name: GetRequestStatsFiltered :one
 SELECT
     COUNT(*) AS total_requests,
-    COUNT(*) FILTER (WHERE status = 'OPEN') AS open_requests,
-    COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired_requests,
-    COUNT(*) FILTER (WHERE status = 'CANCELLED') AS cancelled_requests,
+
+    COUNT(*) FILTER (WHERE status = 'OPEN')          AS open_requests,
+    COUNT(*) FILTER (WHERE status = 'EXPIRED')       AS expired_requests,
+    COUNT(*) FILTER (WHERE status = 'CANCELLED')     AS cancelled_requests,
     COUNT(*) FILTER (WHERE status = 'ORDER_CREATED') AS order_created_requests
+
 FROM requests
+WHERE
+    (
+        $1::uuid IS NULL
+            OR user_id = $1::uuid
+    )
 `
 
-type GetRequestStatsRow struct {
+type GetRequestStatsFilteredRow struct {
 	TotalRequests        int64
 	OpenRequests         int64
 	ExpiredRequests      int64
@@ -154,9 +161,9 @@ type GetRequestStatsRow struct {
 }
 
 // Used by: Admin Dashboard
-func (q *Queries) GetRequestStats(ctx context.Context) (GetRequestStatsRow, error) {
-	row := q.db.QueryRowContext(ctx, getRequestStats)
-	var i GetRequestStatsRow
+func (q *Queries) GetRequestStatsFiltered(ctx context.Context, userID uuid.NullUUID) (GetRequestStatsFilteredRow, error) {
+	row := q.db.QueryRowContext(ctx, getRequestStatsFiltered, userID)
+	var i GetRequestStatsFilteredRow
 	err := row.Scan(
 		&i.TotalRequests,
 		&i.OpenRequests,

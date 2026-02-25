@@ -20,5 +20,8 @@ type RequestRepository interface {
 	SetOrderCreated(ctx context.Context, requestID uuid.UUID) error
 
 	Expire(ctx context.Context) error
-	GetStats(ctx context.Context) (db.GetRequestStatsRow, error)
+	GetStatsFiltered(
+		ctx context.Context,
+		userID uuid.NullUUID,
+	) (db.GetRequestStatsFilteredRow, error)
 }

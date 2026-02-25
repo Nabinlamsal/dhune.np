@@ -19,6 +19,7 @@ func RegisterRequestRoutes(
 
 	requests.POST("", requestHandler.Create)
 	requests.GET("/me", requestHandler.ListMy)
+	requests.GET("/me/stats", requestHandler.GetUserStats)
 	requests.GET("/:id", requestHandler.GetByID)
 	requests.PATCH("/:id/cancel", requestHandler.Cancel)
 
@@ -37,4 +38,5 @@ func RegisterRequestRoutes(
 	)
 
 	admin.GET("/requests", requestHandler.ListAdmin)
+	admin.GET("/requests/stats", requestHandler.GetAdminStats)
 }
