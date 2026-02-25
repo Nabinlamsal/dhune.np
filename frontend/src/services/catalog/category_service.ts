@@ -5,6 +5,8 @@ import {
     DeactivateCategoryResponse,
     CreateCategoryPayload,
     UpdateCategoryPayload,
+    DeleteCategoryResponce,
+    ReactivateCategoryResponse,
 } from "@/src/types/catalog/category";
 
 export const getCategories = async (): Promise<ListCategoriesResponse> => {
@@ -45,6 +47,28 @@ export const deactivateCategory = async (
         `/admin/categories/${id}/deactivate`,
         {
             method: "PATCH",
+        }
+    );
+};
+
+export const reactivateCategory = async (
+    id: string
+): Promise<ReactivateCategoryResponse> => {
+    return api<ReactivateCategoryResponse>(
+        `/admin/categories/${id}/reactivate`,
+        {
+            method: "PATCH",
+        }
+    );
+};
+
+export const deleteCategory = async (
+    id: string
+): Promise<DeleteCategoryResponce> => {
+    return api<DeleteCategoryResponce>(
+        `/admin/categories/${id}`,
+        {
+            method: "DELETE",
         }
     );
 };

@@ -12,9 +12,11 @@ import {
     useCreateCategory,
     useUpdateCategory,
     useDeactivateCategory,
+    useDeleteCategory,
+    useReactivateCategory
 } from "@/src/hooks/catalog/useCategory";
 import { Category } from "@/src/types/catalog/category";
-import { createCategory, updateCategory } from "@/src/services/catalog/category_service";
+import { createCategory, reactivateCategory, updateCategory } from "@/src/services/catalog/category_service";
 import { PricingUnit } from "@/src/types/catalog/category-enums";
 
 export default function AdminCategoriesPage() {
@@ -25,6 +27,8 @@ export default function AdminCategoriesPage() {
     const createMutation = useCreateCategory();
     const updateMutation = useUpdateCategory();
     const deactivateMutation = useDeactivateCategory();
+    const reactivateMutation = useReactivateCategory();
+    const deleteCategory = useDeleteCategory()
 
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
@@ -102,7 +106,7 @@ export default function AdminCategoriesPage() {
             render: (c: Category) => (
                 <div className="flex gap-2">
 
-                    {/* Edit always allowed */}
+                    {/* Edit */}
                     <Button
                         size="sm"
                         variant="outline"
@@ -117,11 +121,28 @@ export default function AdminCategoriesPage() {
                         Edit
                     </Button>
 
-                    {/* Deactivate or Reactivate */}
+                    {/* Delete */}
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                            if (
+                                confirm(
+                                    `Are you sure you want to delete "${c.name}"?`
+                                )
+                            ) {
+                                deleteCategory.mutate(c.id);
+                            }
+                        }}
+                    >
+                        Delete
+                    </Button>
+
+                    {/* Deactivate / Reactivate */}
                     {c.is_active ? (
                         <Button
                             size="sm"
-                            variant="destructive"
+                            variant="secondary"
                             onClick={() =>
                                 deactivateMutation.mutate(c.id)
                             }
@@ -131,12 +152,15 @@ export default function AdminCategoriesPage() {
                     ) : (
                         <Button
                             size="sm"
-                            variant="secondary"
-                            disabled
+                            variant="default"
+                            onClick={() =>
+                                reactivateMutation.mutate(c.id)
+                            }
                         >
                             Reactivate
                         </Button>
                     )}
+
                 </div>
             ),
         },

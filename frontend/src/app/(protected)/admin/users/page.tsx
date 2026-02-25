@@ -25,10 +25,6 @@ function deriveUserStatus(
         return u.BusinessApprovalStatus ?? "pending";
     }
 
-    if (u.Role === "vendor") {
-        return u.VendorApprovalStatus ?? "pending";
-    }
-
     // normal user (auto-approved)
     return "approved";
 }
@@ -124,7 +120,7 @@ export default function AdminUsersPage() {
                     <option value="suspended">Suspended</option>
                 </select>
                 <SearchInput
-                    placeholder="Search vendors..."
+                    placeholder="Search Users (Normal and Business)..."
                     value={search}
                     onChange={(e) =>
                         setSearch(e.target.value)

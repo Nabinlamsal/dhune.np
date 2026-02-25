@@ -4,12 +4,20 @@ import { OfferStatus } from "./orders-enums";
 export interface Offer {
     id: string;
     request_id: string;
-    vendor_id?: string; // useful for admin
+    vendor_id?: string;
     bid_price: number;
     completion_time: string;
     status: OfferStatus;
     description?: string;
     created_at?: string;
+}
+export interface Offer {
+    id: string;
+    request_id: string;
+    bid_price: number;
+    completion_time: string;
+    status: OfferStatus;
+    description?: string;
 }
 
 

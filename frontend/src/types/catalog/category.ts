@@ -31,3 +31,5 @@ export interface MessageResponse {
 }
 
 export type DeactivateCategoryResponse = ApiResponse<MessageResponse>;
+export type ReactivateCategoryResponse = ApiResponse<MessageResponse>;
+export type DeleteCategoryResponce = ApiResponse<MessageResponse>;
