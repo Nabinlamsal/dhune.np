@@ -99,10 +99,23 @@ export const getAdminOrders = async (
     });
 };
 
-// GET /admin/orders/stats
-export const getOrderStats = async (): Promise<ApiResponse<OrderStats>> => {
+// User stats
+export const getMyOrderStats = async (): Promise<ApiResponse<OrderStats>> => {
     return api<ApiResponse<OrderStats>>(
-        `/admin/orders/stats`,
+        "/orders/me/stats",
         { method: "GET" }
     );
 };
+
+// Vendor stats
+export const getVendorOrderStats = async (): Promise<ApiResponse<OrderStats>> => {
+    return api<ApiResponse<OrderStats>>(
+        "/vendor/orders/stats",
+        { method: "GET" }
+    );
+};
+export const getAdminOrderStats = async (): Promise<ApiResponse<OrderStats>> => {
+    return api<ApiResponse<OrderStats>>(
+        "/admin/orders/stats"
+    )
+}

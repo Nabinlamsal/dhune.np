@@ -1,6 +1,4 @@
 "use client";
-
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     createOffer,
@@ -41,9 +39,10 @@ export const useUpdateOffer = () => {
         mutationFn: ({ id, payload }: any) =>
             updateOffer(id, payload),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["my-offers"] });
-            qc.invalidateQueries({ queryKey: ["admin-offers"] });
-        },
+            toast.success("you offer is updated successfully!")
+            qc.invalidateQueries({ queryKey: ["vendor-offers"] });
+            qc.invalidateQueries({ queryKey: ["offers", "vendor", "stats"] });
+        }
     });
 };
 
@@ -53,10 +52,12 @@ export const useWithdrawOffer = () => {
     return useMutation({
         mutationFn: withdrawOffer,
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["my-offers"] });
-            qc.invalidateQueries({ queryKey: ["admin-offers"] });
-        },
-    });
+            toast.success("you offer is withdrawn successfully!")
+            qc.invalidateQueries({ queryKey: ["vendor-offers"] });
+            qc.invalidateQueries({ queryKey: ["offers", "vendor", "stats"] });
+        }
+    },
+    );
 };
 
 export const useVendorOffers = ({
@@ -136,12 +137,12 @@ export const useAdminOffers = (
 
 export const useAdminOfferStats = () =>
     useQuery({
-        queryKey: ["admin-offer-stats"],
+        queryKey: ["offers", "admin", "stats"],
         queryFn: getAdminOfferStats,
     });
 
 export const useVendorOfferStats = () =>
     useQuery({
-        queryKey: ["vendor-offer-stats"],
+        queryKey: ["offers", "vendor", "stats"],
         queryFn: getVendorOfferStats,
     });

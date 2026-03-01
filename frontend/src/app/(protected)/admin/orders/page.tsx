@@ -9,14 +9,9 @@ import { FilterTabs } from "@/src/components/common/FilterTabs"
 import { Status, StatusBadge } from "@/src/components/common/StatusBadge"
 import { Detail } from "@/src/components/common/DetailItem"
 
-import {
-    useAdminOrders,
-    useOrderStats,
-    useOrderDetail,
-} from "@/src/hooks/orders/useOrder"
-
 import { OrderListItem } from "@/src/types/orders/orders"
 import { OrderStatus } from "@/src/types/orders/orders-enums"
+import { useAdminOrderStats, useOrderDetail, useAdminOrders } from "@/src/hooks/orders/useOrder"
 
 
 function mapOrderStatusToBadge(status: string): Status {
@@ -55,9 +50,11 @@ export default function AdminOrdersPage() {
     const {
         data: ordersResponse,
         isLoading: isOrdersLoading,
-    } = useAdminOrders(filter === "ALL" ? undefined : filter)
+    } = useAdminOrders(
+        filter === "ALL" ? undefined : filter
+    );
 
-    const { data: statsResponse } = useOrderStats()
+    const { data: statsResponse } = useAdminOrderStats()
 
     const {
         data: selectedOrderResponse,
@@ -240,3 +237,4 @@ export default function AdminOrdersPage() {
         </>
     )
 }
+

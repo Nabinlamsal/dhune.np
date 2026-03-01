@@ -11,15 +11,6 @@ export interface Offer {
     description?: string;
     created_at?: string;
 }
-export interface Offer {
-    id: string;
-    request_id: string;
-    bid_price: number;
-    completion_time: string;
-    status: OfferStatus;
-    description?: string;
-}
-
 
 export interface CreateOfferPayload {
     request_id: string;

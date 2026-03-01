@@ -1,6 +1,5 @@
 "use client";
-
-import { getMyOrders, cancelOrder, getVendorOrders, updateOrderStatus, getOrderById, getAdminOrders, getOrderStats } from "@/src/services/orders/order_service";
+import { getMyOrders, cancelOrder, getVendorOrders, updateOrderStatus, getOrderById, getMyOrderStats, getVendorOrderStats, getAdminOrderStats, getAdminOrders } from "@/src/services/orders/order_service";
 import { CancelOrderPayload, UpdateOrderStatusPayload } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -74,6 +73,16 @@ export const useUpdateOrderStatus = () => {
     });
 };
 
+export const useAdminOrders = (
+    status?: string,
+    limit = 10,
+    offset = 0
+) => {
+    return useQuery({
+        queryKey: ["admin-orders", status, limit, offset],
+        queryFn: () => getAdminOrders(status, limit, offset),
+    });
+};
 
 export const useOrderDetail = (orderId?: string) => {
     return useQuery({
@@ -84,20 +93,20 @@ export const useOrderDetail = (orderId?: string) => {
 };
 
 
-export const useAdminOrders = (
-    status?: string,
-    limit = 10,
-    offset = 0
-) => {
-    return useQuery({
-        queryKey: ["orders", "admin", status, limit, offset],
-        queryFn: () => getAdminOrders(status, limit, offset),
+export const useMyOrderStats = () =>
+    useQuery({
+        queryKey: ["orders", "my", "stats"],
+        queryFn: getMyOrderStats,
     });
-};
 
-export const useOrderStats = () => {
-    return useQuery({
-        queryKey: ["orders", "stats"],
-        queryFn: getOrderStats,
+export const useVendorOrderStats = () =>
+    useQuery({
+        queryKey: ["orders", "vendor", "stats"],
+        queryFn: getVendorOrderStats,
     });
-};
+
+export const useAdminOrderStats = () =>
+    useQuery({
+        queryKey: ["orders", "admin", "stats"],
+        queryFn: getAdminOrderStats,
+    });

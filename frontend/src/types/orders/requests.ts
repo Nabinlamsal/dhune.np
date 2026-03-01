@@ -13,7 +13,7 @@ export interface RequestServiceItem {
 //create requests layload
 export interface CreateRequestPayload {
     pickup_address: string;
-    pickup_time_from: string; // ISO string
+    pickup_time_from: string;
     pickup_time_to: string;   // ISO string
     payment_method: PaymentMethod;
     services: RequestServiceItem[];
@@ -58,8 +58,17 @@ export interface MarketplaceRequest {
     total_quantity: number;
     services: MarketplaceServiceItem[];
 }
+export interface RequestStats {
+    total_requests: number;
+    open_requests: number;
+    expired_requests: number;
+    cancelled_requests: number;
+    order_created_requests: number;
+}
 
 //responces short hand types
+export type RequestStatsResponse = ApiResponse<RequestStats>;
+
 export type CreateRequestResponse = ApiResponse<RequestDetail>;
 
 export type GetRequestResponse = ApiResponse<RequestDetail>;

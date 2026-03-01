@@ -103,18 +103,16 @@ export const getAdminOffers = async (
     });
 };
 
-export const getAdminOfferStats =
-    async (): Promise<OfferStatsResponse> => {
-        return api<OfferStatsResponse>(
-            "/admin/offers",
-            { method: "GET" }
-        );
-    };
+export const getAdminOfferStats = async (): Promise<OfferStatsResponse> => {
+    return api<OfferStatsResponse>(
+        "/admin/offers/stats",
+        { method: "GET" }
+    );
+};
 
-export const getVendorOfferStats =
-    async (): Promise<OfferStatsResponse> => {
-        return api<OfferStatsResponse>(
-            "/admin/offers/stats",
-            { method: "GET" }
-        );
-    };
+export const getVendorOfferStats = async (): Promise<OfferStatsResponse> => {
+    return api<OfferStatsResponse>(
+        "/offers/me/stats",
+        { method: "GET" }
+    );
+};

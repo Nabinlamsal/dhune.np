@@ -1,5 +1,6 @@
 import { api } from "@/src/libs/api";
-import { CancelRequestResponse, CreateRequestPayload, CreateRequestResponse, GetRequestResponse, ListAdminRequestsResponse, ListMarketplaceResponse, ListMyRequestsResponse } from "@/src/types/orders/requests";
+import { ApiResponse } from "@/src/types/api";
+import { CancelRequestResponse, CreateRequestPayload, CreateRequestResponse, GetRequestResponse, ListAdminRequestsResponse, ListMarketplaceResponse, ListMyRequestsResponse, RequestStats } from "@/src/types/orders/requests";
 
 //create request
 export const createRequest = async (
@@ -79,6 +80,18 @@ export const getAdminRequests = async (
     }
 
     return api<ListAdminRequestsResponse>(url, {
+        method: "GET",
+    });
+};
+
+export const getMyRequestStats = async () => {
+    return api<ApiResponse<RequestStats>>("/requests/me/stats", {
+        method: "GET",
+    });
+};
+
+export const getAdminRequestStats = async () => {
+    return api<ApiResponse<RequestStats>>("/admin/requests/stats", {
         method: "GET",
     });
 };

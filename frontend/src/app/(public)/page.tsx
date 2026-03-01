@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-
   return (
     <div className="bg-[#F7F5EE] font-nunito">
       <div className="relative mt-10 h-screen bg-[url('/hero.jpg')] bg-cover bg-center bg-no-repeat px-10">
