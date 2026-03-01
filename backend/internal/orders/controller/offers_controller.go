@@ -292,9 +292,23 @@ func (h *OfferHandler) ListAdmin(c *gin.Context) {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+	var response []dto.OfferAdminResponseDTO
 
-	utils.Success(c, offers)
+	for _, o := range offers {
+		response = append(response, dto.OfferAdminResponseDTO{
+			ID:             o.ID.String(),
+			RequestID:      o.RequestID.String(),
+			VendorID:       o.VendorID.String(),
+			BidPrice:       o.BidPrice,
+			Status:         o.Status,
+			CompletionTime: o.CompletionTime.Format(time.RFC3339),
+			CreatedAt:      o.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	utils.Success(c, response)
 }
+
 func (h *OfferHandler) AdminStats(c *gin.Context) {
 
 	stats, err := h.service.GetAdminStats(c.Request.Context())

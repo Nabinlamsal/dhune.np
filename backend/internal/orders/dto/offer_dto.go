@@ -45,3 +45,12 @@ type OfferStatsDTO struct {
 	Withdrawn int64 `json:"withdrawn"`
 	Expired   int64 `json:"expired"`
 }
+type OfferAdminResponseDTO struct {
+	ID             string  `json:"id"`
+	RequestID      string  `json:"request_id"`
+	VendorID       string  `json:"vendor_id"`
+	BidPrice       float64 `json:"bid_price"`
+	Status         string  `json:"status"`
+	CompletionTime string  `json:"completion_time"`
+	CreatedAt      string  `json:"created_at"`
+}
