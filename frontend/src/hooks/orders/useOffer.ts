@@ -125,15 +125,19 @@ export const useAdminOffers = (
             limit,
             offset,
         ],
-        queryFn: () =>
-            getAdminOffers(
+        queryFn: async () => {
+            const res = await getAdminOffers(
                 status,
                 vendorId,
                 requestId,
                 limit,
                 offset
-            ),
+            )
+
+            return res.data
+        },
     });
+
 
 export const useAdminOfferStats = () =>
     useQuery({
