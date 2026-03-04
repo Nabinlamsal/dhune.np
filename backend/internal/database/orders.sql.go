@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -90,29 +91,109 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	return i, err
 }
 
-const getOrderByID = `-- name: GetOrderByID :one
-SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
-FROM orders
-WHERE id = $1
+const getOrderDetail = `-- name: GetOrderDetail :one
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.pickup_time,
+    o.delivery_time,
+    o.created_at,
+
+    u.id AS user_id,
+    u.display_name AS user_name,
+    u.email AS user_email,
+    u.phone AS user_phone,
+
+    v.id AS vendor_id,
+    v.display_name AS vendor_name,
+    v.email AS vendor_email,
+    v.phone AS vendor_phone,
+
+    r.pickup_address,
+    r.pickup_time_from,
+    r.pickup_time_to,
+    r.payment_method,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u ON u.id = o.user_id
+         JOIN users v ON v.id = o.vendor_id
+         JOIN requests r ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value,
+                           'items_json', rs.items_json,
+                           'description', rs.description
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.id = $1
 `
 
-// Used by: User / Vendor / Admin (Order Detail Page)
-func (q *Queries) GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error) {
-	row := q.db.QueryRowContext(ctx, getOrderByID, id)
-	var i Order
+type GetOrderDetailRow struct {
+	ID             uuid.UUID
+	RequestID      uuid.UUID
+	FinalPrice     string
+	OrderStatus    OrderStatus
+	PaymentStatus  PaymentStatus
+	PickupTime     sql.NullTime
+	DeliveryTime   sql.NullTime
+	CreatedAt      time.Time
+	UserID         uuid.UUID
+	UserName       string
+	UserEmail      string
+	UserPhone      string
+	VendorID       uuid.UUID
+	VendorName     string
+	VendorEmail    string
+	VendorPhone    string
+	PickupAddress  string
+	PickupTimeFrom time.Time
+	PickupTimeTo   time.Time
+	PaymentMethod  PaymentMethod
+	ServicesJson   []byte
+}
+
+// Used by: User (My Orders)
+func (q *Queries) GetOrderDetail(ctx context.Context, id uuid.UUID) (GetOrderDetailRow, error) {
+	row := q.db.QueryRowContext(ctx, getOrderDetail, id)
+	var i GetOrderDetailRow
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.OfferID,
-		&i.UserID,
-		&i.VendorID,
 		&i.FinalPrice,
 		&i.OrderStatus,
 		&i.PaymentStatus,
 		&i.PickupTime,
 		&i.DeliveryTime,
 		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.UserID,
+		&i.UserName,
+		&i.UserEmail,
+		&i.UserPhone,
+		&i.VendorID,
+		&i.VendorName,
+		&i.VendorEmail,
+		&i.VendorPhone,
+		&i.PickupAddress,
+		&i.PickupTimeFrom,
+		&i.PickupTimeTo,
+		&i.PaymentMethod,
+		&i.ServicesJson,
 	)
 	return i, err
 }
@@ -173,13 +254,46 @@ func (q *Queries) GetOrderStatsFiltered(ctx context.Context, arg GetOrderStatsFi
 }
 
 const listOrdersAdmin = `-- name: ListOrdersAdmin :many
-SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
-FROM orders
+SELECT
+    o.id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.created_at,
+
+    u.display_name AS user_name,
+    v.display_name AS vendor_name,
+
+    r.pickup_address,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u ON u.id = o.user_id
+         JOIN users v ON v.id = o.vendor_id
+         JOIN requests r ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
 WHERE (
           $3::order_status IS NULL
-              OR order_status = $3::order_status
+              OR o.order_status = $3::order_status
           )
-ORDER BY created_at DESC
+
+ORDER BY o.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
@@ -189,29 +303,38 @@ type ListOrdersAdminParams struct {
 	Status NullOrderStatus
 }
 
+type ListOrdersAdminRow struct {
+	ID            uuid.UUID
+	FinalPrice    string
+	OrderStatus   OrderStatus
+	PaymentStatus PaymentStatus
+	CreatedAt     time.Time
+	UserName      string
+	VendorName    string
+	PickupAddress string
+	ServicesJson  []byte
+}
+
 // Used by: Admin Dashboard (Global Orders with Filter)
-func (q *Queries) ListOrdersAdmin(ctx context.Context, arg ListOrdersAdminParams) ([]Order, error) {
+func (q *Queries) ListOrdersAdmin(ctx context.Context, arg ListOrdersAdminParams) ([]ListOrdersAdminRow, error) {
 	rows, err := q.db.QueryContext(ctx, listOrdersAdmin, arg.Limit, arg.Offset, arg.Status)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	var items []ListOrdersAdminRow
 	for rows.Next() {
-		var i Order
+		var i ListOrdersAdminRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.RequestID,
-			&i.OfferID,
-			&i.UserID,
-			&i.VendorID,
 			&i.FinalPrice,
 			&i.OrderStatus,
 			&i.PaymentStatus,
-			&i.PickupTime,
-			&i.DeliveryTime,
 			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.UserName,
+			&i.VendorName,
+			&i.PickupAddress,
+			&i.ServicesJson,
 		); err != nil {
 			return nil, err
 		}
@@ -227,10 +350,46 @@ func (q *Queries) ListOrdersAdmin(ctx context.Context, arg ListOrdersAdminParams
 }
 
 const listOrdersByUser = `-- name: ListOrdersByUser :many
-SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
-FROM orders
-WHERE user_id = $1
-ORDER BY created_at DESC
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.created_at,
+
+    v.display_name AS vendor_name,
+    v.phone        AS vendor_phone,
+
+    r.pickup_address,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users v
+              ON v.id = o.vendor_id
+
+         JOIN requests r
+              ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.user_id = $1
+
+ORDER BY o.created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -240,29 +399,40 @@ type ListOrdersByUserParams struct {
 	Offset int32
 }
 
-// Used by: User (My Orders)
-func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserParams) ([]Order, error) {
+type ListOrdersByUserRow struct {
+	ID            uuid.UUID
+	RequestID     uuid.UUID
+	FinalPrice    string
+	OrderStatus   OrderStatus
+	PaymentStatus PaymentStatus
+	CreatedAt     time.Time
+	VendorName    string
+	VendorPhone   string
+	PickupAddress string
+	ServicesJson  []byte
+}
+
+// Used by: User / Vendor / Admin (Order Detail Page)
+func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserParams) ([]ListOrdersByUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listOrdersByUser, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	var items []ListOrdersByUserRow
 	for rows.Next() {
-		var i Order
+		var i ListOrdersByUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.RequestID,
-			&i.OfferID,
-			&i.UserID,
-			&i.VendorID,
 			&i.FinalPrice,
 			&i.OrderStatus,
 			&i.PaymentStatus,
-			&i.PickupTime,
-			&i.DeliveryTime,
 			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.VendorName,
+			&i.VendorPhone,
+			&i.PickupAddress,
+			&i.ServicesJson,
 		); err != nil {
 			return nil, err
 		}
@@ -278,19 +448,53 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserPara
 }
 
 const listOrdersByVendor = `-- name: ListOrdersByVendor :many
-SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at
-FROM orders
-WHERE vendor_id = $1
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.pickup_time,
+    o.created_at,
+
+    u.display_name AS user_name,
+    u.phone        AS user_phone,
+
+    r.pickup_address,
+    r.pickup_time_from,
+    r.pickup_time_to,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u
+              ON u.id = o.user_id
+
+         JOIN requests r
+              ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.vendor_id = $1
   AND (
     $4::order_status IS NULL
-        OR order_status = $4::order_status
+        OR o.order_status = $4::order_status
     )
-ORDER BY
-    CASE
-        WHEN $5 = 'pickup'
-            THEN pickup_time
-        END ASC,
-    created_at DESC
+
+ORDER BY o.created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -299,37 +503,52 @@ type ListOrdersByVendorParams struct {
 	Limit    int32
 	Offset   int32
 	Status   NullOrderStatus
-	SortBy   interface{}
 }
 
-func (q *Queries) ListOrdersByVendor(ctx context.Context, arg ListOrdersByVendorParams) ([]Order, error) {
+type ListOrdersByVendorRow struct {
+	ID             uuid.UUID
+	RequestID      uuid.UUID
+	FinalPrice     string
+	OrderStatus    OrderStatus
+	PaymentStatus  PaymentStatus
+	PickupTime     sql.NullTime
+	CreatedAt      time.Time
+	UserName       string
+	UserPhone      string
+	PickupAddress  string
+	PickupTimeFrom time.Time
+	PickupTimeTo   time.Time
+	ServicesJson   []byte
+}
+
+func (q *Queries) ListOrdersByVendor(ctx context.Context, arg ListOrdersByVendorParams) ([]ListOrdersByVendorRow, error) {
 	rows, err := q.db.QueryContext(ctx, listOrdersByVendor,
 		arg.VendorID,
 		arg.Limit,
 		arg.Offset,
 		arg.Status,
-		arg.SortBy,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	var items []ListOrdersByVendorRow
 	for rows.Next() {
-		var i Order
+		var i ListOrdersByVendorRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.RequestID,
-			&i.OfferID,
-			&i.UserID,
-			&i.VendorID,
 			&i.FinalPrice,
 			&i.OrderStatus,
 			&i.PaymentStatus,
 			&i.PickupTime,
-			&i.DeliveryTime,
 			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.UserName,
+			&i.UserPhone,
+			&i.PickupAddress,
+			&i.PickupTimeFrom,
+			&i.PickupTimeTo,
+			&i.ServicesJson,
 		); err != nil {
 			return nil, err
 		}

@@ -12,21 +12,27 @@ type orderRepository struct {
 }
 
 func NewOrderRepository(q *db.Queries) OrderRepository {
-	return &orderRepository{q: q}
+	return &orderRepository{
+		q: q,
+	}
 }
 
-// Create new order
-func (r *orderRepository) Create(ctx context.Context, params db.CreateOrderParams) (db.Order, error) {
+// Create order (used when offer is accepted)
+func (r *orderRepository) Create(
+	ctx context.Context,
+	params db.CreateOrderParams,
+) (db.Order, error) {
+
 	return r.q.CreateOrder(ctx, params)
 }
 
-// List orders by user
+// List orders for a user dashboard
 func (r *orderRepository) ListByUser(
 	ctx context.Context,
 	userID uuid.UUID,
-	limit,
+	limit int32,
 	offset int32,
-) ([]db.Order, error) {
+) ([]db.ListOrdersByUserRow, error) {
 
 	return r.q.ListOrdersByUser(ctx, db.ListOrdersByUserParams{
 		UserID: userID,
@@ -35,40 +41,48 @@ func (r *orderRepository) ListByUser(
 	})
 }
 
-// List orders by vendor
+// List orders for vendor dashboard
 func (r *orderRepository) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
 	status db.NullOrderStatus,
-	sortBy string,
-	limit,
+	limit int32,
 	offset int32,
-) ([]db.Order, error) {
-
-	// Default sort
-	if sortBy == "" {
-		sortBy = "newest"
-	}
+) ([]db.ListOrdersByVendorRow, error) {
 
 	return r.q.ListOrdersByVendor(ctx, db.ListOrdersByVendorParams{
 		VendorID: vendorID,
+		Status:   status,
 		Limit:    limit,
 		Offset:   offset,
-		Status:   status,
-		SortBy:   sortBy,
 	})
 }
 
-// Get single order
-func (r *orderRepository) GetByID(
+// List orders for admin panel
+func (r *orderRepository) ListAdmin(
 	ctx context.Context,
-	orderID uuid.UUID,
-) (db.Order, error) {
+	status db.NullOrderStatus,
+	limit int32,
+	offset int32,
+) ([]db.ListOrdersAdminRow, error) {
 
-	return r.q.GetOrderByID(ctx, orderID)
+	return r.q.ListOrdersAdmin(ctx, db.ListOrdersAdminParams{
+		Status: status,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
-// Update order status
+// Get full order detail (for clicking table row)
+func (r *orderRepository) GetDetail(
+	ctx context.Context,
+	orderID uuid.UUID,
+) (db.GetOrderDetailRow, error) {
+
+	return r.q.GetOrderDetail(ctx, orderID)
+}
+
+// Update order status (vendor progress)
 func (r *orderRepository) UpdateStatus(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -81,7 +95,7 @@ func (r *orderRepository) UpdateStatus(
 	})
 }
 
-// Cancel order
+// Cancel order (user)
 func (r *orderRepository) Cancel(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -90,7 +104,7 @@ func (r *orderRepository) Cancel(
 	return r.q.CancelOrder(ctx, orderID)
 }
 
-// Mark order as paid
+// Mark order paid (payment service)
 func (r *orderRepository) MarkPaid(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -99,7 +113,7 @@ func (r *orderRepository) MarkPaid(
 	return r.q.MarkOrderPaid(ctx, orderID)
 }
 
-// Mark order as refunded
+// Mark order refunded
 func (r *orderRepository) MarkRefunded(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -108,31 +122,15 @@ func (r *orderRepository) MarkRefunded(
 	return r.q.MarkOrderRefunded(ctx, orderID)
 }
 
-// Admin listing with optional status filter
-func (r *orderRepository) ListAdmin(
-	ctx context.Context,
-	status db.NullOrderStatus,
-	limit, offset int32,
-) ([]db.Order, error) {
-	return r.q.ListOrdersAdmin(ctx, db.ListOrdersAdminParams{
-		Status: status,
-		Limit:  limit,
-		Offset: offset,
-	})
-}
-
-// Order statistics
+// Order statistics for dashboards
 func (r *orderRepository) GetStatsFiltered(
 	ctx context.Context,
 	userID uuid.NullUUID,
 	vendorID uuid.NullUUID,
 ) (db.GetOrderStatsFilteredRow, error) {
 
-	return r.q.GetOrderStatsFiltered(
-		ctx,
-		db.GetOrderStatsFilteredParams{
-			UserID:   userID,
-			VendorID: vendorID,
-		},
-	)
+	return r.q.GetOrderStatsFiltered(ctx, db.GetOrderStatsFilteredParams{
+		UserID:   userID,
+		VendorID: vendorID,
+	})
 }

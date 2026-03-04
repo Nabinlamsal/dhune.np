@@ -32,7 +32,28 @@ func (s *OrderService) GetByID(
 		return nil, err
 	}
 
-	return mapOrder(order), nil
+	price, err := strconv.ParseFloat(order.FinalPrice, 64)
+	if err != nil {
+		price = 0
+	}
+
+	var pickup *time.Time
+	if order.PickupTime.Valid {
+		pickup = &order.PickupTime.Time
+	}
+
+	return &OrderSummary{
+		ID:            order.ID,
+		RequestID:     order.RequestID,
+		OfferID:       order.OfferID,
+		UserID:        order.UserID,
+		VendorID:      order.VendorID,
+		FinalPrice:    price,
+		OrderStatus:   string(order.OrderStatus),
+		PaymentStatus: string(order.PaymentStatus),
+		PickupTime:    pickup,
+		CreatedAt:     order.CreatedAt,
+	}, nil
 }
 
 // list by user
@@ -49,7 +70,7 @@ func (s *OrderService) ListByUser(
 
 	var result []OrderSummary
 	for _, o := range orders {
-		result = append(result, *mapOrder(o))
+		result = append(result, mapUserOrder(o))
 	}
 
 	return result, nil
@@ -83,7 +104,7 @@ func (s *OrderService) ListByVendor(
 
 	var result []OrderSummary
 	for _, o := range orders {
-		result = append(result, *mapOrder(o))
+		result = append(result, mapVendorOrder(o))
 	}
 
 	return result, nil
@@ -172,7 +193,7 @@ func (s *OrderService) ListAdmin(
 
 	var result []OrderSummary
 	for _, o := range orders {
-		result = append(result, *mapOrder(o))
+		result = append(result, mapAdminOrder(o))
 	}
 
 	return result, nil
@@ -217,28 +238,85 @@ func (s *OrderService) GetAdminStats(
 		uuid.NullUUID{},
 	)
 }
+func mapVendorOrder(row db.ListOrdersByVendorRow) OrderSummary {
 
-// helper function
-func mapOrder(o db.Order) *OrderSummary {
-
-	price, _ := strconv.ParseFloat(o.FinalPrice, 64)
+	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
 
 	var pickup *time.Time
-	if o.PickupTime.Valid {
-		pickup = &o.PickupTime.Time
+	if row.PickupTime.Valid {
+		pickup = &row.PickupTime.Time
 	}
 
-	return &OrderSummary{
-		ID:            o.ID,
-		RequestID:     o.RequestID,
-		OfferID:       o.OfferID,
-		UserID:        o.UserID,
-		VendorID:      o.VendorID,
-		FinalPrice:    price,
-		OrderStatus:   string(o.OrderStatus),
-		PaymentStatus: string(o.PaymentStatus),
-		PickupTime:    pickup,
-		CreatedAt:     o.CreatedAt,
+	return OrderSummary{
+		ID:        row.ID,
+		RequestID: row.RequestID,
+		OfferID:   row.OfferID,
+
+		FinalPrice: price,
+
+		OrderStatus:   string(row.OrderStatus),
+		PaymentStatus: string(row.PaymentStatus),
+
+		PickupTime: pickup,
+		CreatedAt:  row.CreatedAt,
+
+		UserName:  row.UserName,
+		UserPhone: row.UserPhone,
+		UserEmail: row.UserEmail,
+
+		CategoryName: row.CategoryName,
+	}
+}
+
+func mapAdminOrder(row db.ListOrdersAdminRow) OrderSummary {
+
+	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
+
+	return OrderSummary{
+		ID:        row.ID,
+		RequestID: row.RequestID,
+		OfferID:   row.OfferID,
+
+		FinalPrice: price,
+
+		OrderStatus:   string(row.OrderStatus),
+		PaymentStatus: string(row.PaymentStatus),
+
+		CreatedAt: row.CreatedAt,
+
+		UserName:  row.UserName,
+		UserPhone: row.UserPhone,
+		UserEmail: row.UserEmail,
+
+		VendorName:  row.VendorName,
+		VendorPhone: row.VendorPhone,
+		VendorEmail: row.VendorEmail,
+
+		CategoryName: row.CategoryName,
+	}
+}
+
+func mapUserOrder(row db.ListOrdersByUserRow) OrderSummary {
+
+	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
+
+	return OrderSummary{
+		ID:        row.ID,
+		RequestID: row.RequestID,
+		OfferID:   row.OfferID,
+
+		FinalPrice: price,
+
+		OrderStatus:   string(row.OrderStatus),
+		PaymentStatus: string(row.PaymentStatus),
+
+		CreatedAt: row.CreatedAt,
+
+		VendorName:  row.VendorName,
+		VendorPhone: row.VendorPhone,
+		VendorEmail: row.VendorEmail,
+
+		CategoryName: row.CategoryName,
 	}
 }
 
