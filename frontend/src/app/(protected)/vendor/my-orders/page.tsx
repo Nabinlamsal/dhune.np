@@ -91,13 +91,13 @@ export default function VendorOrdersPage() {
             key: "id",
             header: "Order ID",
             render: (o: OrderListItem) =>
-                o.id.slice(0, 8) + "...",
+                o.id
         },
         {
             key: "request_id",
             header: "Request",
             render: (o: OrderListItem) =>
-                o.request_id.slice(0, 8) + "...",
+                o.request_id
         },
         {
             key: "amount",

@@ -88,7 +88,7 @@ export const useOrderDetail = (orderId?: string) => {
     return useQuery({
         queryKey: ["orders", "detail", orderId],
         queryFn: () => getOrderById(orderId as string),
-        enabled: !!orderId, // only run if exists
+        enabled: !!orderId,
     });
 };
 
