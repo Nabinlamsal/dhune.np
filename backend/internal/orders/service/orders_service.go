@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
-	"strconv"
+	"encoding/json"
 	"time"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
@@ -21,69 +20,123 @@ func NewOrderService(repo repository.OrderRepository) *OrderService {
 	}
 }
 
-// get by id
-func (s *OrderService) GetByID(
+func parseServices(data []byte) ([]OrderService, error) {
+	var services []OrderService
+
+	if len(data) == 0 {
+		return services, nil
+	}
+
+	err := json.Unmarshal(data, &services)
+	return services, err
+}
+
+func (s *OrderService) GetDetail(
 	ctx context.Context,
 	orderID uuid.UUID,
-) (*OrderSummary, error) {
+) (*OrderDetail, error) {
 
-	order, err := s.repo.GetByID(ctx, orderID)
+	row, err := s.repo.GetDetail(ctx, orderID)
 	if err != nil {
 		return nil, err
 	}
 
-	price, err := strconv.ParseFloat(order.FinalPrice, 64)
+	services, err := parseServices(row.ServicesJson)
 	if err != nil {
-		price = 0
+		return nil, err
 	}
 
 	var pickup *time.Time
-	if order.PickupTime.Valid {
-		pickup = &order.PickupTime.Time
+	if row.PickupTime.Valid {
+		pickup = &row.PickupTime.Time
 	}
 
-	return &OrderSummary{
-		ID:            order.ID,
-		RequestID:     order.RequestID,
-		OfferID:       order.OfferID,
-		UserID:        order.UserID,
-		VendorID:      order.VendorID,
-		FinalPrice:    price,
-		OrderStatus:   string(order.OrderStatus),
-		PaymentStatus: string(order.PaymentStatus),
-		PickupTime:    pickup,
-		CreatedAt:     order.CreatedAt,
+	var delivery *time.Time
+	if row.DeliveryTime.Valid {
+		delivery = &row.DeliveryTime.Time
+	}
+
+	return &OrderDetail{
+		ID:            row.ID.String(),
+		RequestID:     row.RequestID.String(),
+		FinalPrice:    row.FinalPrice,
+		OrderStatus:   string(row.OrderStatus),
+		PaymentStatus: string(row.PaymentStatus),
+
+		PickupTime:   pickup,
+		DeliveryTime: delivery,
+		CreatedAt:    row.CreatedAt,
+
+		User: UserInfo{
+			ID:    row.UserID.String(),
+			Name:  row.UserName,
+			Email: row.UserEmail,
+			Phone: row.UserPhone,
+		},
+
+		Vendor: VendorInfo{
+			ID:    row.VendorID.String(),
+			Name:  row.VendorName,
+			Email: row.VendorEmail,
+			Phone: row.VendorPhone,
+		},
+
+		Request: RequestInfo{
+			PickupAddress:  row.PickupAddress,
+			PickupTimeFrom: row.PickupTimeFrom,
+			PickupTimeTo:   row.PickupTimeTo,
+			PaymentMethod:  string(row.PaymentMethod),
+		},
+
+		Services: services,
 	}, nil
 }
 
-// list by user
 func (s *OrderService) ListByUser(
 	ctx context.Context,
 	userID uuid.UUID,
-	limit, offset int32,
+	limit,
+	offset int32,
 ) ([]OrderSummary, error) {
 
-	orders, err := s.repo.ListByUser(ctx, userID, limit, offset)
+	rows, err := s.repo.ListByUser(ctx, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	var result []OrderSummary
-	for _, o := range orders {
-		result = append(result, mapUserOrder(o))
+
+	for _, row := range rows {
+
+		services, _ := parseServices(row.ServicesJson)
+
+		result = append(result, OrderSummary{
+			ID:            row.ID.String(),
+			RequestID:     row.RequestID.String(),
+			FinalPrice:    row.FinalPrice,
+			OrderStatus:   string(row.OrderStatus),
+			PaymentStatus: string(row.PaymentStatus),
+			CreatedAt:     row.CreatedAt,
+
+			VendorName:    row.VendorName,
+			VendorPhone:   row.VendorPhone,
+			PickupAddress: row.PickupAddress,
+
+			Services: services,
+		})
 	}
 
 	return result, nil
 }
 
-// list by vendor
 func (s *OrderService) ListByVendor(
 	ctx context.Context,
 	vendorID uuid.UUID,
 	status *string,
-	sortBy string,
-	limit, offset int32,
+	limit,
+	offset int32,
 ) ([]OrderSummary, error) {
+
 	var dbStatus db.NullOrderStatus
 
 	if status != nil {
@@ -93,66 +146,102 @@ func (s *OrderService) ListByVendor(
 		}
 	}
 
-	if sortBy == "" {
-		sortBy = "newest"
-	}
-
-	orders, err := s.repo.ListByVendor(ctx, vendorID, dbStatus, sortBy, limit, offset)
+	rows, err := s.repo.ListByVendor(ctx, vendorID, dbStatus, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	var result []OrderSummary
-	for _, o := range orders {
-		result = append(result, mapVendorOrder(o))
+
+	for _, row := range rows {
+
+		services, _ := parseServices(row.ServicesJson)
+
+		result = append(result, OrderSummary{
+			ID:            row.ID.String(),
+			RequestID:     row.RequestID.String(),
+			FinalPrice:    row.FinalPrice,
+			OrderStatus:   string(row.OrderStatus),
+			PaymentStatus: string(row.PaymentStatus),
+			CreatedAt:     row.CreatedAt,
+
+			UserName:  row.UserName,
+			UserPhone: row.UserPhone,
+
+			PickupAddress: row.PickupAddress,
+
+			Services: services,
+		})
 	}
 
 	return result, nil
 }
 
-// update status
-func (s *OrderService) UpdateStatus(
+func (s *OrderService) ListAdmin(
 	ctx context.Context,
-	input UpdateOrderStatusInput,
-) error {
+	status *string,
+	limit,
+	offset int32,
+) ([]OrderSummary, error) {
 
-	//Get current order
-	order, err := s.repo.GetByID(ctx, input.OrderID)
+	var dbStatus db.NullOrderStatus
+
+	if status != nil {
+		dbStatus = db.NullOrderStatus{
+			OrderStatus: db.OrderStatus(*status),
+			Valid:       true,
+		}
+	}
+
+	rows, err := s.repo.ListAdmin(ctx, dbStatus, limit, offset)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	current := order.OrderStatus
-	next := db.OrderStatus(input.Status)
+	var result []OrderSummary
 
-	//Validate transition
-	if !isValidTransition(current, next) {
-		return errors.New("invalid order status transition")
+	for _, row := range rows {
+
+		services, _ := parseServices(row.ServicesJson)
+
+		result = append(result, OrderSummary{
+			ID:            row.ID.String(),
+			FinalPrice:    row.FinalPrice,
+			OrderStatus:   string(row.OrderStatus),
+			PaymentStatus: string(row.PaymentStatus),
+			CreatedAt:     row.CreatedAt,
+
+			UserName:   row.UserName,
+			VendorName: row.VendorName,
+
+			PickupAddress: row.PickupAddress,
+
+			Services: services,
+		})
 	}
 
-	// 3Update
-	return s.repo.UpdateStatus(ctx, input.OrderID, next)
+	return result, nil
 }
 
-// cancel order
+func (s *OrderService) UpdateStatus(
+	ctx context.Context,
+	orderID uuid.UUID,
+	status string,
+) error {
+
+	next := db.OrderStatus(status)
+
+	return s.repo.UpdateStatus(ctx, orderID, next)
+}
+
 func (s *OrderService) Cancel(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
 
-	order, err := s.repo.GetByID(ctx, orderID)
-	if err != nil {
-		return err
-	}
-
-	if order.OrderStatus != db.OrderStatusACCEPTED {
-		return errors.New("order cannot be cancelled")
-	}
-
 	return s.repo.Cancel(ctx, orderID)
 }
 
-// mark as paid
 func (s *OrderService) MarkPaid(
 	ctx context.Context,
 	orderID uuid.UUID,
@@ -161,42 +250,12 @@ func (s *OrderService) MarkPaid(
 	return s.repo.MarkPaid(ctx, orderID)
 }
 
-// mark as refunded
 func (s *OrderService) MarkRefunded(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
 
 	return s.repo.MarkRefunded(ctx, orderID)
-}
-
-// admin order listing
-func (s *OrderService) ListAdmin(
-	ctx context.Context,
-	status *string,
-	limit, offset int32,
-) ([]OrderSummary, error) {
-
-	var dbStatus db.NullOrderStatus
-
-	if status != nil {
-		dbStatus = db.NullOrderStatus{
-			OrderStatus: db.OrderStatus(*status),
-			Valid:       true,
-		}
-	}
-
-	orders, err := s.repo.ListAdmin(ctx, dbStatus, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []OrderSummary
-	for _, o := range orders {
-		result = append(result, mapAdminOrder(o))
-	}
-
-	return result, nil
 }
 
 func (s *OrderService) GetUserStats(
@@ -213,6 +272,7 @@ func (s *OrderService) GetUserStats(
 		uuid.NullUUID{},
 	)
 }
+
 func (s *OrderService) GetVendorStats(
 	ctx context.Context,
 	vendorID uuid.UUID,
@@ -237,113 +297,4 @@ func (s *OrderService) GetAdminStats(
 		uuid.NullUUID{},
 		uuid.NullUUID{},
 	)
-}
-func mapVendorOrder(row db.ListOrdersByVendorRow) OrderSummary {
-
-	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
-
-	var pickup *time.Time
-	if row.PickupTime.Valid {
-		pickup = &row.PickupTime.Time
-	}
-
-	return OrderSummary{
-		ID:        row.ID,
-		RequestID: row.RequestID,
-		OfferID:   row.OfferID,
-
-		FinalPrice: price,
-
-		OrderStatus:   string(row.OrderStatus),
-		PaymentStatus: string(row.PaymentStatus),
-
-		PickupTime: pickup,
-		CreatedAt:  row.CreatedAt,
-
-		UserName:  row.UserName,
-		UserPhone: row.UserPhone,
-		UserEmail: row.UserEmail,
-
-		CategoryName: row.CategoryName,
-	}
-}
-
-func mapAdminOrder(row db.ListOrdersAdminRow) OrderSummary {
-
-	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
-
-	return OrderSummary{
-		ID:        row.ID,
-		RequestID: row.RequestID,
-		OfferID:   row.OfferID,
-
-		FinalPrice: price,
-
-		OrderStatus:   string(row.OrderStatus),
-		PaymentStatus: string(row.PaymentStatus),
-
-		CreatedAt: row.CreatedAt,
-
-		UserName:  row.UserName,
-		UserPhone: row.UserPhone,
-		UserEmail: row.UserEmail,
-
-		VendorName:  row.VendorName,
-		VendorPhone: row.VendorPhone,
-		VendorEmail: row.VendorEmail,
-
-		CategoryName: row.CategoryName,
-	}
-}
-
-func mapUserOrder(row db.ListOrdersByUserRow) OrderSummary {
-
-	price, _ := strconv.ParseFloat(row.FinalPrice, 64)
-
-	return OrderSummary{
-		ID:        row.ID,
-		RequestID: row.RequestID,
-		OfferID:   row.OfferID,
-
-		FinalPrice: price,
-
-		OrderStatus:   string(row.OrderStatus),
-		PaymentStatus: string(row.PaymentStatus),
-
-		CreatedAt: row.CreatedAt,
-
-		VendorName:  row.VendorName,
-		VendorPhone: row.VendorPhone,
-		VendorEmail: row.VendorEmail,
-
-		CategoryName: row.CategoryName,
-	}
-}
-
-// transaction logic
-func isValidTransition(
-	current db.OrderStatus,
-	next db.OrderStatus,
-) bool {
-
-	switch current {
-
-	case db.OrderStatusACCEPTED:
-		return next == db.OrderStatusPICKEDUP ||
-			next == db.OrderStatusCANCELLED
-
-	case db.OrderStatusPICKEDUP:
-		return next == db.OrderStatusINPROGRESS
-
-	case db.OrderStatusINPROGRESS:
-		return next == db.OrderStatusDELIVERING
-
-	case db.OrderStatusDELIVERING:
-		return next == db.OrderStatusCOMPLETED
-
-	case db.OrderStatusCOMPLETED,
-		db.OrderStatusCANCELLED:
-		return false
-	}
-	return false
 }

@@ -16,6 +16,7 @@ type OrderHandler struct {
 func NewOrderHandler(service *service.OrderService) *OrderHandler {
 	return &OrderHandler{service: service}
 }
+
 func (h *OrderHandler) GetByID(c *gin.Context) {
 
 	orderID, err := uuid.Parse(c.Param("id"))
@@ -24,7 +25,7 @@ func (h *OrderHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	order, err := h.service.GetByID(c.Request.Context(), orderID)
+	order, err := h.service.GetDetail(c.Request.Context(), orderID)
 	if err != nil {
 		utils.Error(c, http.StatusNotFound, err.Error())
 		return
@@ -32,6 +33,7 @@ func (h *OrderHandler) GetByID(c *gin.Context) {
 
 	utils.Success(c, order)
 }
+
 func (h *OrderHandler) ListMy(c *gin.Context) {
 
 	userIDStr := c.MustGet("user_id").(string)
@@ -66,8 +68,8 @@ func (h *OrderHandler) ListVendor(c *gin.Context) {
 		utils.Error(c, http.StatusUnauthorized, "invalid user id")
 		return
 	}
+
 	statusStr := c.Query("status")
-	sortBy := c.DefaultQuery("sort", "newest")
 
 	var status *string
 	if statusStr != "" {
@@ -80,10 +82,10 @@ func (h *OrderHandler) ListVendor(c *gin.Context) {
 		c.Request.Context(),
 		vendorID,
 		status,
-		sortBy,
 		limit,
 		offset,
 	)
+
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
@@ -111,10 +113,8 @@ func (h *OrderHandler) UpdateStatus(c *gin.Context) {
 
 	err = h.service.UpdateStatus(
 		c.Request.Context(),
-		service.UpdateOrderStatusInput{
-			OrderID: orderID,
-			Status:  body.Status,
-		},
+		orderID,
+		body.Status,
 	)
 
 	if err != nil {
@@ -124,6 +124,7 @@ func (h *OrderHandler) UpdateStatus(c *gin.Context) {
 
 	utils.Success(c, gin.H{"message": "order status updated"})
 }
+
 func (h *OrderHandler) Cancel(c *gin.Context) {
 
 	orderID, err := uuid.Parse(c.Param("id"))
