@@ -12,19 +12,102 @@ RETURNING *;
 
 
 -- Used by: User (My Orders)
--- name: ListOrdersByUser :many
-SELECT *
-FROM orders
-WHERE user_id = $1
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+-- name: GetOrderDetail :one
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.pickup_time,
+    o.delivery_time,
+    o.created_at,
+
+    u.id AS user_id,
+    u.display_name AS user_name,
+    u.email AS user_email,
+    u.phone AS user_phone,
+
+    v.id AS vendor_id,
+    v.display_name AS vendor_name,
+    v.email AS vendor_email,
+    v.phone AS vendor_phone,
+
+    r.pickup_address,
+    r.pickup_time_from,
+    r.pickup_time_to,
+    r.payment_method,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u ON u.id = o.user_id
+         JOIN users v ON v.id = o.vendor_id
+         JOIN requests r ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value,
+                           'items_json', rs.items_json,
+                           'description', rs.description
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.id = $1;
 
 
 -- Used by: User / Vendor / Admin (Order Detail Page)
--- name: GetOrderByID :one
-SELECT *
-FROM orders
-WHERE id = $1;
+-- name: ListOrdersByUser :many
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.created_at,
+
+    v.display_name AS vendor_name,
+    v.phone        AS vendor_phone,
+
+    r.pickup_address,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users v
+              ON v.id = o.vendor_id
+
+         JOIN requests r
+              ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.user_id = $1
+
+ORDER BY o.created_at DESC
+LIMIT $2 OFFSET $3;
 
 
 -- Used by: Vendor (Status Progression)
@@ -74,30 +157,99 @@ WHERE id = $1
 
 -- Used by: Admin Dashboard (Global Orders with Filter)
 -- name: ListOrdersAdmin :many
-SELECT *
-FROM orders
+SELECT
+    o.id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.created_at,
+
+    u.display_name AS user_name,
+    v.display_name AS vendor_name,
+
+    r.pickup_address,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u ON u.id = o.user_id
+         JOIN users v ON v.id = o.vendor_id
+         JOIN requests r ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
 WHERE (
           sqlc.narg(status)::order_status IS NULL
-              OR order_status = sqlc.narg(status)::order_status
+              OR o.order_status = sqlc.narg(status)::order_status
           )
-ORDER BY created_at DESC
+
+ORDER BY o.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: ListOrdersByVendor :many
-SELECT *
-FROM orders
-WHERE vendor_id = $1
+SELECT
+    o.id,
+    o.request_id,
+    o.final_price,
+    o.order_status,
+    o.payment_status,
+    o.pickup_time,
+    o.created_at,
+
+    u.display_name AS user_name,
+    u.phone        AS user_phone,
+
+    r.pickup_address,
+    r.pickup_time_from,
+    r.pickup_time_to,
+
+    COALESCE(s.services_json, '[]'::jsonb) AS services_json
+
+FROM orders o
+
+         JOIN users u
+              ON u.id = o.user_id
+
+         JOIN requests r
+              ON r.id = o.request_id
+
+         LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'category_id', c.id,
+                           'category_name', c.name,
+                           'selected_unit', rs.selected_unit,
+                           'quantity_value', rs.quantity_value
+                   )
+           ) AS services_json
+    FROM request_services rs
+             JOIN categories c ON c.id = rs.category_id
+    WHERE rs.request_id = o.request_id
+    ) s ON true
+
+WHERE o.vendor_id = $1
   AND (
     sqlc.narg(status)::order_status IS NULL
-        OR order_status = sqlc.narg(status)::order_status
+        OR o.order_status = sqlc.narg(status)::order_status
     )
-ORDER BY
-    CASE
-        WHEN sqlc.arg(sort_by) = 'pickup'
-            THEN pickup_time
-        END ASC,
-    created_at DESC
+
+ORDER BY o.created_at DESC
 LIMIT $2 OFFSET $3;
+
+
 
 -- Used by: Admin Dashboard (Order Stats)
 -- name: GetOrderStatsFiltered :one
