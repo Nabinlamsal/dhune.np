@@ -33,7 +33,6 @@ export const cancelOrder = async (
 export const getVendorOrders = async (
     options?: {
         status?: string;
-        sort?: "newest" | "pickup";
         limit?: number;
         offset?: number;
     }
@@ -41,12 +40,11 @@ export const getVendorOrders = async (
 
     const {
         status,
-        sort = "newest",
         limit = 10,
         offset = 0
     } = options || {};
 
-    let url = `/vendor/orders?limit=${limit}&offset=${offset}&sort=${sort}`;
+    let url = `/vendor/orders?limit=${limit}&offset=${offset}`;
 
     if (status) {
         url += `&status=${status}`;

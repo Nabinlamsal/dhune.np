@@ -6,32 +6,47 @@ import { RequestDetail } from "./requests";
 export interface OrderListItem {
     id: string;
     request_id: string;
-    offer_id: string;
     final_price: number;
     order_status: OrderStatus;
     payment_status: PaymentStatus;
     created_at: string;
 
-    user?: AdminUserSummary;
-    vendor?: AdminUserSummary;
+    user_name?: string;
+    user_phone?: string;
+
+    vendor_name?: string;
+    vendor_phone?: string;
+
+    pickup_address: string;
+
+    services: {
+        category_id: string;
+        category_name: string;
+        selected_unit: string;
+        quantity_value: number;
+    }[];
 }
 
 export interface OrderDetailResponse {
-    order: {
-        id: string;
-        request_id: string;
-        offer_id: string;
-        final_price: number;
-        order_status: OrderStatus;
-        payment_status: PaymentStatus;
-        created_at: string;
-    };
+    id: string;
+    request_id: string;
+    final_price: number;
+    order_status: OrderStatus;
+    payment_status: PaymentStatus;
+    created_at: string;
 
-    request: RequestDetail;
     user: AdminUserSummary;
     vendor: AdminUserSummary;
-}
 
+    request: RequestDetail;
+
+    services: {
+        category_id: string;
+        category_name: string;
+        selected_unit: string;
+        quantity_value: number;
+    }[];
+}
 export interface OrderStats {
     recent_orders: any;
     total_orders: number;

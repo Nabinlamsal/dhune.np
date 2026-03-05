@@ -7,7 +7,10 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 export const useMyOrders = (limit = 10, offset = 0) => {
     return useQuery({
         queryKey: ["orders", "my", limit, offset],
-        queryFn: () => getMyOrders(limit, offset),
+        queryFn: async () => {
+            const res = await getMyOrders(limit, offset);
+            return res.data;
+        },
     });
 };
 
@@ -31,21 +34,18 @@ export const useCancelOrder = () => {
 
 export const useVendorOrders = ({
     status,
-    sort = "newest",
     limit = 10,
     offset = 0,
 }: {
     status?: OrderStatus;
-    sort?: "newest" | "pickup";
     limit?: number;
     offset?: number;
 }) => {
     return useQuery({
-        queryKey: ["vendor-orders", status, sort, limit, offset],
+        queryKey: ["vendor-orders", status, limit, offset],
         queryFn: async () => {
             const res = await getVendorOrders({
                 status,
-                sort,
                 limit,
                 offset,
             });
@@ -80,18 +80,23 @@ export const useAdminOrders = (
 ) => {
     return useQuery({
         queryKey: ["admin-orders", status, limit, offset],
-        queryFn: () => getAdminOrders(status, limit, offset),
+        queryFn: async () => {
+            const res = await getAdminOrders(status, limit, offset);
+            return res.data;
+        },
     });
 };
 
 export const useOrderDetail = (orderId?: string) => {
     return useQuery({
         queryKey: ["orders", "detail", orderId],
-        queryFn: () => getOrderById(orderId as string),
+        queryFn: async () => {
+            const res = await getOrderById(orderId as string);
+            return res.data;
+        },
         enabled: !!orderId,
     });
 };
-
 
 export const useMyOrderStats = () =>
     useQuery({
