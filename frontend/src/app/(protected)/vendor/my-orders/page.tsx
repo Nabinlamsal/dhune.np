@@ -15,11 +15,7 @@ import {
     useOrderDetail,
 } from "@/src/hooks/orders/useOrder";
 
-import {
-    OrderListItem,
-    UpdateOrderStatusPayload,
-} from "@/src/types/orders/orders";
-
+import { OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
 
 function mapOrderStatusToBadge(status: string): Status {
@@ -38,75 +34,82 @@ function mapOrderStatusToBadge(status: string): Status {
     }
 }
 
+function getNextStatus(status: OrderStatus): OrderStatus | null {
+    switch (status) {
+        case "ACCEPTED":
+            return "PICKED_UP";
+        case "PICKED_UP":
+            return "IN_PROGRESS";
+        case "IN_PROGRESS":
+            return "DELIVERING";
+        case "DELIVERING":
+            return "COMPLETED";
+        default:
+            return null;
+    }
+}
+
+function getNextButtonLabel(status: OrderStatus) {
+    switch (status) {
+        case "ACCEPTED":
+            return "Mark Picked Up";
+        case "PICKED_UP":
+            return "Start Processing";
+        case "IN_PROGRESS":
+            return "Start Delivery";
+        case "DELIVERING":
+            return "Mark Completed";
+        default:
+            return null;
+    }
+}
+
 export default function VendorOrdersPage() {
-    const [filter, setFilter] = useState<OrderStatus>("ALL");
+
+    const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-    const {
-        data: orders,
-        isLoading,
-    } = useVendorOrders({
+    const { data: orders, isLoading } = useVendorOrders({
         status: filter === "ALL" ? undefined : filter,
     });
 
     const { mutate: updateStatus } = useUpdateOrderStatus();
 
-    const {
-        data: detailResponse,
-        isLoading: isDetailLoading,
-    } = useOrderDetail(selectedOrderId || undefined);
-
-    const detail = detailResponse?.data;
-
-    const handleNextStatus = (order: OrderListItem) => {
-        let next: OrderStatus | null = null;
-
-        switch (order.order_status) {
-            case "ACCEPTED":
-                next = "PICKED_UP";
-                break;
-            case "PICKED_UP":
-                next = "IN_PROGRESS";
-                break;
-            case "IN_PROGRESS":
-                next = "DELIVERING";
-                break;
-            case "DELIVERING":
-                next = "COMPLETED";
-                break;
-        }
-
-        if (!next) return;
-
-        const payload: UpdateOrderStatusPayload = { status: next };
-
-        updateStatus({
-            orderId: order.id,
-            payload,
-        });
-    };
+    const { data: detail, isLoading: isDetailLoading } =
+        useOrderDetail(selectedOrderId ?? undefined);
 
     const columns = [
+
         {
             key: "id",
-            header: "Order ID",
-            render: (o: OrderListItem) =>
-                o.id
+            header: "Order",
+            render: (o: OrderListItem) => o.id.slice(0, 8) + "...",
         },
+
         {
-            key: "request_id",
-            header: "Request",
+            key: "customer",
+            header: "Customer",
             render: (o: OrderListItem) =>
-                o.request_id
+                o.user_name ?? "-",
         },
+
         {
             key: "amount",
             header: "Amount",
             render: (o: OrderListItem) =>
                 `Rs. ${o.final_price}`,
         },
+
         {
-            key: "payment_status",
+            key: "status",
+            header: "Order Status",
+            render: (o: OrderListItem) => (
+                <StatusBadge status={mapOrderStatusToBadge(o.order_status)} />
+            ),
+        },
+
+        {
+            key: "payment",
             header: "Payment",
             render: (o: OrderListItem) => (
                 <StatusBadge
@@ -120,71 +123,27 @@ export default function VendorOrdersPage() {
                 />
             ),
         },
+
         {
-            key: "order_status",
-            header: "Status",
-            render: (o: OrderListItem) => (
-                <StatusBadge
-                    status={mapOrderStatusToBadge(o.order_status)}
-                />
-            ),
-        },
-        {
-            key: "created_at",
+            key: "created",
             header: "Created",
             render: (o: OrderListItem) =>
                 new Date(o.created_at).toLocaleDateString(),
         },
-        {
-            key: "actions",
-            header: "Action",
-            render: (o: OrderListItem) => {
-                const canProgress =
-                    !["COMPLETED", "CANCELLED"].includes(
-                        o.order_status
-                    );
 
-                return (
-                    <div className="flex gap-2">
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                                setSelectedOrderId(o.id)
-                            }
-                        >
-                            View
-                        </Button>
-
-                        {canProgress && (
-                            <Button
-                                size="sm"
-                                onClick={() =>
-                                    handleNextStatus(o)
-                                }
-                            >
-                                Next Step
-                            </Button>
-                        )}
-                    </div>
-                );
-            },
-        },
     ];
 
     return (
         <>
-            {/* Header */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                    My Orders
+                    Vendor Orders
                 </h2>
                 <p className="text-sm text-gray-500">
-                    Manage your active and completed orders
+                    Manage laundry orders and update their progress
                 </p>
             </div>
 
-            {/* Filters */}
             <FilterTabs
                 tabs={[
                     { label: "All", value: "ALL" },
@@ -201,30 +160,30 @@ export default function VendorOrdersPage() {
                 }
             />
 
-            {/* Table */}
             <div className="mt-4">
+
                 {isLoading ? (
                     <div className="p-6 text-sm text-gray-500">
                         Loading orders...
                     </div>
-                ) : !orders || orders.length === 0 ? (
-                    <div className="p-6 text-sm text-gray-500">
-                        No orders found
-                    </div>
                 ) : (
                     <DataTable
                         columns={columns}
-                        data={orders}
+                        data={orders ?? []}
+                        onRowClick={(o: OrderListItem) =>
+                            setSelectedOrderId(o.id)
+                        }
                     />
                 )}
+
             </div>
 
-            {/* Details Drawer */}
             <DetailsDrawer
                 open={!!selectedOrderId}
                 onClose={() => setSelectedOrderId(null)}
                 title="Order Details"
             >
+
                 {isDetailLoading && (
                     <p className="text-sm text-gray-500">
                         Loading details...
@@ -232,46 +191,68 @@ export default function VendorOrdersPage() {
                 )}
 
                 {detail && (
-                    <div className="space-y-4 text-sm">
-                        <Detail
-                            label="Order ID"
-                            value={detail.order.id}
-                        />
-                        <Detail
-                            label="Amount"
-                            value={`Rs. ${detail.order.final_price}`}
-                        />
-                        <Detail
-                            label="Order Status"
-                            value={detail.order.order_status}
-                        />
-                        <Detail
-                            label="Payment Status"
-                            value={detail.order.payment_status}
-                        />
-                        <Detail
-                            label="Customer"
-                            value={
-                                detail.user?.DisplayName
-                            }
-                        />
-                        <Detail
-                            label="Pickup Address"
-                            value={
-                                detail.request
-                                    ?.pickup_address
-                            }
-                        />
+
+                    <div className="space-y-6 text-sm">
+
+                        <Detail label="Order ID" value={detail.id} />
+                        <Detail label="Amount" value={`Rs. ${detail.final_price}`} />
+
+                        <Detail label="Order Status" value={detail.order_status} />
+
+                        <Detail label="Payment Status" value={detail.payment_status} />
+
+                        <Detail label="Pickup Address" value={detail.request.pickup_address} />
+
+                        <h3 className="text-lg font-semibold border-b pb-2">
+                            Customer Details
+                        </h3>
+
+                        <Detail label="Name" value={detail.user.name} />
+                        <Detail label="Email" value={detail.user.email} />
+
                         <Detail
                             label="Pickup Window"
-                            value={`${new Date(
-                                detail.request.pickup_time_from
-                            ).toLocaleString()} - ${new Date(
-                                detail.request.pickup_time_to
-                            ).toLocaleString()}`}
+                            value={`${new Date(detail.request.pickup_time_from).toLocaleString()} - ${new Date(detail.request.pickup_time_to).toLocaleString()}`}
                         />
+
+                        <div className="pt-4 border-t">
+                            <h4 className="font-semibold mb-2">
+                                Services
+                            </h4>
+
+                            {detail.services.map((s, i) => (
+                                <div key={i}>
+                                    {s.category_name} — {s.quantity_value} {s.selected_unit}
+                                </div>
+                            ))}
+                        </div>
+
+                        {getNextButtonLabel(detail.order_status) && (
+
+                            <div className="pt-6 border-t">
+
+                                <Button
+                                    className="bg-[#040947]"
+                                    onClick={() =>
+                                        updateStatus({
+                                            orderId: detail.id,
+                                            payload: {
+                                                status: getNextStatus(detail.order_status)!,
+                                            },
+                                        })
+                                    }
+                                >
+                                    {getNextButtonLabel(detail.order_status)}
+                                </Button>
+
+                            </div>
+
+                        )}
+
                     </div>
+
                 )}
+
             </DetailsDrawer>
         </>
     );

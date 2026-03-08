@@ -185,7 +185,7 @@ export default function AdminOffersPage() {
                 {selectedOffer && (
                     <div className="space-y-6 text-sm">
 
-                        {/* Offer Info */}
+                        {/* Offer Information */}
                         <div className="space-y-3">
                             <h4 className="font-semibold border-b pb-2">
                                 Offer Information
@@ -193,12 +193,13 @@ export default function AdminOffersPage() {
 
                             <Detail label="Offer ID" value={selectedOffer.id} />
                             <Detail label="Request ID" value={selectedOffer.request_id} />
-                            <Detail label="Vendor ID" value={selectedOffer.vendor_id} />
                             <Detail label="Bid Amount" value={`Rs. ${selectedOffer.bid_price}`} />
+
                             <Detail
                                 label="Completion Time"
                                 value={new Date(selectedOffer.completion_time).toLocaleString()}
                             />
+
                             <Detail
                                 label="Submitted On"
                                 value={
@@ -209,15 +210,66 @@ export default function AdminOffersPage() {
                             />
                         </div>
 
+
+                        {/* Vendor Details */}
+                        {selectedOffer.vendor && (
+                            <div className="pt-4 border-t space-y-3">
+                                <h4 className="font-semibold border-b pb-2">
+                                    Vendor Details
+                                </h4>
+
+                                <Detail label="Vendor Name" value={selectedOffer.vendor.DisplayName} />
+                                <Detail label="Email" value={selectedOffer.vendor.Email} />
+                                <Detail label="Phone" value={selectedOffer.vendor.Phone} />
+                                <Detail label="Role" value={selectedOffer.vendor.Role} />
+                                <Detail label="Account Active" value={selectedOffer.vendor.IsActive ? "Yes" : "No"} />
+
+                                {selectedOffer.vendor.BusinessApprovalStatus && (
+                                    <Detail
+                                        label="Business Approval"
+                                        value={selectedOffer.vendor.BusinessApprovalStatus}
+                                    />
+                                )}
+
+                                {selectedOffer.vendor.VendorApprovalStatus && (
+                                    <Detail
+                                        label="Vendor Approval"
+                                        value={selectedOffer.vendor.VendorApprovalStatus}
+                                    />
+                                )}
+
+                            </div>
+                        )}
+
+
+                        {/* User Details */}
+                        {selectedOffer.user && (
+                            <div className="pt-4 border-t space-y-3">
+                                <h4 className="font-semibold border-b pb-2">
+                                    Customer Details
+                                </h4>
+
+                                <Detail label="Name" value={selectedOffer.user.DisplayName} />
+                                <Detail label="Email" value={selectedOffer.user.Email} />
+                                <Detail label="Phone" value={selectedOffer.user.Phone} />
+                                <Detail label="Role" value={selectedOffer.user.Role} />
+                                <Detail label="Account Active" value={selectedOffer.user.IsActive ? "Yes" : "No"} />
+
+                            </div>
+                        )}
+
+
                         {/* Status */}
                         <div className="pt-4 border-t">
                             <h4 className="font-semibold mb-2">
                                 Status
                             </h4>
+
                             <StatusBadge
                                 status={mapOfferStatus(selectedOffer.status)}
                             />
                         </div>
+
 
                         {/* Description */}
                         {selectedOffer.description && (
@@ -225,11 +277,14 @@ export default function AdminOffersPage() {
                                 <h4 className="font-semibold mb-2">
                                     Description
                                 </h4>
+
                                 <p className="text-gray-600 leading-relaxed">
                                     {selectedOffer.description}
                                 </p>
+
                             </div>
                         )}
+
                     </div>
                 )}
             </DetailsDrawer>

@@ -1,5 +1,4 @@
 import { ApiResponse } from "../api";
-import { AdminUserSummary } from "../users/admin-user-summary";
 import { OrderStatus, PaymentStatus } from "./orders-enums";
 import { RequestDetail } from "./requests";
 
@@ -35,8 +34,19 @@ export interface OrderDetailResponse {
     payment_status: PaymentStatus;
     created_at: string;
 
-    user: AdminUserSummary;
-    vendor: AdminUserSummary;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+    };
+
+    vendor: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+    };
 
     request: RequestDetail;
 
@@ -47,6 +57,7 @@ export interface OrderDetailResponse {
         quantity_value: number;
     }[];
 }
+
 export interface OrderStats {
     recent_orders: any;
     total_orders: number;

@@ -1,4 +1,5 @@
 import { Role } from "../auth/identity";
+import { ApprovalStatus } from "./user.enums";
 import { BusinessProfile, VendorProfile } from "./profile";
 import { UserDocument } from "./document";
 
@@ -12,6 +13,8 @@ export interface AdminUserProfile {
     IsActive: boolean;
     IsVerified: boolean;
     CreatedAt: string;
+    BusinessApprovalStatus?: ApprovalStatus | null;
+    VendorApprovalStatus?: ApprovalStatus | null;
 
     BusinessProfile?: BusinessProfile | null;
     VendorProfile?: VendorProfile | null;

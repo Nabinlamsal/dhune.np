@@ -1,166 +1,209 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { DataTable } from "@/src/components/dashboard/table/DataTable"
-import { StatCard } from "@/src/components/dashboard/StatCard"
-import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
-import { FilterTabs } from "@/src/components/common/FilterTabs"
-import { Status, StatusBadge } from "@/src/components/common/StatusBadge"
-import { Detail } from "@/src/components/common/DetailItem"
+import { DataTable } from "@/src/components/dashboard/table/DataTable";
+import { StatCard } from "@/src/components/dashboard/StatCard";
+import { DetailsDrawer } from "@/src/components/common/DetailsDrawer";
+import { FilterTabs } from "@/src/components/common/FilterTabs";
+import { StatusBadge, Status } from "@/src/components/common/StatusBadge";
+import { Detail } from "@/src/components/common/DetailItem";
 
-import { OrderListItem } from "@/src/types/orders/orders"
-import { OrderStatus } from "@/src/types/orders/orders-enums"
-import { useAdminOrderStats, useOrderDetail, useAdminOrders } from "@/src/hooks/orders/useOrder"
+import {
+    useAdminOrders,
+    useOrderDetail,
+    useAdminOrderStats,
+} from "@/src/hooks/orders/useOrder";
+
+import { OrderListItem } from "@/src/types/orders/orders";
+import { OrderStatus } from "@/src/types/orders/orders-enums";
 
 
-function mapOrderStatusToBadge(status: string): Status {
+
+function mapOrderStatus(status: string): Status {
     switch (status) {
         case "ACCEPTED":
         case "PICKED_UP":
         case "IN_PROGRESS":
         case "DELIVERING":
-            return "info"
+            return "info";
+
         case "COMPLETED":
-            return "success"
+            return "success";
+
         case "CANCELLED":
-            return "error"
+            return "error";
+
         default:
-            return "neutral"
+            return "neutral";
     }
 }
 
-function mapPaymentStatusToBadge(status: string): Status {
+function mapPaymentStatus(status: string): Status {
     switch (status) {
         case "PAID":
-            return "success"
+            return "success";
+
         case "UNPAID":
-            return "warning"
+            return "warning";
+
         case "REFUNDED":
-            return "neutral"
+            return "neutral";
+
         default:
-            return "neutral"
+            return "neutral";
     }
 }
 
+
+
 export default function AdminOrdersPage() {
-    const [filter, setFilter] = useState<OrderStatus>("ALL")
-    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+    const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
+    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
 
     const {
-        data: ordersResponse,
-        isLoading: isOrdersLoading,
+        data: orders,
+        isLoading,
     } = useAdminOrders(
         filter === "ALL" ? undefined : filter
     );
 
-    const { data: statsResponse } = useAdminOrderStats()
+
+    const { data: stats } = useAdminOrderStats();
+
 
     const {
-        data: selectedOrderResponse,
-        isLoading: isDetailLoading,
-    } = useOrderDetail(selectedOrderId || undefined)
+        data: orderDetail,
+        isLoading: detailLoading,
+    } = useOrderDetail(selectedOrderId ?? undefined);
 
-    const orders = ordersResponse?.data ?? []
-    const stats = statsResponse?.data
-    const selectedOrder = selectedOrderResponse
+
 
     const columns = [
+
         {
             key: "id",
-            header: "Order ID",
+            header: "Order",
+            render: (o: OrderListItem) =>
+                o.id.slice(0, 8) + "...",
         },
+
         {
             key: "user",
-            header: "User",
+            header: "Customer",
             render: (o: OrderListItem) =>
-                o.user?.DisplayName ?? "—",
+                o.user_name ?? "—",
         },
+
         {
             key: "vendor",
             header: "Vendor",
             render: (o: OrderListItem) =>
-                o.vendor?.DisplayName ?? "—",
+                o.vendor_name ?? "—",
         },
+
         {
-            key: "final_price",
+            key: "amount",
             header: "Amount",
             render: (o: OrderListItem) =>
                 `Rs. ${o.final_price}`,
         },
+
         {
-            key: "payment_status",
+            key: "payment",
             header: "Payment",
             render: (o: OrderListItem) => (
                 <StatusBadge
-                    status={mapPaymentStatusToBadge(o.payment_status)}
+                    status={mapPaymentStatus(o.payment_status)}
                 />
             ),
         },
+
         {
-            key: "order_status",
+            key: "status",
             header: "Order Status",
             render: (o: OrderListItem) => (
                 <StatusBadge
-                    status={mapOrderStatusToBadge(o.order_status)}
+                    status={mapOrderStatus(o.order_status)}
                 />
             ),
         },
+
         {
-            key: "created_at",
+            key: "created",
             header: "Created",
             render: (o: OrderListItem) =>
                 new Date(o.created_at).toLocaleDateString(),
         },
+
     ];
+
 
     return (
         <>
             {/* Header */}
+
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
+
+                <h2 className="text-2xl font-bold">
                     Orders
                 </h2>
+
                 <p className="text-sm text-gray-500">
                     Accepted offers and service fulfillment
                 </p>
+
             </div>
 
+
+
             {/* Stats */}
+
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+
                 <StatCard
                     title="Total Orders"
-                    value={String(stats?.total_orders ?? 0)}
+                    value={String(stats?.data.total_orders ?? 0)}
                     trend=""
                     description="All orders"
                 />
+
                 <StatCard
                     title="Accepted"
-                    value={String(stats?.accepted_orders ?? 0)}
+                    value={String(stats?.data.accepted_orders ?? 0)}
                     trend=""
                     description="Accepted orders"
                 />
+
                 <StatCard
                     title="In Progress"
-                    value={String(stats?.in_progress_orders ?? 0)}
+                    value={String(stats?.data.in_progress_orders ?? 0)}
                     trend=""
                     description="Currently active"
                 />
+
                 <StatCard
                     title="Completed"
-                    value={String(stats?.completed_orders ?? 0)}
+                    value={String(stats?.data.completed_orders ?? 0)}
                     trend=""
                     description="Delivered successfully"
                 />
+
                 <StatCard
                     title="Cancelled"
-                    value={String(stats?.cancelled_orders ?? 0)}
+                    value={String(stats?.data.cancelled_orders ?? 0)}
                     trend=""
                     description="Cancelled orders"
                 />
+
             </div>
 
+
+
             {/* Filters */}
+
             <FilterTabs
                 tabs={[
                     { label: "All", value: "ALL" },
@@ -172,20 +215,31 @@ export default function AdminOrdersPage() {
                     { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 active={filter}
-                onChange={(v) => setFilter(v as OrderStatus)}
+                onChange={(v) =>
+                    setFilter(v as OrderStatus)
+                }
             />
 
+
+
             {/* Table */}
+
             <div className="mt-4">
-                {isOrdersLoading ? (
-                    <div className="text-sm text-gray-500 p-6">
+
+                {isLoading ? (
+
+                    <div className="p-6 text-sm text-gray-500">
                         Loading orders...
                     </div>
-                ) : orders.length === 0 ? (
-                    <div className="text-sm text-gray-500 p-6">
+
+                ) : !orders || orders.length === 0 ? (
+
+                    <div className="p-6 text-sm text-gray-500">
                         No orders found
                     </div>
+
                 ) : (
+
                     <DataTable
                         columns={columns}
                         data={orders}
@@ -193,48 +247,143 @@ export default function AdminOrdersPage() {
                             setSelectedOrderId(o.id)
                         }
                     />
+
                 )}
+
             </div>
 
-            {/* Details Drawer */}
+
+
+            {/* Drawer */}
+
             <DetailsDrawer
                 open={!!selectedOrderId}
                 onClose={() => setSelectedOrderId(null)}
                 title="Order Details"
             >
-                {isDetailLoading && (
+
+                {detailLoading && (
                     <p className="text-sm text-gray-500">
-                        Loading order details...
+                        Loading details...
                     </p>
                 )}
 
-                {selectedOrder && (
-                    <div className="space-y-4 text-sm">
-                        <Detail label="Order ID" value={selectedOrder.data.order?.id} />
-                        <Detail label="User" value={selectedOrder.data.user?.DisplayName} />
-                        <Detail label="Vendor" value={selectedOrder.data.vendor?.DisplayName} />
-                        <Detail
-                            label="Amount"
-                            value={`Rs. ${selectedOrder.data.order.final_price}`}
-                        />
-                        <Detail
-                            label="Payment Status"
-                            value={selectedOrder.data.order.payment_status}
-                        />
-                        <Detail
-                            label="Order Status"
-                            value={selectedOrder.data.order.order_status}
-                        />
-                        <Detail
-                            label="Created At"
-                            value={new Date(
-                                selectedOrder.data.order.created_at
-                            ).toLocaleString()}
-                        />
-                    </div>
-                )}
-            </DetailsDrawer>
-        </>
-    )
-}
 
+                {orderDetail?.data && (
+
+                    <div className="space-y-6 text-sm">
+
+
+                        {/* Order */}
+
+                        <div className="space-y-3">
+
+                            <h4 className="font-semibold border-b pb-2">
+                                Order Information
+                            </h4>
+
+                            <Detail label="Order ID" value={orderDetail.data.id} />
+
+                            <Detail
+                                label="Amount"
+                                value={`Rs. ${orderDetail.data.final_price}`}
+                            />
+
+                            <Detail
+                                label="Order Status"
+                                value={orderDetail.data.order_status}
+                            />
+
+                            <Detail
+                                label="Payment Status"
+                                value={orderDetail.data.payment_status}
+                            />
+
+                            <Detail
+                                label="Created"
+                                value={new Date(orderDetail.data.created_at).toLocaleString()}
+                            />
+
+                        </div>
+
+
+
+                        {/* Customer */}
+
+                        <div className="pt-4 border-t space-y-3">
+
+                            <h4 className="font-semibold border-b pb-2">
+                                Customer
+                            </h4>
+
+                            <Detail label="Name" value={orderDetail.data.user.name} />
+                            <Detail label="Email" value={orderDetail.data.user.email} />
+                            <Detail label="Phone" value={orderDetail.data.user.phone} />
+
+                        </div>
+
+
+
+                        {/* Vendor */}
+
+                        <div className="pt-4 border-t space-y-3">
+
+                            <h4 className="font-semibold border-b pb-2">
+                                Vendor
+                            </h4>
+
+                            <Detail label="Name" value={orderDetail.data.vendor.name} />
+                            <Detail label="Email" value={orderDetail.data.vendor.email} />
+                            <Detail label="Phone" value={orderDetail.data.vendor.phone} />
+                        </div>
+
+
+
+                        {/* Pickup */}
+
+                        <div className="pt-4 border-t space-y-3">
+
+                            <h4 className="font-semibold border-b pb-2">
+                                Pickup Details
+                            </h4>
+
+                            <Detail
+                                label="Address"
+                                value={orderDetail.data.request.pickup_address}
+                            />
+
+                            <Detail
+                                label="Pickup Window"
+                                value={`${new Date(orderDetail.data.request.pickup_time_from).toLocaleString()} - ${new Date(orderDetail.data.request.pickup_time_to).toLocaleString()}`}
+                            />
+
+                        </div>
+
+
+
+                        {/* Services */}
+
+                        <div className="pt-4 border-t">
+
+                            <h4 className="font-semibold mb-2">
+                                Services
+                            </h4>
+
+                            {orderDetail.data.services.map((s: any, i: number) => (
+                                <div key={i} className="text-gray-600 text-sm">
+                                    {s.category_name} — {s.quantity_value} {s.selected_unit}
+                                </div>
+                            ))}
+
+                        </div>
+
+
+                    </div>
+
+                )}
+
+            </DetailsDrawer>
+
+        </>
+    );
+}
