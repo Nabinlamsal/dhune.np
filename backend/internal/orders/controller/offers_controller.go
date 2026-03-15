@@ -67,6 +67,7 @@ func (h *OfferHandler) Create(c *gin.Context) {
 		CompletionTime: result.CompletionTime.Format(time.RFC3339),
 	})
 }
+
 func (h *OfferHandler) Update(c *gin.Context) {
 
 	offerID, err := uuid.Parse(c.Param("id"))
