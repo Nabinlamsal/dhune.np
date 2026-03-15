@@ -41,7 +41,7 @@ export function MarketplaceComparisonChart({
                     <BarChart
                         data={data}
                         margin={{ top: 4, right: 4, left: -18, bottom: 0 }}
-                        barCategoryGap="40%"
+                        barCategoryGap="10%"
                     >
                         <CartesianGrid stroke="#f1f5f9" vertical={false} />
                         <XAxis
@@ -57,7 +57,7 @@ export function MarketplaceComparisonChart({
                             allowDecimals={false}
                         />
                         <Tooltip />
-                        <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={30}>
+                        <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={40}>
                             {data.map((entry) => (
                                 <Cell key={entry.name} fill={entry.fill} />
                             ))}

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import {
     LayoutDashboard,
     Users,
@@ -32,20 +33,26 @@ export default function Sidebar() {
     ]
 
     return (
-        <aside className="w-64 h-screen bg-black text-white flex flex-col border-r border-white/10">
+        <aside className="w-64 h-screen bg-[#040947] text-white flex flex-col border-r border-white/10">
             {/* Logo */}
-            <div className="h-16 flex items-center gap-3 px-6 border-b border-white/10">
-                <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center text-black font-bold">
-                    D
+            <div className="h-16 flex items-center gap-3 px-4 border-b border-white/10">
+                <div className="relative h-9 w-9 overflow-hidden rounded-lg border border-white/15 bg-white/10">
+                    <Image
+                        src="/logo.jpg"
+                        alt="Dhune logo"
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                    />
                 </div>
                 <div>
-                    <p className="font-semibold">Dhune.np</p>
-                    <p className="text-xs text-gray-400">Admin Panel</p>
+                    <p className="text-sm font-semibold leading-none">Dhune.np</p>
+                    <p className="mt-1 text-[11px] text-gray-400">Admin Panel</p>
                 </div>
             </div>
 
             {/* Menu */}
-            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+            <div className="sidebar-scroll flex-1 px-3 py-4 space-y-1">
                 {menu.map((item) => (
                     <SidebarItem
                         key={item.href}
@@ -53,6 +60,7 @@ export default function Sidebar() {
                         label={item.label}
                         icon={item.icon}
                         active={pathname === item.href}
+                        compact
                     />
                 ))}
             </div>
@@ -63,11 +71,12 @@ export default function Sidebar() {
                     href="/admin/settings"
                     label="Admin Settings"
                     icon={<Settings />}
+                    compact
                 />
                 <button
                     onClick={logout}
-                    className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10">
-                    <LogOut className="w-5 h-5" />
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10">
+                    <LogOut className="w-4 h-4" />
                     Logout
                 </button>
             </div>

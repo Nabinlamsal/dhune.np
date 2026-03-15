@@ -14,6 +14,7 @@ import { StatusBadge } from "@/src/components/common/StatusBadge";
 import { FilterTabs } from "@/src/components/common/FilterTabs";
 import { DetailsDrawer } from "@/src/components/common/DetailsDrawer";
 import { SearchInput } from "@/src/components/ui/search-input";
+import { FilePreviewModal } from "@/src/components/common/FilePreviewModal";
 
 //helper
 function deriveUserStatus(
@@ -43,6 +44,10 @@ export default function AdminUsersPage() {
 
     //selected user 
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<{
+        title: string;
+        url: string;
+    } | null>(null);
     const [search, setSearch] = useState("")
     //backend filter 
     const roles =
@@ -296,13 +301,18 @@ export default function AdminUsersPage() {
                                                 className="flex items-center justify-between"
                                             >
                                                 <span>{doc.DocumentType.toUpperCase()}</span>
-                                                <a
-                                                    href={doc.DocumentURL}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition"                                                >
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setPreviewDoc({
+                                                            title: doc.DocumentType.toUpperCase(),
+                                                            url: doc.DocumentURL,
+                                                        })
+                                                    }
+                                                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition"
+                                                >
                                                     Preview Document
-                                                </a>
+                                                </button>
                                             </li>
                                         ))}
                                     </ul>
@@ -382,6 +392,13 @@ export default function AdminUsersPage() {
                     );
                 })()}
             </DetailsDrawer>
+
+            <FilePreviewModal
+                open={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                title={previewDoc?.title}
+                url={previewDoc?.url}
+            />
         </>
     );
 }

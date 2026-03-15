@@ -15,10 +15,8 @@ import {
     useAdminOrderStats,
 } from "@/src/hooks/orders/useOrder";
 
-import { OrderListItem } from "@/src/types/orders/orders";
+import { OrderDetailResponse, OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
-
-
 
 function mapOrderStatus(status: string): Status {
     switch (status) {
@@ -27,13 +25,10 @@ function mapOrderStatus(status: string): Status {
         case "IN_PROGRESS":
         case "DELIVERING":
             return "info";
-
         case "COMPLETED":
             return "success";
-
         case "CANCELLED":
             return "error";
-
         default:
             return "neutral";
     }
@@ -43,166 +38,116 @@ function mapPaymentStatus(status: string): Status {
     switch (status) {
         case "PAID":
             return "success";
-
         case "UNPAID":
             return "warning";
-
         case "REFUNDED":
             return "neutral";
-
         default:
             return "neutral";
     }
 }
 
-
-
 export default function AdminOrdersPage() {
-
     const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-
-    const {
-        data: orders,
-        isLoading,
-    } = useAdminOrders(
+    const { data: orders, isLoading } = useAdminOrders(
         filter === "ALL" ? undefined : filter
     );
 
-
     const { data: stats } = useAdminOrderStats();
-
 
     const {
         data: orderDetail,
         isLoading: detailLoading,
     } = useOrderDetail(selectedOrderId ?? undefined);
 
-
+    const detail: OrderDetailResponse | undefined = orderDetail;
 
     const columns = [
-
         {
             key: "id",
             header: "Order",
-            render: (o: OrderListItem) =>
-                o.id.slice(0, 8) + "...",
+            render: (o: OrderListItem) => o.id.slice(0, 8) + "...",
         },
-
         {
             key: "user",
             header: "Customer",
-            render: (o: OrderListItem) =>
-                o.user_name ?? "—",
+            render: (o: OrderListItem) => o.user_name ?? "-",
         },
-
         {
             key: "vendor",
             header: "Vendor",
-            render: (o: OrderListItem) =>
-                o.vendor_name ?? "—",
+            render: (o: OrderListItem) => o.vendor_name ?? "-",
         },
-
         {
             key: "amount",
             header: "Amount",
-            render: (o: OrderListItem) =>
-                `Rs. ${o.final_price}`,
+            render: (o: OrderListItem) => `Rs. ${o.final_price}`,
         },
-
         {
             key: "payment",
             header: "Payment",
             render: (o: OrderListItem) => (
-                <StatusBadge
-                    status={mapPaymentStatus(o.payment_status)}
-                />
+                <StatusBadge status={mapPaymentStatus(o.payment_status)} />
             ),
         },
-
         {
             key: "status",
             header: "Order Status",
             render: (o: OrderListItem) => (
-                <StatusBadge
-                    status={mapOrderStatus(o.order_status)}
-                />
+                <StatusBadge status={mapOrderStatus(o.order_status)} />
             ),
         },
-
         {
             key: "created",
             header: "Created",
             render: (o: OrderListItem) =>
                 new Date(o.created_at).toLocaleDateString(),
         },
-
     ];
-
 
     return (
         <>
-            {/* Header */}
-
             <div className="mb-6">
-
-                <h2 className="text-2xl font-bold">
-                    Orders
-                </h2>
-
+                <h2 className="text-2xl font-bold">Orders</h2>
                 <p className="text-sm text-gray-500">
                     Accepted offers and service fulfillment
                 </p>
-
             </div>
 
-
-
-            {/* Stats */}
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-
+            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
                 <StatCard
                     title="Total Orders"
                     value={String(stats?.data.total_orders ?? 0)}
                     trend=""
                     description="All orders"
                 />
-
                 <StatCard
                     title="Accepted"
                     value={String(stats?.data.accepted_orders ?? 0)}
                     trend=""
                     description="Accepted orders"
                 />
-
                 <StatCard
                     title="In Progress"
                     value={String(stats?.data.in_progress_orders ?? 0)}
                     trend=""
                     description="Currently active"
                 />
-
                 <StatCard
                     title="Completed"
                     value={String(stats?.data.completed_orders ?? 0)}
                     trend=""
                     description="Delivered successfully"
                 />
-
                 <StatCard
                     title="Cancelled"
                     value={String(stats?.data.cancelled_orders ?? 0)}
                     trend=""
                     description="Cancelled orders"
                 />
-
             </div>
-
-
-
-            {/* Filters */}
 
             <FilterTabs
                 tabs={[
@@ -215,183 +160,113 @@ export default function AdminOrdersPage() {
                     { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 active={filter}
-                onChange={(v) =>
-                    setFilter(v as OrderStatus)
-                }
+                onChange={(v) => setFilter(v as OrderStatus)}
             />
 
-
-
-            {/* Table */}
-
             <div className="mt-4">
-
                 {isLoading ? (
-
-                    <div className="p-6 text-sm text-gray-500">
-                        Loading orders...
-                    </div>
-
+                    <div className="p-6 text-sm text-gray-500">Loading orders...</div>
                 ) : !orders || orders.length === 0 ? (
-
-                    <div className="p-6 text-sm text-gray-500">
-                        No orders found
-                    </div>
-
+                    <div className="p-6 text-sm text-gray-500">No orders found</div>
                 ) : (
-
                     <DataTable
                         columns={columns}
                         data={orders}
-                        onRowClick={(o: OrderListItem) =>
-                            setSelectedOrderId(o.id)
-                        }
+                        onRowClick={(o: OrderListItem) => setSelectedOrderId(o.id)}
                     />
-
                 )}
-
             </div>
-
-
-
-            {/* Drawer */}
 
             <DetailsDrawer
                 open={!!selectedOrderId}
                 onClose={() => setSelectedOrderId(null)}
                 title="Order Details"
             >
-
                 {detailLoading && (
-                    <p className="text-sm text-gray-500">
-                        Loading details...
-                    </p>
+                    <p className="text-sm text-gray-500">Loading details...</p>
                 )}
 
+                {!detailLoading && !detail && (
+                    <p className="text-sm text-gray-500">Unable to load order details.</p>
+                )}
 
-                {orderDetail?.data && (
-
+                {detail && (
                     <div className="space-y-6 text-sm">
-
-
-                        {/* Order */}
-
                         <div className="space-y-3">
-
-                            <h4 className="font-semibold border-b pb-2">
-                                Order Information
-                            </h4>
-
-                            <Detail label="Order ID" value={orderDetail.data.id} />
-
-                            <Detail
-                                label="Amount"
-                                value={`Rs. ${orderDetail.data.final_price}`}
-                            />
-
-                            <Detail
-                                label="Order Status"
-                                value={orderDetail.data.order_status}
-                            />
-
-                            <Detail
-                                label="Payment Status"
-                                value={orderDetail.data.payment_status}
-                            />
-
+                            <h4 className="border-b pb-2 font-semibold">Order Information</h4>
+                            <Detail label="Order ID" value={detail.id} />
+                            <Detail label="Request ID" value={detail.request_id} />
+                            <Detail label="Amount" value={`Rs. ${detail.final_price}`} />
+                            <Detail label="Order Status" value={detail.order_status} />
+                            <Detail label="Payment Status" value={detail.payment_status} />
                             <Detail
                                 label="Created"
-                                value={new Date(orderDetail.data.created_at).toLocaleString()}
+                                value={new Date(detail.created_at).toLocaleString()}
                             />
-
                         </div>
 
-
-
-                        {/* Customer */}
-
-                        <div className="pt-4 border-t space-y-3">
-
-                            <h4 className="font-semibold border-b pb-2">
-                                Customer
-                            </h4>
-
-                            <Detail label="Name" value={orderDetail.data.user.name} />
-                            <Detail label="Email" value={orderDetail.data.user.email} />
-                            <Detail label="Phone" value={orderDetail.data.user.phone} />
-
+                        <div className="space-y-3 border-t pt-4">
+                            <h4 className="border-b pb-2 font-semibold">Customer</h4>
+                            <Detail label="Name" value={detail.user?.name} />
+                            <Detail label="Email" value={detail.user?.email} />
+                            <Detail label="Phone" value={detail.user?.phone} />
                         </div>
 
-
-
-                        {/* Vendor */}
-
-                        <div className="pt-4 border-t space-y-3">
-
-                            <h4 className="font-semibold border-b pb-2">
-                                Vendor
-                            </h4>
-
-                            <Detail label="Name" value={orderDetail.data.vendor.name} />
-                            <Detail label="Email" value={orderDetail.data.vendor.email} />
-                            <Detail label="Phone" value={orderDetail.data.vendor.phone} />
+                        <div className="space-y-3 border-t pt-4">
+                            <h4 className="border-b pb-2 font-semibold">Vendor</h4>
+                            <Detail label="Name" value={detail.vendor?.name} />
+                            <Detail label="Email" value={detail.vendor?.email} />
+                            <Detail label="Phone" value={detail.vendor?.phone} />
                         </div>
 
-
-
-                        {/* Pickup */}
-
-                        <div className="pt-4 border-t space-y-3">
-
-                            <h4 className="font-semibold border-b pb-2">
-                                Pickup Details
-                            </h4>
-
-                            <Detail
-                                label="Address"
-                                value={orderDetail.data.request.pickup_address}
-                            />
+                        <div className="space-y-3 border-t pt-4">
+                            <h4 className="border-b pb-2 font-semibold">Pickup Details</h4>
+                            <Detail label="Address" value={detail.request?.pickup_address} />
                             <Detail
                                 label="Latitude"
-                                value={String(orderDetail.data.request.pickup_lat)}
+                                value={
+                                    detail.request?.pickup_lat !== undefined
+                                        ? String(detail.request.pickup_lat)
+                                        : undefined
+                                }
                             />
                             <Detail
                                 label="Longitude"
-                                value={String(orderDetail.data.request.pickup_lng)}
+                                value={
+                                    detail.request?.pickup_lng !== undefined
+                                        ? String(detail.request.pickup_lng)
+                                        : undefined
+                                }
                             />
-
                             <Detail
                                 label="Pickup Window"
-                                value={`${new Date(orderDetail.data.request.pickup_time_from).toLocaleString()} - ${new Date(orderDetail.data.request.pickup_time_to).toLocaleString()}`}
+                                value={
+                                    detail.request?.pickup_time_from && detail.request?.pickup_time_to
+                                        ? `${new Date(detail.request.pickup_time_from).toLocaleString()} - ${new Date(detail.request.pickup_time_to).toLocaleString()}`
+                                        : undefined
+                                }
                             />
-
+                            <Detail
+                                label="Payment Method"
+                                value={detail.request?.payment_method}
+                            />
                         </div>
 
-
-
-                        {/* Services */}
-
-                        <div className="pt-4 border-t">
-
-                            <h4 className="font-semibold mb-2">
-                                Services
-                            </h4>
-
-                            {orderDetail.data.services.map((s: any, i: number) => (
-                                <div key={i} className="text-gray-600 text-sm">
-                                    {s.category_name} — {s.quantity_value} {s.selected_unit}
-                                </div>
-                            ))}
-
+                        <div className="border-t pt-4">
+                            <h4 className="mb-2 font-semibold">Services</h4>
+                            {detail.services?.length ? (
+                                detail.services.map((s, i) => (
+                                    <div key={`${s.category_id}-${i}`} className="text-sm text-gray-600">
+                                        {s.category_name} - {s.quantity_value} {s.selected_unit}
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-xs text-gray-500">No services listed.</p>
+                            )}
                         </div>
-
-
                     </div>
-
                 )}
-
             </DetailsDrawer>
-
         </>
     );
 }

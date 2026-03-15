@@ -14,6 +14,7 @@ import {
 import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
 import { Detail } from "@/src/components/common/DetailItem";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
+import { FilePreviewModal } from "@/src/components/common/FilePreviewModal";
 
 function normalizeApprovalStatus(value?: string | null): AdminUserFilterStatus | null {
     if (!value) return null;
@@ -50,6 +51,10 @@ export default function VendorDetailsPage() {
     const [statusOverride, setStatusOverride] = useState<{
         vendorId: string;
         status: AdminUserFilterStatus;
+    } | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<{
+        title: string;
+        url: string;
     } | null>(null);
 
     const approveVendor = useVendorApprove();
@@ -102,14 +107,18 @@ export default function VendorDetailsPage() {
                                 className="flex items-center justify-between border rounded-lg p-4"
                             >
                                 <span className="text-sm font-medium">{humanize(doc.DocumentType)}</span>
-                                <a
-                                    href={doc.DocumentURL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPreviewDoc({
+                                            title: humanize(doc.DocumentType),
+                                            url: doc.DocumentURL,
+                                        })
+                                    }
                                     className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition"
                                 >
                                     View Document
-                                </a>
+                                </button>
                             </li>
                         ))}
                     </ul>
@@ -199,6 +208,13 @@ export default function VendorDetailsPage() {
                     </Button>
                 )}
             </div>
+
+            <FilePreviewModal
+                open={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                title={previewDoc?.title}
+                url={previewDoc?.url}
+            />
         </div>
     );
 }

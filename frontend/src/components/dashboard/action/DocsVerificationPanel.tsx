@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/src/components/ui/button"
 import { StatusBadge } from "../../common/StatusBadge"
 import { ApprovalDialog } from "./ApprovalDialog"
+import { FilePreviewModal } from "../../common/FilePreviewModal"
 
 export type DocumentStatus = "pending" | "approved" | "rejected"
 
@@ -36,6 +37,7 @@ export function DocumentVerificationPanel({
         doc: VerifiableDocument
         action: "approve" | "reject"
     } | null>(null)
+    const [previewDoc, setPreviewDoc] = useState<VerifiableDocument | null>(null)
 
     return (
         <div className="bg-white rounded-xl border shadow-sm">
@@ -65,14 +67,13 @@ export function DocumentVerificationPanel({
                             <p className="font-medium text-sm">
                                 {humanize(doc.documentType)}
                             </p>
-                            <a
-                                href={doc.documentUrl}
-                                target="_blank"
-                                rel="noreferrer"
+                            <button
+                                type="button"
+                                onClick={() => setPreviewDoc(doc)}
                                 className="text-xs text-blue-600 underline"
                             >
                                 View document
-                            </a>
+                            </button>
                         </div>
 
                         {/* Right */}
@@ -124,6 +125,13 @@ export function DocumentVerificationPanel({
 
                     setDialog(null)
                 }}
+            />
+
+            <FilePreviewModal
+                open={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                title={previewDoc ? humanize(previewDoc.documentType) : "Document Preview"}
+                url={previewDoc?.documentUrl}
             />
         </div>
     )
