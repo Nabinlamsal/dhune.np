@@ -83,6 +83,8 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	input := service.CreateRequestInput{
 		UserID:         userID,
 		PickupAddress:  req.PickupAddress,
+		PickupLat:      req.PickupLat,
+		PickupLng:      req.PickupLng,
 		PickupTimeFrom: pickupFrom,
 		PickupTimeTo:   pickupTo,
 		PaymentMethod:  db.PaymentMethod(req.PaymentMethod),

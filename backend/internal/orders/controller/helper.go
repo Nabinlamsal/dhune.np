@@ -38,6 +38,8 @@ func (h *RequestHandler) mapSummaryList(
 		response = append(response, dto.RequestSummaryDTO{
 			ID:            r.ID.String(),
 			PickupAddress: r.PickupAddress,
+			PickupLat:     r.PickupLat,
+			PickupLng:     r.PickupLng,
 			Status:        string(r.Status),
 			CreatedAt:     r.CreatedAt.Format(time.RFC3339),
 		})
@@ -65,6 +67,8 @@ func (h *RequestHandler) mapDetailToDTO(
 		RequestResponseDTO: dto.RequestResponseDTO{
 			ID:             r.ID.String(),
 			PickupAddress:  r.PickupAddress,
+			PickupLat:      r.PickupLat,
+			PickupLng:      r.PickupLng,
 			PickupTimeFrom: r.PickupTimeFrom.Format(time.RFC3339),
 			PickupTimeTo:   r.PickupTimeTo.Format(time.RFC3339),
 			PaymentMethod:  string(r.PaymentMethod),
@@ -96,6 +100,8 @@ func (h *RequestHandler) mapMarketplaceSummaryList(
 		response = append(response, dto.MarketplaceRequestSummaryDTO{
 			ID:             r.ID.String(),
 			PickupAddress:  r.PickupAddress,
+			PickupLat:      r.PickupLat,
+			PickupLng:      r.PickupLng,
 			PickupTimeFrom: r.PickupTimeFrom.Format(time.RFC3339),
 			PickupTimeTo:   r.PickupTimeTo.Format(time.RFC3339),
 			ExpiresAt:      r.ExpiresAt.Format(time.RFC3339),

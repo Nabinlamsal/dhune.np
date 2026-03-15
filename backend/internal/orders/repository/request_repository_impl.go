@@ -52,7 +52,7 @@ func (r *requestRepo) ListAdmin(
 	ctx context.Context,
 	status *db.RequestsStatus,
 	limit, offset int32,
-) ([]db.Request, error) {
+) ([]db.ListRequestsAdminRow, error) {
 
 	var nullableStatus db.NullRequestsStatus
 

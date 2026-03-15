@@ -25,7 +25,9 @@ type OrderSummary struct {
 	UserName  string `json:"user_name,omitempty"`
 	UserPhone string `json:"user_phone,omitempty"`
 
-	PickupAddress string `json:"pickup_address"`
+	PickupAddress string  `json:"pickup_address"`
+	PickupLat     float64 `json:"pickup_lat"`
+	PickupLng     float64 `json:"pickup_lng"`
 
 	Services []OrderService `json:"services"`
 }
@@ -67,6 +69,8 @@ type VendorInfo struct {
 
 type RequestInfo struct {
 	PickupAddress  string    `json:"pickup_address"`
+	PickupLat      float64   `json:"pickup_lat"`
+	PickupLng      float64   `json:"pickup_lng"`
 	PickupTimeFrom time.Time `json:"pickup_time_from"`
 	PickupTimeTo   time.Time `json:"pickup_time_to"`
 	PaymentMethod  string    `json:"payment_method"`

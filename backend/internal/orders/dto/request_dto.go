@@ -2,19 +2,23 @@ package dto
 
 type CreateRequestDTO struct {
 	PickupAddress  string              `json:"pickup_address" binding:"required"`
+	PickupLat      float64             `json:"pickup_lat" binding:"required"`
+	PickupLng      float64             `json:"pickup_lng" binding:"required"`
 	PickupTimeFrom string              `json:"pickup_time_from" binding:"required"`
 	PickupTimeTo   string              `json:"pickup_time_to" binding:"required"`
 	PaymentMethod  string              `json:"payment_method" binding:"required"`
 	Services       []RequestServiceDTO `json:"services" binding:"required,dive"`
 }
 type RequestResponseDTO struct {
-	ID             string `json:"id"`
-	PickupAddress  string `json:"pickup_address"`
-	PickupTimeFrom string `json:"pickup_time_from"`
-	PickupTimeTo   string `json:"pickup_time_to"`
-	PaymentMethod  string `json:"payment_method"`
-	Status         string `json:"status"`
-	CreatedAt      string `json:"created_at"`
+	ID             string  `json:"id"`
+	PickupAddress  string  `json:"pickup_address"`
+	PickupLat      float64 `json:"pickup_lat"`
+	PickupLng      float64 `json:"pickup_lng"`
+	PickupTimeFrom string  `json:"pickup_time_from"`
+	PickupTimeTo   string  `json:"pickup_time_to"`
+	PaymentMethod  string  `json:"payment_method"`
+	Status         string  `json:"status"`
+	CreatedAt      string  `json:"created_at"`
 }
 type RequestServiceDTO struct {
 	CategoryID    string  `json:"category_id" binding:"required,uuid"`
@@ -37,10 +41,12 @@ type MessageResponseDTO struct {
 	Message string `json:"message"`
 }
 type RequestSummaryDTO struct {
-	ID            string `json:"id"`
-	PickupAddress string `json:"pickup_address"`
-	Status        string `json:"status"`
-	CreatedAt     string `json:"created_at"`
+	ID            string  `json:"id"`
+	PickupAddress string  `json:"pickup_address"`
+	PickupLat     float64 `json:"pickup_lat"`
+	PickupLng     float64 `json:"pickup_lng"`
+	Status        string  `json:"status"`
+	CreatedAt     string  `json:"created_at"`
 }
 type MarketplaceServiceDTO struct {
 	CategoryID    string  `json:"category_id"`
@@ -51,6 +57,8 @@ type MarketplaceServiceDTO struct {
 type MarketplaceRequestSummaryDTO struct {
 	ID             string                  `json:"id"`
 	PickupAddress  string                  `json:"pickup_address"`
+	PickupLat      float64                 `json:"pickup_lat"`
+	PickupLng      float64                 `json:"pickup_lng"`
 	PickupTimeFrom string                  `json:"pickup_time_from"`
 	PickupTimeTo   string                  `json:"pickup_time_to"`
 	ExpiresAt      string                  `json:"expires_at"`

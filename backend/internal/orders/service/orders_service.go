@@ -83,6 +83,8 @@ func (s *OrderService) GetDetail(
 
 		Request: RequestInfo{
 			PickupAddress:  row.PickupAddress,
+			PickupLat:      nullFloat64Value(row.PickupLat),
+			PickupLng:      nullFloat64Value(row.PickupLng),
 			PickupTimeFrom: row.PickupTimeFrom,
 			PickupTimeTo:   row.PickupTimeTo,
 			PaymentMethod:  string(row.PaymentMethod),
@@ -121,6 +123,8 @@ func (s *OrderService) ListByUser(
 			VendorName:    row.VendorName,
 			VendorPhone:   row.VendorPhone,
 			PickupAddress: row.PickupAddress,
+			PickupLat:     nullFloat64Value(row.PickupLat),
+			PickupLng:     nullFloat64Value(row.PickupLng),
 
 			Services: services,
 		})
@@ -169,6 +173,8 @@ func (s *OrderService) ListByVendor(
 			UserPhone: row.UserPhone,
 
 			PickupAddress: row.PickupAddress,
+			PickupLat:     nullFloat64Value(row.PickupLat),
+			PickupLng:     nullFloat64Value(row.PickupLng),
 
 			Services: services,
 		})
@@ -215,6 +221,8 @@ func (s *OrderService) ListAdmin(
 			VendorName: row.VendorName,
 
 			PickupAddress: row.PickupAddress,
+			PickupLat:     nullFloat64Value(row.PickupLat),
+			PickupLng:     nullFloat64Value(row.PickupLng),
 
 			Services: services,
 		})

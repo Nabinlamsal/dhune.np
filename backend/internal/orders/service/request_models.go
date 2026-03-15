@@ -10,6 +10,8 @@ import (
 type CreateRequestInput struct {
 	UserID         uuid.UUID
 	PickupAddress  string
+	PickupLat      float64
+	PickupLng      float64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	PaymentMethod  db.PaymentMethod
@@ -38,6 +40,8 @@ type RequestDetail struct {
 	ID             uuid.UUID
 	UserID         uuid.UUID
 	PickupAddress  string
+	PickupLat      float64
+	PickupLng      float64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	PaymentMethod  db.PaymentMethod
@@ -50,6 +54,8 @@ type RequestSummary struct {
 	ID            uuid.UUID
 	UserID        uuid.UUID
 	PickupAddress string
+	PickupLat     float64
+	PickupLng     float64
 	Status        db.RequestsStatus
 	CreatedAt     time.Time
 }
@@ -62,6 +68,8 @@ type MarketplaceServiceItem struct {
 type MarketplaceRequestSummary struct {
 	ID             uuid.UUID
 	PickupAddress  string
+	PickupLat      float64
+	PickupLng      float64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	ExpiresAt      time.Time

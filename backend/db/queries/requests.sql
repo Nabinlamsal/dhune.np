@@ -4,11 +4,13 @@
 INSERT INTO requests (
     user_id,
     pickup_address,
+    pickup_lat,
+    pickup_lng,
     pickup_time_from,
     pickup_time_to,
     payment_method,
     expires_at
-) VALUES ($1, $2, $3, $4, $5, $6)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 
@@ -54,6 +56,8 @@ LIMIT $2 OFFSET $3;
 SELECT
     r.id,
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
     r.expires_at,
@@ -92,7 +96,7 @@ LIMIT $1 OFFSET $2;
 
 -- Used by: Admin Panel
 -- name: ListRequestsAdmin :many
-SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to,
+SELECT id, user_id, pickup_address, pickup_lat, pickup_lng, pickup_time_from, pickup_time_to,
        payment_method, status, expires_at, created_at, updated_at
 FROM requests
 WHERE (

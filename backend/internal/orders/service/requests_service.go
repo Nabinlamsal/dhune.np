@@ -76,6 +76,8 @@ func (s *RequestService) Create(
 	req, err := txRepo.Create(ctx, db.CreateRequestParams{
 		UserID:         input.UserID,
 		PickupAddress:  input.PickupAddress,
+		PickupLat:      sql.NullFloat64{Float64: input.PickupLat, Valid: true},
+		PickupLng:      sql.NullFloat64{Float64: input.PickupLng, Valid: true},
 		PickupTimeFrom: input.PickupTimeFrom,
 		PickupTimeTo:   input.PickupTimeTo,
 		PaymentMethod:  input.PaymentMethod,
@@ -143,6 +145,8 @@ func (s *RequestService) GetDetail(
 		ID:             first.ID,
 		UserID:         first.UserID,
 		PickupAddress:  first.PickupAddress,
+		PickupLat:      nullFloat64Value(first.PickupLat),
+		PickupLng:      nullFloat64Value(first.PickupLng),
 		PickupTimeFrom: first.PickupTimeFrom,
 		PickupTimeTo:   first.PickupTimeTo,
 		PaymentMethod:  first.PaymentMethod,
@@ -199,6 +203,8 @@ func (s *RequestService) ListByUser(
 			ID:            r.ID,
 			UserID:        r.UserID,
 			PickupAddress: r.PickupAddress,
+			PickupLat:     nullFloat64Value(r.PickupLat),
+			PickupLng:     nullFloat64Value(r.PickupLng),
 			Status:        r.Status,
 			CreatedAt:     r.CreatedAt,
 		})
@@ -246,6 +252,8 @@ func (s *RequestService) ListMarketplace(
 		result = append(result, MarketplaceRequestSummary{
 			ID:             r.ID,
 			PickupAddress:  r.PickupAddress,
+			PickupLat:      nullFloat64Value(r.PickupLat),
+			PickupLng:      nullFloat64Value(r.PickupLng),
 			PickupTimeFrom: r.PickupTimeFrom,
 			PickupTimeTo:   r.PickupTimeTo,
 			ExpiresAt:      expires,
@@ -279,6 +287,8 @@ func (s *RequestService) ListAdmin(
 			ID:            r.ID,
 			UserID:        r.UserID,
 			PickupAddress: r.PickupAddress,
+			PickupLat:     nullFloat64Value(r.PickupLat),
+			PickupLng:     nullFloat64Value(r.PickupLng),
 			Status:        r.Status,
 			CreatedAt:     r.CreatedAt,
 		})
@@ -337,4 +347,11 @@ func (s *RequestService) GetAdminStats(
 ) (db.GetRequestStatsFilteredRow, error) {
 
 	return s.repo.GetStatsFiltered(ctx, uuid.NullUUID{})
+}
+
+func nullFloat64Value(v sql.NullFloat64) float64 {
+	if !v.Valid {
+		return 0
+	}
+	return v.Float64
 }

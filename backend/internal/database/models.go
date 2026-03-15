@@ -348,6 +348,8 @@ type Request struct {
 	ExpiresAt      sql.NullTime
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 }
 
 type RequestService struct {

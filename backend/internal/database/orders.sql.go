@@ -113,6 +113,8 @@ SELECT
     v.phone AS vendor_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
     r.payment_method,
@@ -162,6 +164,8 @@ type GetOrderDetailRow struct {
 	VendorEmail    string
 	VendorPhone    string
 	PickupAddress  string
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	PaymentMethod  PaymentMethod
@@ -190,6 +194,8 @@ func (q *Queries) GetOrderDetail(ctx context.Context, id uuid.UUID) (GetOrderDet
 		&i.VendorEmail,
 		&i.VendorPhone,
 		&i.PickupAddress,
+		&i.PickupLat,
+		&i.PickupLng,
 		&i.PickupTimeFrom,
 		&i.PickupTimeTo,
 		&i.PaymentMethod,
@@ -265,6 +271,8 @@ SELECT
     v.display_name AS vendor_name,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
 
     COALESCE(s.services_json, '[]'::jsonb) AS services_json
 
@@ -312,6 +320,8 @@ type ListOrdersAdminRow struct {
 	UserName      string
 	VendorName    string
 	PickupAddress string
+	PickupLat     sql.NullFloat64
+	PickupLng     sql.NullFloat64
 	ServicesJson  []byte
 }
 
@@ -334,6 +344,8 @@ func (q *Queries) ListOrdersAdmin(ctx context.Context, arg ListOrdersAdminParams
 			&i.UserName,
 			&i.VendorName,
 			&i.PickupAddress,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.ServicesJson,
 		); err != nil {
 			return nil, err
@@ -362,6 +374,8 @@ SELECT
     v.phone        AS vendor_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
 
     COALESCE(s.services_json, '[]'::jsonb) AS services_json
 
@@ -409,6 +423,8 @@ type ListOrdersByUserRow struct {
 	VendorName    string
 	VendorPhone   string
 	PickupAddress string
+	PickupLat     sql.NullFloat64
+	PickupLng     sql.NullFloat64
 	ServicesJson  []byte
 }
 
@@ -432,6 +448,8 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, arg ListOrdersByUserPara
 			&i.VendorName,
 			&i.VendorPhone,
 			&i.PickupAddress,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.ServicesJson,
 		); err != nil {
 			return nil, err
@@ -461,6 +479,8 @@ SELECT
     u.phone        AS user_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
 
@@ -516,6 +536,8 @@ type ListOrdersByVendorRow struct {
 	UserName       string
 	UserPhone      string
 	PickupAddress  string
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	ServicesJson   []byte
@@ -546,6 +568,8 @@ func (q *Queries) ListOrdersByVendor(ctx context.Context, arg ListOrdersByVendor
 			&i.UserName,
 			&i.UserPhone,
 			&i.PickupAddress,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.PickupTimeFrom,
 			&i.PickupTimeTo,
 			&i.ServicesJson,

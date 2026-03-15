@@ -34,6 +34,8 @@ SELECT
     v.phone AS vendor_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
     r.payment_method,
@@ -79,6 +81,8 @@ SELECT
     v.phone        AS vendor_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
 
     COALESCE(s.services_json, '[]'::jsonb) AS services_json
 
@@ -168,6 +172,8 @@ SELECT
     v.display_name AS vendor_name,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
 
     COALESCE(s.services_json, '[]'::jsonb) AS services_json
 
@@ -213,6 +219,8 @@ SELECT
     u.phone        AS user_phone,
 
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
 

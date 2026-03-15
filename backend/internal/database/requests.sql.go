@@ -77,17 +77,21 @@ const createRequest = `-- name: CreateRequest :one
 INSERT INTO requests (
     user_id,
     pickup_address,
+    pickup_lat,
+    pickup_lng,
     pickup_time_from,
     pickup_time_to,
     payment_method,
     expires_at
-) VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at, pickup_lat, pickup_lng
 `
 
 type CreateRequestParams struct {
 	UserID         uuid.UUID
 	PickupAddress  string
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	PaymentMethod  PaymentMethod
@@ -99,6 +103,8 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 	row := q.db.QueryRowContext(ctx, createRequest,
 		arg.UserID,
 		arg.PickupAddress,
+		arg.PickupLat,
+		arg.PickupLng,
 		arg.PickupTimeFrom,
 		arg.PickupTimeTo,
 		arg.PaymentMethod,
@@ -116,6 +122,8 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PickupLat,
+		&i.PickupLng,
 	)
 	return i, err
 }
@@ -176,7 +184,7 @@ func (q *Queries) GetRequestStatsFiltered(ctx context.Context, userID uuid.NullU
 
 const getRequestWithServices = `-- name: GetRequestWithServices :many
 SELECT
-    r.id, r.user_id, r.pickup_address, r.pickup_time_from, r.pickup_time_to, r.payment_method, r.status, r.expires_at, r.created_at, r.updated_at,
+    r.id, r.user_id, r.pickup_address, r.pickup_time_from, r.pickup_time_to, r.payment_method, r.status, r.expires_at, r.created_at, r.updated_at, r.pickup_lat, r.pickup_lng,
     rs.id AS service_id,
     rs.category_id,
     rs.selected_unit,
@@ -199,6 +207,8 @@ type GetRequestWithServicesRow struct {
 	ExpiresAt      sql.NullTime
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 	ServiceID      uuid.NullUUID
 	CategoryID     uuid.NullUUID
 	SelectedUnit   NullPricingUnit
@@ -228,6 +238,8 @@ func (q *Queries) GetRequestWithServices(ctx context.Context, id uuid.UUID) ([]G
 			&i.ExpiresAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.ServiceID,
 			&i.CategoryID,
 			&i.SelectedUnit,
@@ -252,6 +264,8 @@ const listMarketplaceRequests = `-- name: ListMarketplaceRequests :many
 SELECT
     r.id,
     r.pickup_address,
+    r.pickup_lat,
+    r.pickup_lng,
     r.pickup_time_from,
     r.pickup_time_to,
     r.expires_at,
@@ -297,6 +311,8 @@ type ListMarketplaceRequestsParams struct {
 type ListMarketplaceRequestsRow struct {
 	ID             uuid.UUID
 	PickupAddress  string
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
 	PickupTimeFrom time.Time
 	PickupTimeTo   time.Time
 	ExpiresAt      sql.NullTime
@@ -319,6 +335,8 @@ func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketpla
 		if err := rows.Scan(
 			&i.ID,
 			&i.PickupAddress,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.PickupTimeFrom,
 			&i.PickupTimeTo,
 			&i.ExpiresAt,
@@ -341,7 +359,7 @@ func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketpla
 }
 
 const listRequestsAdmin = `-- name: ListRequestsAdmin :many
-SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to,
+SELECT id, user_id, pickup_address, pickup_lat, pickup_lng, pickup_time_from, pickup_time_to,
        payment_method, status, expires_at, created_at, updated_at
 FROM requests
 WHERE (
@@ -358,20 +376,37 @@ type ListRequestsAdminParams struct {
 	Status NullRequestsStatus
 }
 
+type ListRequestsAdminRow struct {
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	PickupAddress  string
+	PickupLat      sql.NullFloat64
+	PickupLng      sql.NullFloat64
+	PickupTimeFrom time.Time
+	PickupTimeTo   time.Time
+	PaymentMethod  PaymentMethod
+	Status         RequestsStatus
+	ExpiresAt      sql.NullTime
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
 // Used by: Admin Panel
-func (q *Queries) ListRequestsAdmin(ctx context.Context, arg ListRequestsAdminParams) ([]Request, error) {
+func (q *Queries) ListRequestsAdmin(ctx context.Context, arg ListRequestsAdminParams) ([]ListRequestsAdminRow, error) {
 	rows, err := q.db.QueryContext(ctx, listRequestsAdmin, arg.Limit, arg.Offset, arg.Status)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Request
+	var items []ListRequestsAdminRow
 	for rows.Next() {
-		var i Request
+		var i ListRequestsAdminRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
 			&i.PickupAddress,
+			&i.PickupLat,
+			&i.PickupLng,
 			&i.PickupTimeFrom,
 			&i.PickupTimeTo,
 			&i.PaymentMethod,
@@ -394,7 +429,7 @@ func (q *Queries) ListRequestsAdmin(ctx context.Context, arg ListRequestsAdminPa
 }
 
 const listUserRequests = `-- name: ListUserRequests :many
-SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at
+SELECT id, user_id, pickup_address, pickup_time_from, pickup_time_to, payment_method, status, expires_at, created_at, updated_at, pickup_lat, pickup_lng
 FROM requests
 WHERE user_id = $1
 ORDER BY created_at DESC
@@ -428,6 +463,8 @@ func (q *Queries) ListUserRequests(ctx context.Context, arg ListUserRequestsPara
 			&i.ExpiresAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PickupLat,
+			&i.PickupLng,
 		); err != nil {
 			return nil, err
 		}
