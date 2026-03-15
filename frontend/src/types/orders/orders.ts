@@ -17,6 +17,8 @@ export interface OrderListItem {
     vendor_phone?: string;
 
     pickup_address: string;
+    pickup_lat: number;
+    pickup_lng: number;
 
     services: {
         category_id: string;

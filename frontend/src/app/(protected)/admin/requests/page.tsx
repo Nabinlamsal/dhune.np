@@ -290,6 +290,14 @@ export default function AdminRequestsPage() {
                             label="Pickup Address"
                             value={requestDetail.data.pickup_address}
                         />
+                        <Detail
+                            label="Pickup Latitude"
+                            value={String(requestDetail.data.pickup_lat)}
+                        />
+                        <Detail
+                            label="Pickup Longitude"
+                            value={String(requestDetail.data.pickup_lng)}
+                        />
 
                         <Detail
                             label="Pickup From"

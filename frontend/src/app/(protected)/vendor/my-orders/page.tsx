@@ -202,6 +202,8 @@ export default function VendorOrdersPage() {
                         <Detail label="Payment Status" value={detail.payment_status} />
 
                         <Detail label="Pickup Address" value={detail.request.pickup_address} />
+                        <Detail label="Pickup Latitude" value={String(detail.request.pickup_lat)} />
+                        <Detail label="Pickup Longitude" value={String(detail.request.pickup_lng)} />
 
                         <h3 className="text-lg font-semibold border-b pb-2">
                             Customer Details

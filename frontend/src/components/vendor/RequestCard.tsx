@@ -14,6 +14,8 @@ interface MarketplaceServiceItem {
 interface RequestCardProps {
     id: string
     pickupAddress: string
+    pickupLat: number
+    pickupLng: number
     pickupTimeFrom: string
     pickupTimeTo: string
     expiresAt: string
@@ -25,6 +27,8 @@ interface RequestCardProps {
 export default function RequestCard({
     id,
     pickupAddress,
+    pickupLat,
+    pickupLng,
     pickupTimeFrom,
     pickupTimeTo,
     expiresAt,
@@ -84,6 +88,9 @@ export default function RequestCard({
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin size={16} />
                     <span>{pickupAddress}</span>
+                </div>
+                <div className="text-xs text-gray-500">
+                    {pickupLat}, {pickupLng}
                 </div>
 
                 {/* Pickup Window */}

@@ -351,6 +351,14 @@ export default function AdminOrdersPage() {
                                 label="Address"
                                 value={orderDetail.data.request.pickup_address}
                             />
+                            <Detail
+                                label="Latitude"
+                                value={String(orderDetail.data.request.pickup_lat)}
+                            />
+                            <Detail
+                                label="Longitude"
+                                value={String(orderDetail.data.request.pickup_lng)}
+                            />
 
                             <Detail
                                 label="Pickup Window"

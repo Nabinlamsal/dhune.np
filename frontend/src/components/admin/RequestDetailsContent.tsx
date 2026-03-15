@@ -16,6 +16,8 @@ function RequestDetailsContent({ id }: { id: string }) {
     <div className="space-y-4 text-sm">
       <Detail label="Request ID" value={request.id} />
       <Detail label="Pickup Address" value={request.pickup_address} />
+      <Detail label="Pickup Latitude" value={String(request.pickup_lat)} />
+      <Detail label="Pickup Longitude" value={String(request.pickup_lng)} />
       <Detail
         label="Pickup From"
         value={new Date(request.pickup_time_from).toLocaleString()}

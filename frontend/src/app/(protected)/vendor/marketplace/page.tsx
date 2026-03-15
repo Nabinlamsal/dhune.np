@@ -74,6 +74,8 @@ export default function VendorMarketplacePage() {
                         key={r.id}
                         id={r.id}
                         pickupAddress={r.pickup_address}
+                        pickupLat={r.pickup_lat}
+                        pickupLng={r.pickup_lng}
                         pickupTimeFrom={r.pickup_time_from}
                         pickupTimeTo={r.pickup_time_to}
                         expiresAt={r.expires_at}
@@ -120,6 +122,14 @@ export default function VendorMarketplacePage() {
                         <Detail
                             label="Pickup Address"
                             value={selectedRequest.pickup_address}
+                        />
+                        <Detail
+                            label="Pickup Latitude"
+                            value={String(selectedRequest.pickup_lat)}
+                        />
+                        <Detail
+                            label="Pickup Longitude"
+                            value={String(selectedRequest.pickup_lng)}
                         />
 
                         <Detail
