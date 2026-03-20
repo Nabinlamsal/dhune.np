@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import {
+    Bell,
     LayoutDashboard,
     Users,
     Building2,
@@ -49,6 +50,10 @@ export default function Sidebar() {
                     <p className="text-sm font-semibold leading-none">Dhune.np</p>
                     <p className="mt-1 text-[11px] text-gray-400">Admin Panel</p>
                 </div>
+                <button className="relative ml-auto rounded-lg p-2 text-gray-200 transition hover:bg-white/10 hover:text-white">
+                    <Bell className="h-4 w-4" />
+                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-orange-400" />
+                </button>
             </div>
 
             {/* Menu */}

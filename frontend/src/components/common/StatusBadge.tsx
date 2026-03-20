@@ -30,6 +30,7 @@ type DomainStatus =
  */
 type StatusBadgeProps = {
     status: Status | DomainStatus
+    label?: string
 }
 
 /* ---------------- style map ---------------- */
@@ -67,8 +68,13 @@ function normalizeStatus(status: Status | DomainStatus): Status {
 
 //comonens
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, label }: StatusBadgeProps) {
     const normalized = normalizeStatus(status)
+    const displayText = (status: string) =>
+        status
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase())
 
     return (
         <span
@@ -77,7 +83,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
                 STATUS_STYLES[normalized]
             )}
         >
-            {status.replace("_", " ")}
+            {displayText(label ?? status)}
         </span>
     )
 }

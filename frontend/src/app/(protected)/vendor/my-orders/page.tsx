@@ -17,6 +17,8 @@ import {
 
 import { OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
+import { ClipboardList, ShoppingBag, UserRound } from "lucide-react";
+import { formatDisplayId, formatPickupDuration } from "@/src/utils/display";
 
 function mapOrderStatusToBadge(status: string): Status {
     switch (status) {
@@ -83,7 +85,7 @@ export default function VendorOrdersPage() {
         {
             key: "id",
             header: "Order",
-            render: (o: OrderListItem) => o.id.slice(0, 8) + "...",
+            render: (o: OrderListItem) => formatDisplayId(o.id, "ORD"),
         },
 
         {
@@ -104,7 +106,10 @@ export default function VendorOrdersPage() {
             key: "status",
             header: "Order Status",
             render: (o: OrderListItem) => (
-                <StatusBadge status={mapOrderStatusToBadge(o.order_status)} />
+                <StatusBadge
+                    status={mapOrderStatusToBadge(o.order_status)}
+                    label={o.order_status}
+                />
             ),
         },
 
@@ -120,6 +125,7 @@ export default function VendorOrdersPage() {
                                 ? "warning"
                                 : "neutral"
                     }
+                    label={o.payment_status}
                 />
             ),
         },
@@ -192,33 +198,46 @@ export default function VendorOrdersPage() {
 
                 {detail && (
 
-                    <div className="space-y-6 text-sm">
+                    <div className="space-y-3 text-sm">
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                    <ClipboardList className="size-4 text-[#040947]" />
+                                    Order Information
+                                </h3>
+                                <Detail label="Order ID" value={detail.id} />
+                                <Detail label="Amount" value={`Rs. ${detail.final_price}`} />
+                                <Detail label="Order Status" value={detail.order_status} />
+                                <Detail label="Payment Status" value={detail.payment_status} />
+                            </div>
 
-                        <Detail label="Order ID" value={detail.id} />
-                        <Detail label="Amount" value={`Rs. ${detail.final_price}`} />
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                    <ClipboardList className="size-4 text-[#040947]" />
+                                    Pickup Details
+                                </h3>
+                                <Detail label="Pickup Address" value={detail.request.pickup_address} />
+                                <Detail label="Pickup Latitude" value={String(detail.request.pickup_lat)} />
+                                <Detail label="Pickup Longitude" value={String(detail.request.pickup_lng)} />
+                                <Detail
+                                    label="Pickup Duration"
+                                    value={formatPickupDuration(detail.request.pickup_time_from, detail.request.pickup_time_to)}
+                                />
+                            </div>
+                        </div>
 
-                        <Detail label="Order Status" value={detail.order_status} />
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                <UserRound className="size-4 text-[#040947]" />
+                                Customer Details
+                            </h3>
+                            <Detail label="Name" value={detail.user.name} />
+                            <Detail label="Email" value={detail.user.email} />
+                        </div>
 
-                        <Detail label="Payment Status" value={detail.payment_status} />
-
-                        <Detail label="Pickup Address" value={detail.request.pickup_address} />
-                        <Detail label="Pickup Latitude" value={String(detail.request.pickup_lat)} />
-                        <Detail label="Pickup Longitude" value={String(detail.request.pickup_lng)} />
-
-                        <h3 className="text-lg font-semibold border-b pb-2">
-                            Customer Details
-                        </h3>
-
-                        <Detail label="Name" value={detail.user.name} />
-                        <Detail label="Email" value={detail.user.email} />
-
-                        <Detail
-                            label="Pickup Window"
-                            value={`${new Date(detail.request.pickup_time_from).toLocaleString()} - ${new Date(detail.request.pickup_time_to).toLocaleString()}`}
-                        />
-
-                        <div className="pt-4 border-t">
-                            <h4 className="font-semibold mb-2">
+                        <div className="pt-3 border-t border-[#040947]/15">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2 text-slate-900">
+                                <ShoppingBag className="size-4 text-[#040947]" />
                                 Services
                             </h4>
 
@@ -234,7 +253,7 @@ export default function VendorOrdersPage() {
                             <div className="pt-6 border-t">
 
                                 <Button
-                                    className="bg-[#040947]"
+                                    className="bg-[#040947] hover:bg-[#030736]"
                                     onClick={() =>
                                         updateStatus({
                                             orderId: detail.id,
@@ -259,3 +278,4 @@ export default function VendorOrdersPage() {
         </>
     );
 }
+

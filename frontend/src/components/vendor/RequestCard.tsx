@@ -3,6 +3,7 @@
 import { Clock, MapPin, Package } from "lucide-react"
 import { Button } from "@/src/components/ui/button"
 import { StatusBadge } from "@/src/components/common/StatusBadge"
+import { formatDisplayId, formatPickupDuration } from "@/src/utils/display"
 
 interface MarketplaceServiceItem {
     category_id: string
@@ -36,7 +37,6 @@ export default function RequestCard({
     onView,
     onBid,
 }: RequestCardProps) {
-
     const expiresDate = new Date(expiresAt)
     const now = new Date()
     const diffMs = expiresDate.getTime() - now.getTime()
@@ -46,27 +46,23 @@ export default function RequestCard({
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between">
-
-            {/* Top Section */}
             <div className="space-y-4">
-
-                {/* Header */}
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="font-semibold text-lg text-gray-900">
                             Laundry Request
                         </h3>
                         <p className="text-xs text-gray-400">
-                            Request ID: {id.slice(0, 8)}...
+                            Request ID: {formatDisplayId(id, "REQ")}
                         </p>
                     </div>
 
                     <StatusBadge
                         status={isUrgent ? "error" : "info"}
+                        label={isUrgent ? "EXPIRING_SOON" : "OPEN"}
                     />
                 </div>
 
-                {/* Services Breakdown */}
                 <div className="space-y-1">
                     {services.map((service) => (
                         <div
@@ -75,7 +71,7 @@ export default function RequestCard({
                         >
                             <Package size={16} />
                             <span>
-                                {service.category_name} —{" "}
+                                {service.category_name} -{" "}
                                 <span className="font-medium">
                                     {service.quantity_value} {service.selected_unit}
                                 </span>
@@ -84,7 +80,6 @@ export default function RequestCard({
                     ))}
                 </div>
 
-                {/* Location */}
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin size={16} />
                     <span>{pickupAddress}</span>
@@ -93,28 +88,24 @@ export default function RequestCard({
                     {pickupLat}, {pickupLng}
                 </div>
 
-                {/* Pickup Window */}
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Clock size={16} />
                     <span>
-                        Pickup:{" "}
-                        <span className="font-medium text-blue-950">
-                            {new Date(pickupTimeFrom).toLocaleString()} –{" "}
-                            {new Date(pickupTimeTo).toLocaleTimeString()}
+                        Pickup Duration:{" "}
+                        <span className="font-medium text-[#040947]">
+                            {formatPickupDuration(pickupTimeFrom, pickupTimeTo)}
                         </span>
                     </span>
                 </div>
 
-                {/* Expiry */}
                 <div className="text-sm font-medium text-gray-900">
                     Expires in{" "}
-                    <span className={`font-medium text-red-600`}>
+                    <span className="font-medium text-red-600">
                         {expiresInMinutes} minutes
                     </span>
                 </div>
             </div>
 
-            {/* Bottom Actions */}
             <div className="flex gap-3 mt-6">
                 <Button
                     variant="outline"
@@ -125,7 +116,7 @@ export default function RequestCard({
                 </Button>
 
                 <Button
-                    className="flex-1 bg-[#040956] hover:bg-orange-600"
+                    className="flex-1 bg-[#040947] hover:bg-[#030736]"
                     onClick={onBid}
                 >
                     Place Bid
@@ -134,3 +125,4 @@ export default function RequestCard({
         </div>
     )
 }
+

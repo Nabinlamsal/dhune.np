@@ -17,6 +17,8 @@ import {
     useRequestDetail,
     useAdminRequestStats,
 } from "@/src/hooks/orders/useRequest";
+import { ClipboardList, ShoppingBag } from "lucide-react";
+import { formatDisplayId, formatPickupDuration } from "@/src/utils/display";
 
 /* ---------------- Status Mapping ---------------- */
 
@@ -160,16 +162,22 @@ export default function AdminRequestsPage() {
 
             {/* ---------- Table ---------- */}
 
-            <div className="mt-4 rounded-xl border overflow-hidden">
+            <div className="mt-4 overflow-hidden rounded-xl border border-[#040947]/15 bg-white shadow-sm">
 
-                <table className="w-full text-sm">
+                <table className="w-full table-fixed text-sm">
+                    <colgroup>
+                        <col className="w-40" />
+                        <col />
+                        <col className="w-44" />
+                        <col className="w-36" />
+                    </colgroup>
 
-                    <thead className="bg-gray-50 text-gray-600">
+                    <thead className="bg-[#040947]/[0.06] text-gray-700">
                         <tr>
-                            <th className="p-3 text-left">Request ID</th>
-                            <th className="p-3 text-left">Pickup Address</th>
-                            <th className="p-3 text-left">Status</th>
-                            <th className="p-3 text-left">Created</th>
+                            <th className="px-4 py-3 text-left font-semibold">Request ID</th>
+                            <th className="px-4 py-3 text-left font-semibold">Pickup Address</th>
+                            <th className="px-4 py-3 text-left font-semibold">Status</th>
+                            <th className="px-4 py-3 text-left font-semibold">Created</th>
                         </tr>
                     </thead>
 
@@ -204,26 +212,27 @@ export default function AdminRequestsPage() {
                             requests.map((r) => (
                                 <tr
                                     key={r.id}
-                                    className="border-t hover:bg-gray-50 cursor-pointer"
+                                    className="cursor-pointer border-t border-[#040947]/10 hover:bg-[#040947]/[0.05]"
                                     onClick={() =>
                                         setSelectedRequestId(r.id)
                                     }
                                 >
-                                    <td className="p-3">
-                                        {r.id}
+                                    <td className="px-4 py-3 font-medium text-slate-700">
+                                        {formatDisplayId(r.id, "REQ")}
                                     </td>
 
-                                    <td className="p-3">
+                                    <td className="px-4 py-3 truncate text-slate-600" title={r.pickup_address}>
                                         {r.pickup_address}
                                     </td>
 
-                                    <td className="p-3">
+                                    <td className="px-4 py-3">
                                         <StatusBadge
                                             status={deriveRequestStatus(r.status)}
+                                            label={r.status}
                                         />
                                     </td>
 
-                                    <td className="p-3">
+                                    <td className="px-4 py-3 text-slate-600">
                                         {new Date(
                                             r.created_at
                                         ).toLocaleDateString()}
@@ -279,86 +288,72 @@ export default function AdminRequestsPage() {
                 )}
 
                 {requestDetail?.data && (
-                    <div className="space-y-4 text-sm">
+                    <div className="space-y-3 text-sm">
+                        <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900">
+                                <ClipboardList className="size-4 text-[#040947]" />
+                                Request Information
+                            </h4>
+                            <Detail label="Request ID" value={requestDetail.data.id} />
+                            <Detail label="Payment Method" value={requestDetail.data.payment_method} />
+                            <Detail label="Status" value={requestDetail.data.status} />
+                        </div>
 
-                        <Detail
-                            label="Request ID"
-                            value={requestDetail.data.id}
-                        />
-
-                        <Detail
-                            label="Pickup Address"
-                            value={requestDetail.data.pickup_address}
-                        />
-                        <Detail
-                            label="Pickup Latitude"
-                            value={String(requestDetail.data.pickup_lat)}
-                        />
-                        <Detail
-                            label="Pickup Longitude"
-                            value={String(requestDetail.data.pickup_lng)}
-                        />
-
-                        <Detail
-                            label="Pickup From"
-                            value={new Date(
-                                requestDetail.data.pickup_time_from
-                            ).toLocaleString()}
-                        />
-
-                        <Detail
-                            label="Pickup To"
-                            value={new Date(
-                                requestDetail.data.pickup_time_to
-                            ).toLocaleString()}
-                        />
-
-                        <Detail
-                            label="Payment Method"
-                            value={requestDetail.data.payment_method}
-                        />
-
-                        <Detail
-                            label="Status"
-                            value={requestDetail.data.status}
-                        />
-
-                        <hr />
-
-                        <p className="font-medium">
-                            Services
-                        </p>
-
-                        {requestDetail.data.services?.map((svc) => (
-                            <div
-                                key={svc.category_id}
-                                className="border rounded-md p-3"
-                            >
-
-                                <Detail
-                                    label="Category ID"
-                                    value={svc.category_id}
-                                />
-
-                                <Detail
-                                    label="Unit"
-                                    value={svc.selected_unit}
-                                />
-
-                                <Detail
-                                    label="Quantity"
-                                    value={String(svc.quantity_value)}
-                                />
-
-                                {svc.description && (
-                                    <Detail
-                                        label="Description"
-                                        value={svc.description}
-                                    />
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900">
+                                <ClipboardList className="size-4 text-[#040947]" />
+                                Pickup Details
+                            </h4>
+                            <Detail label="Pickup Address" value={requestDetail.data.pickup_address} />
+                            <Detail label="Pickup Latitude" value={String(requestDetail.data.pickup_lat)} />
+                            <Detail label="Pickup Longitude" value={String(requestDetail.data.pickup_lng)} />
+                            <Detail
+                                label="Pickup Duration"
+                                value={formatPickupDuration(
+                                    requestDetail.data.pickup_time_from,
+                                    requestDetail.data.pickup_time_to
                                 )}
+                            />
+                        </div>
+                        </div>
 
-                            </div>
-                        ))}
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900">
+                                <ShoppingBag className="size-4 text-[#040947]" />
+                                Services
+                            </h4>
+                            {requestDetail.data.services?.map((svc) => (
+                                <div
+                                    key={svc.category_id}
+                                    className="rounded-lg border border-[#040947]/15 p-2.5"
+                                >
+
+                                    <Detail
+                                        label="Category ID"
+                                        value={svc.category_id}
+                                    />
+
+                                    <Detail
+                                        label="Unit"
+                                        value={svc.selected_unit}
+                                    />
+
+                                    <Detail
+                                        label="Quantity"
+                                        value={String(svc.quantity_value)}
+                                    />
+
+                                    {svc.description && (
+                                        <Detail
+                                            label="Description"
+                                            value={svc.description}
+                                        />
+                                    )}
+
+                                </div>
+                            ))}
+                        </div>
 
                     </div>
                 )}
@@ -367,3 +362,4 @@ export default function AdminRequestsPage() {
         </>
     );
 }
+

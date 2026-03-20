@@ -1,5 +1,6 @@
 import { useRequestDetail } from "@/src/hooks/orders/useRequest"
 import { Detail } from "../common/DetailItem"
+import { formatPickupDuration } from "@/src/utils/display"
 
 
 function RequestDetailsContent({ id }: { id: string }) {
@@ -19,12 +20,8 @@ function RequestDetailsContent({ id }: { id: string }) {
       <Detail label="Pickup Latitude" value={String(request.pickup_lat)} />
       <Detail label="Pickup Longitude" value={String(request.pickup_lng)} />
       <Detail
-        label="Pickup From"
-        value={new Date(request.pickup_time_from).toLocaleString()}
-      />
-      <Detail
-        label="Pickup To"
-        value={new Date(request.pickup_time_to).toLocaleString()}
+        label="Pickup Duration"
+        value={formatPickupDuration(request.pickup_time_from, request.pickup_time_to)}
       />
       <Detail label="Payment Method" value={request.payment_method} />
       <Detail label="Status" value={request.status} />

@@ -255,6 +255,8 @@ import {
 import { Offer } from "@/src/types/orders/offers";
 import { OfferStatus } from "@/src/types/orders/orders-enums";
 import EditOfferModal from "@/src/components/vendor/EditOfferModel";
+import { ClipboardList, FileText, ShieldCheck } from "lucide-react";
+import { formatDisplayId } from "@/src/utils/display";
 
 function mapOfferStatusToBadge(status: OfferStatus) {
     switch (status) {
@@ -300,7 +302,7 @@ export default function VendorOffersPage() {
             key: "request_id",
             header: "Request",
             render: (o: Offer) =>
-                o.request_id.slice(0, 8) + "...",
+                formatDisplayId(o.request_id, "REQ"),
         },
         {
             key: "bid_price",
@@ -317,7 +319,10 @@ export default function VendorOffersPage() {
             key: "status",
             header: "Status",
             render: (o: Offer) => (
-                <StatusBadge status={mapOfferStatusToBadge(o.status)} />
+                <StatusBadge
+                    status={mapOfferStatusToBadge(o.status)}
+                    label={o.status}
+                />
             ),
         }
     ];
@@ -372,11 +377,12 @@ export default function VendorOffersPage() {
                 title="Offer Details"
             >
                 {selectedOffer && (
-                    <div className="space-y-6 text-sm">
+                    <div className="space-y-3 text-sm">
 
                         {/* SECTION 1 - OFFER INFO */}
-                        <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-800 border-b pb-2">
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 font-semibold text-slate-900 border-b border-[#040947]/15 pb-2">
+                                <ClipboardList className="size-4 text-[#040947]" />
                                 Offer Information
                             </h4>
 
@@ -398,20 +404,23 @@ export default function VendorOffersPage() {
                         </div>
 
                         {/* SECTION 2 - STATUS */}
-                        <div className="space-y-2 pt-4 border-t">
-                            <h4 className="font-semibold text-gray-800">
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                                <ShieldCheck className="size-4 text-[#040947]" />
                                 Status
                             </h4>
 
                             <StatusBadge
                                 status={mapOfferStatusToBadge(selectedOffer.status)}
+                                label={selectedOffer.status}
                             />
                         </div>
 
                         {/* SECTION 3 - DESCRIPTION */}
                         {selectedOffer.description && (
-                            <div className="pt-4 border-t space-y-2">
-                                <h4 className="font-semibold text-gray-800">
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <FileText className="size-4 text-[#040947]" />
                                     Description
                                 </h4>
                                 <p className="text-gray-600 leading-relaxed">
@@ -425,7 +434,7 @@ export default function VendorOffersPage() {
                             <div className="flex gap-3 pt-6 border-t">
                                 <button
                                     onClick={() => setEditOpen(true)}
-                                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                    className="px-4 py-2 text-sm bg-[#040947] text-white rounded-lg hover:bg-[#030736] transition"
                                 >
                                     Update Offer
                                 </button>
@@ -467,3 +476,4 @@ export default function VendorOffersPage() {
         </>
     );
 }
+

@@ -9,6 +9,8 @@ import { useMarketplaceRequests } from "@/src/hooks/orders/useRequest"
 import { MarketplaceRequest } from "@/src/types/orders/requests"
 import VendorSendOfferModal from "@/src/components/vendor/VendorSendOfferModal"
 import { Detail } from "@/src/components/common/DetailItem"
+import { ClipboardList, ShoppingBag } from "lucide-react"
+import { formatPickupDuration } from "@/src/utils/display"
 
 export default function VendorMarketplacePage() {
 
@@ -117,63 +119,48 @@ export default function VendorMarketplacePage() {
                 title="Request Details"
             >
                 {selectedRequest && (
-                    <div className="space-y-6 text-sm">
+                    <div className="space-y-3 text-sm">
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900">
+                                    <ClipboardList className="size-4 text-[#040947]" />
+                                    Request Information
+                                </h4>
 
-                        <Detail
-                            label="Pickup Address"
-                            value={selectedRequest.pickup_address}
-                        />
-                        <Detail
-                            label="Pickup Latitude"
-                            value={String(selectedRequest.pickup_lat)}
-                        />
-                        <Detail
-                            label="Pickup Longitude"
-                            value={String(selectedRequest.pickup_lng)}
-                        />
+                                <Detail label="Expires At" value={new Date(selectedRequest.expires_at).toLocaleString()} />
+                                <Detail label="Created At" value={new Date(selectedRequest.created_at).toLocaleString()} />
+                                <Detail label="Total Quantity" value={`${selectedRequest.total_quantity}`} />
+                                <Detail label="Service Count" value={`${selectedRequest.service_count}`} />
+                            </div>
 
-                        <Detail
-                            label="Pickup Window"
-                            value={`${new Date(
-                                selectedRequest.pickup_time_from
-                            ).toLocaleString()} - ${new Date(
-                                selectedRequest.pickup_time_to
-                            ).toLocaleString()}`}
-                        />
-
-                        <Detail
-                            label="Expires At"
-                            value={new Date(
-                                selectedRequest.expires_at
-                            ).toLocaleString()}
-                        />
-
-                        <Detail
-                            label="Created At"
-                            value={new Date(
-                                selectedRequest.created_at
-                            ).toLocaleString()}
-                        />
-
-                        <Detail
-                            label="Total Quantity"
-                            value={`${selectedRequest.total_quantity}`}
-                        />
-
-                        <Detail
-                            label="Service Count"
-                            value={`${selectedRequest.service_count}`}
-                        />
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900">
+                                    <ClipboardList className="size-4 text-[#040947]" />
+                                    Pickup Details
+                                </h4>
+                                <Detail label="Pickup Address" value={selectedRequest.pickup_address} />
+                                <Detail label="Pickup Latitude" value={String(selectedRequest.pickup_lat)} />
+                                <Detail label="Pickup Longitude" value={String(selectedRequest.pickup_lng)} />
+                                <Detail
+                                    label="Pickup Duration"
+                                    value={formatPickupDuration(
+                                        selectedRequest.pickup_time_from,
+                                        selectedRequest.pickup_time_to
+                                    )}
+                                />
+                            </div>
+                        </div>
 
                         {/* Services */}
-                        <div className="pt-4">
-                            <h4 className="font-semibold mb-2">
+                        <div className="rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2 text-slate-900">
+                                <ShoppingBag className="size-4 text-[#040947]" />
                                 Requested Services
                             </h4>
 
                             <div className="space-y-2">
                                 {selectedRequest.services.map((s, i) => (
-                                    <div key={i} className="border rounded-md p-3">
+                                    <div key={i} className="rounded-md border border-[#040947]/15 p-2.5">
                                         <Detail
                                             label="Category"
                                             value={s.category_name}
@@ -188,8 +175,9 @@ export default function VendorMarketplacePage() {
                         </div>
 
                         {/* Action */}
-                        <div className="pt-6 flex justify-end">
+                        <div className="pt-3 flex justify-end">
                             <Button
+                                className="bg-[#040947] hover:bg-[#030736] text-white"
                                 onClick={() => {
                                     setOfferRequestId(selectedRequest.id)
                                 }}
@@ -211,3 +199,4 @@ export default function VendorMarketplacePage() {
         </>
     )
 }
+

@@ -17,6 +17,8 @@ import {
 
 import { OrderDetailResponse, OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
+import { ClipboardList, MapPin, ShoppingBag, Store, UserRound } from "lucide-react";
+import { formatDisplayId, formatPickupDuration } from "@/src/utils/display";
 
 function mapOrderStatus(status: string): Status {
     switch (status) {
@@ -68,7 +70,7 @@ export default function AdminOrdersPage() {
         {
             key: "id",
             header: "Order",
-            render: (o: OrderListItem) => o.id.slice(0, 8) + "...",
+            render: (o: OrderListItem) => formatDisplayId(o.id, "ORD"),
         },
         {
             key: "user",
@@ -89,14 +91,20 @@ export default function AdminOrdersPage() {
             key: "payment",
             header: "Payment",
             render: (o: OrderListItem) => (
-                <StatusBadge status={mapPaymentStatus(o.payment_status)} />
+                <StatusBadge
+                    status={mapPaymentStatus(o.payment_status)}
+                    label={o.payment_status}
+                />
             ),
         },
         {
             key: "status",
             header: "Order Status",
             render: (o: OrderListItem) => (
-                <StatusBadge status={mapOrderStatus(o.order_status)} />
+                <StatusBadge
+                    status={mapOrderStatus(o.order_status)}
+                    label={o.order_status}
+                />
             ),
         },
         {
@@ -191,9 +199,10 @@ export default function AdminOrdersPage() {
                 )}
 
                 {detail && (
-                    <div className="space-y-6 text-sm">
-                        <div className="space-y-3">
-                            <h4 className="border-b pb-2 font-semibold">Order Information</h4>
+                    <div className="space-y-3 text-sm">
+                        <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900"><ClipboardList className="size-4 text-[#040947]" />Order Information</h4>
                             <Detail label="Order ID" value={detail.id} />
                             <Detail label="Request ID" value={detail.request_id} />
                             <Detail label="Amount" value={`Rs. ${detail.final_price}`} />
@@ -205,22 +214,22 @@ export default function AdminOrdersPage() {
                             />
                         </div>
 
-                        <div className="space-y-3 border-t pt-4">
-                            <h4 className="border-b pb-2 font-semibold">Customer</h4>
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900"><UserRound className="size-4 text-[#040947]" />Customer</h4>
                             <Detail label="Name" value={detail.user?.name} />
                             <Detail label="Email" value={detail.user?.email} />
                             <Detail label="Phone" value={detail.user?.phone} />
                         </div>
 
-                        <div className="space-y-3 border-t pt-4">
-                            <h4 className="border-b pb-2 font-semibold">Vendor</h4>
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900"><Store className="size-4 text-[#040947]" />Vendor</h4>
                             <Detail label="Name" value={detail.vendor?.name} />
                             <Detail label="Email" value={detail.vendor?.email} />
                             <Detail label="Phone" value={detail.vendor?.phone} />
                         </div>
 
-                        <div className="space-y-3 border-t pt-4">
-                            <h4 className="border-b pb-2 font-semibold">Pickup Details</h4>
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 font-semibold text-slate-900"><MapPin className="size-4 text-[#040947]" />Pickup Details</h4>
                             <Detail label="Address" value={detail.request?.pickup_address} />
                             <Detail
                                 label="Latitude"
@@ -239,10 +248,10 @@ export default function AdminOrdersPage() {
                                 }
                             />
                             <Detail
-                                label="Pickup Window"
+                                label="Pickup Duration"
                                 value={
                                     detail.request?.pickup_time_from && detail.request?.pickup_time_to
-                                        ? `${new Date(detail.request.pickup_time_from).toLocaleString()} - ${new Date(detail.request.pickup_time_to).toLocaleString()}`
+                                        ? formatPickupDuration(detail.request.pickup_time_from, detail.request.pickup_time_to)
                                         : undefined
                                 }
                             />
@@ -251,9 +260,10 @@ export default function AdminOrdersPage() {
                                 value={detail.request?.payment_method}
                             />
                         </div>
+                        </div>
 
-                        <div className="border-t pt-4">
-                            <h4 className="mb-2 font-semibold">Services</h4>
+                        <div className="rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="mb-2 flex items-center gap-2 font-semibold text-slate-900"><ShoppingBag className="size-4 text-[#040947]" />Services</h4>
                             {detail.services?.length ? (
                                 detail.services.map((s, i) => (
                                     <div key={`${s.category_id}-${i}`} className="text-sm text-gray-600">
@@ -270,3 +280,4 @@ export default function AdminOrdersPage() {
         </>
     );
 }
+

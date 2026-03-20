@@ -10,6 +10,8 @@ import { useAdminOffers, useAdminOfferStats } from "@/src/hooks/orders/useOffer"
 import { Offer } from "@/src/types/orders/offers"
 import { OfferStatus } from "@/src/types/orders/orders-enums"
 import { Detail } from "@/src/components/common/DetailItem"
+import { ClipboardList, FileText, ShieldUser, UserRound, Wallet } from "lucide-react"
+import { formatDisplayId } from "@/src/utils/display"
 
 
 function mapOfferStatus(status: OfferStatus) {
@@ -52,7 +54,7 @@ export default function AdminOffersPage() {
             key: "id",
             header: "Offer ID",
             render: (o: Offer) =>
-                o?.id ? o.id.slice(0, 8) + "..." : "—",
+                o?.id ? formatDisplayId(o.id, "OFF") : "--",
         },
         {
             key: "bid_price",
@@ -69,7 +71,7 @@ export default function AdminOffersPage() {
             key: "status",
             header: "Status",
             render: (o: Offer) => (
-                <StatusBadge status={mapOfferStatus(o.status)} />
+                <StatusBadge status={mapOfferStatus(o.status)} label={o.status} />
             ),
         },
         {
@@ -183,11 +185,12 @@ export default function AdminOffersPage() {
                 title="Offer Details"
             >
                 {selectedOffer && (
-                    <div className="space-y-6 text-sm">
+                    <div className="space-y-3 text-sm">
 
                         {/* Offer Information */}
-                        <div className="space-y-3">
-                            <h4 className="font-semibold border-b pb-2">
+                        <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="flex items-center gap-2 font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                <ClipboardList className="size-4 text-[#040947]" />
                                 Offer Information
                             </h4>
 
@@ -213,8 +216,9 @@ export default function AdminOffersPage() {
 
                         {/* Vendor Details */}
                         {selectedOffer.vendor && (
-                            <div className="pt-4 border-t space-y-3">
-                                <h4 className="font-semibold border-b pb-2">
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="flex items-center gap-2 font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                    <ShieldUser className="size-4 text-[#040947]" />
                                     Vendor Details
                                 </h4>
 
@@ -244,8 +248,9 @@ export default function AdminOffersPage() {
 
                         {/* User Details */}
                         {selectedOffer.user && (
-                            <div className="pt-4 border-t space-y-3">
-                                <h4 className="font-semibold border-b pb-2">
+                            <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="flex items-center gap-2 font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                    <UserRound className="size-4 text-[#040947]" />
                                     Customer Details
                                 </h4>
 
@@ -260,21 +265,24 @@ export default function AdminOffersPage() {
 
 
                         {/* Status */}
-                        <div className="pt-4 border-t">
-                            <h4 className="font-semibold mb-2">
+                        <div className="rounded-xl border border-[#040947]/15 bg-white p-3">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2 text-slate-900">
+                                <Wallet className="size-4 text-[#040947]" />
                                 Status
                             </h4>
 
                             <StatusBadge
                                 status={mapOfferStatus(selectedOffer.status)}
+                                label={selectedOffer.status}
                             />
                         </div>
 
 
                         {/* Description */}
                         {selectedOffer.description && (
-                            <div className="pt-4 border-t">
-                                <h4 className="font-semibold mb-2">
+                            <div className="rounded-xl border border-[#040947]/15 bg-white p-3">
+                                <h4 className="font-semibold mb-2 flex items-center gap-2 text-slate-900">
+                                    <FileText className="size-4 text-[#040947]" />
                                     Description
                                 </h4>
 
@@ -291,3 +299,4 @@ export default function AdminOffersPage() {
         </>
     )
 }
+
