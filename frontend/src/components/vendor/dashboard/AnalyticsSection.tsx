@@ -60,7 +60,7 @@ export function AnalyticsSection({ offerFlowData, orderFlowData, workloadData }:
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
                             <Tooltip />
-                            <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={22}>
+                            <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={35}>
                                 {offerFlowData.map((entry) => (
                                     <Cell key={entry.name} fill={entry.value === maxOffer ? COLORS.success : COLORS.neutral} />
                                 ))}
