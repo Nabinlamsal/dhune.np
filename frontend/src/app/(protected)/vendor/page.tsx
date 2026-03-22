@@ -86,28 +86,37 @@ export default function VendorPage() {
 
     return (
         <div className="space-y-6 bg-slate-50 pb-2">
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Vendor Dashboard</h1>
-                        <p className="mt-1 text-sm text-slate-500">Performance overview</p>
+            <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-[#040947]">Vendor Dashboard</h1>
+                    <p className="mt-1 text-sm text-slate-500">Performance overview</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-md bg-[#040947]/10 px-2.5 py-1 text-xs font-semibold text-[#040947]">
+                            Conversion: {acceptanceRate}%
+                        </span>
+                        <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-semibold text-[#040947]">
+                            Completion: {completionRate}%
+                        </span>
+                        <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                            Rating: {mockByFilter.rating.toFixed(1)}
+                        </span>
                     </div>
+                </div>
 
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="time-filter" className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                            Time Filter
-                        </label>
-                        <select
-                            id="time-filter"
-                            value={timeFilter}
-                            onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none ring-sky-200 transition focus:ring-2"
-                        >
-                            <option value="today">Today</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <label htmlFor="time-filter" className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Time Filter
+                    </label>
+                    <select
+                        id="time-filter"
+                        value={timeFilter}
+                        onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
+                        className="rounded-lg border border-[#040947]/20 bg-white px-3 py-2 text-sm text-[#040947] outline-none ring-amber-200 transition focus:ring-2"
+                    >
+                        <option value="today">Today</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
                 </div>
             </section>
 

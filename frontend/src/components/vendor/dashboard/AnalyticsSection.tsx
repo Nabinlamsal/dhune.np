@@ -23,14 +23,14 @@ type AnalyticsSectionProps = {
 };
 
 const COLORS = {
-    primary: "#0f172a",
+    primary: "#040947",
     success: "#16a34a",
-    warning: "#f97316",
+    warning: "#f59e0b",
     danger: "#ef4444",
-    neutral: "#0284c7",
+    neutral: "#1d4ed8",
 };
 
-const DONUT_COLORS = [COLORS.warning, COLORS.success, COLORS.neutral, "#6366f1"];
+const DONUT_COLORS = [COLORS.primary, COLORS.warning, COLORS.success, COLORS.neutral];
 
 export function AnalyticsSection({ offerFlowData, orderFlowData, workloadData }: AnalyticsSectionProps) {
     const maxOffer = Math.max(...offerFlowData.map((item) => item.value), 0);
