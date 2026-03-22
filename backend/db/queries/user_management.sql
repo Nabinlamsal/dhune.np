@@ -167,5 +167,3 @@ WHERE vp.user_id = u.id
     UPDATE users
     SET is_active = FALSE, updated_at = now()
     WHERE id = $1;
-
-

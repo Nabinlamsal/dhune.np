@@ -1,8 +1,7 @@
 "use client";
 
-import Topbar from "@/src/components/admin/Topbar";
 import { AuthGuard } from "@/src/components/auth/AuthGuard";
-import SidebarVendor from "@/src/components/vendor/SidebarVendor";
+import NavbarVendor from "@/src/components/vendor/NavbarVendor";
 
 
 export default function VendorLayout({
@@ -12,17 +11,11 @@ export default function VendorLayout({
 }) {
     return (
         <AuthGuard allow={["vendor"]}>
-            <div className="flex h-screen bg-gray-50">
-                {/* Sidebar */}
-                <SidebarVendor />
-
-                {/* Main Content */}
-                <div className="flex flex-1 flex-col overflow-hidden">
-                    {/* Page Content */}
-                    <main className="flex-1 overflow-y-auto p-8">
-                        {children}
-                    </main>
-                </div>
+            <div className="min-h-screen bg-gray-50">
+                <NavbarVendor />
+                <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    {children}
+                </main>
             </div>
         </AuthGuard>
     );

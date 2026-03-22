@@ -18,6 +18,7 @@ export default function VendorMarketplacePage() {
     const [offerRequestId, setOfferRequestId] = useState<string | null>(null)
     const [filter, setFilter] = useState("OPEN")
     const [page, setPage] = useState(0)
+    const [nowTs] = useState(() => Date.now())
 
     const limit = 9
     const offset = page * limit
@@ -27,11 +28,21 @@ export default function VendorMarketplacePage() {
         offset,
     })
 
-    const requests: MarketplaceRequest[] = data || []
+    const requests = useMemo<MarketplaceRequest[]>(
+        () => (Array.isArray(data) ? data : []),
+        [data]
+    )
+    const filteredRequests = useMemo(() => {
+        if (filter === "OPEN") return requests
+        return requests.filter((request) => {
+            const minutes = Math.floor((new Date(request.expires_at).getTime() - nowTs) / (1000 * 60))
+            return minutes > 0 && minutes <= 120
+        })
+    }, [requests, filter, nowTs])
 
     const selectedRequest = useMemo(
-        () => requests.find(r => r.id === selectedId),
-        [selectedId, requests]
+        () => filteredRequests.find(r => r.id === selectedId) ?? requests.find(r => r.id === selectedId),
+        [selectedId, filteredRequests, requests]
     )
 
     return (
@@ -57,7 +68,7 @@ export default function VendorMarketplacePage() {
             />
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
                 {isLoading && (
                     <p className="text-gray-500 col-span-full">
@@ -65,13 +76,13 @@ export default function VendorMarketplacePage() {
                     </p>
                 )}
 
-                {!isLoading && requests.length === 0 && (
+                {!isLoading && filteredRequests.length === 0 && (
                     <p className="text-gray-500 col-span-full">
-                        No open requests available.
+                        No requests available for this filter.
                     </p>
                 )}
 
-                {requests.map((r) => (
+                {filteredRequests.map((r) => (
                     <RequestCard
                         key={r.id}
                         id={r.id}
@@ -104,7 +115,7 @@ export default function VendorMarketplacePage() {
                 </button>
 
                 <button
-                    disabled={requests.length < limit}
+                    disabled={filteredRequests.length < limit}
                     onClick={() => setPage((p) => p + 1)}
                     className="px-4 py-2 border rounded-lg text-sm disabled:opacity-50"
                 >

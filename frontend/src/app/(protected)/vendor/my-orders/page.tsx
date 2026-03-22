@@ -71,7 +71,7 @@ export default function VendorOrdersPage() {
     const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-    const { data: orders, isLoading } = useVendorOrders({
+    const { data: orders, isLoading, isError } = useVendorOrders({
         status: filter === "ALL" ? undefined : filter,
     });
 
@@ -79,6 +79,12 @@ export default function VendorOrdersPage() {
 
     const { data: detail, isLoading: isDetailLoading } =
         useOrderDetail(selectedOrderId ?? undefined);
+
+    const orderRows = Array.isArray(orders)
+        ? orders
+        : Array.isArray((orders as { data?: unknown[] } | undefined)?.data)
+            ? ((orders as { data?: OrderListItem[] }).data ?? [])
+            : [];
 
     const columns = [
 
@@ -172,10 +178,18 @@ export default function VendorOrdersPage() {
                     <div className="p-6 text-sm text-gray-500">
                         Loading orders...
                     </div>
+                ) : isError ? (
+                    <div className="p-6 text-sm text-red-500">
+                        Failed to load orders.
+                    </div>
+                ) : orderRows.length === 0 ? (
+                    <div className="rounded-xl border border-gray-100 bg-white p-6 text-sm text-gray-500">
+                        No orders found for this filter.
+                    </div>
                 ) : (
                     <DataTable
                         columns={columns}
-                        data={orders ?? []}
+                        data={orderRows}
                         onRowClick={(o: OrderListItem) =>
                             setSelectedOrderId(o.id)
                         }
