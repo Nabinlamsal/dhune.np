@@ -88,3 +88,24 @@ func (c *UserController) GetUserDetail(ctx *gin.Context) {
 
 	utils.Success(ctx, gin.H{"userDetail": userDetail})
 }
+func (c *UserController) GetMyProfile(ctx *gin.Context) {
+	userIdVal, exists := ctx.Get("user_id")
+	if !exists {
+		utils.Error(ctx, 401, "unauthorized")
+		return
+	}
+
+	userId, ok := userIdVal.(uuid.UUID)
+	if !ok {
+		utils.Error(ctx, 500, "invalid user id in context")
+		return
+	}
+
+	profile, err := c.userService.GetMyProfile(ctx, userId)
+	if err != nil {
+		utils.Error(ctx, 404, err.Error())
+		return
+	}
+
+	utils.Success(ctx, gin.H{"profile": profile})
+}

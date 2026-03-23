@@ -21,4 +21,8 @@ type UserRepository interface {
 		ctx context.Context,
 		userId uuid.UUID,
 	) (*model.UserProfile, error)
+	GetMyProfile(
+		ctx context.Context,
+		userId uuid.UUID,
+	) (*model.UserProfile, error)
 }

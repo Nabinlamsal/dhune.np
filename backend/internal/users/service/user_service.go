@@ -115,3 +115,16 @@ func (service *UserService) GetUserDetail(
 
 	return user, nil
 }
+func (service *UserService) GetMyProfile(ctx context.Context, userId uuid.UUID) (*model.UserProfile, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	profile, err := service.userRepo.GetMyProfile(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return profile, nil
+}

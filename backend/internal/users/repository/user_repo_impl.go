@@ -118,3 +118,6 @@ func (repo *UserRepoImpl) GetUserDetails(ctx context.Context, userId uuid.UUID) 
 	}
 	return profile, nil
 }
+func (repo *UserRepoImpl) GetMyProfile(ctx context.Context, userId uuid.UUID) (*model.UserProfile, error) {
+	return repo.GetUserDetails(ctx, userId)
+}

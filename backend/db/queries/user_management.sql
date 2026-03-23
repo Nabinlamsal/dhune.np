@@ -167,3 +167,32 @@ WHERE vp.user_id = u.id
     UPDATE users
     SET is_active = FALSE, updated_at = now()
     WHERE id = $1;
+
+-- name: GetMyProfile :one
+SELECT
+    -- user core
+    u.id,
+    u.display_name,
+    u.email,
+    u.phone,
+    u.role,
+    u.created_at,
+
+    -- vendor profile (nullable)
+    vp.id AS vendor_profile_id,
+    vp.owner_name AS vendor_owner_name,
+    vp.address AS vendor_address,
+    vp.approval_status AS vendor_approval_status,
+    vp.is_active AS vendor_is_active,
+
+    -- business profile (nullable)
+    bp.id AS business_profile_id,
+    bp.owner_name AS business_owner_name,
+    bp.business_type,
+    bp.approval_status AS business_approval_status
+
+FROM users u
+         LEFT JOIN vendor_profiles vp ON vp.user_id = u.id
+         LEFT JOIN business_profiles bp ON bp.user_id = u.id
+WHERE u.id = $1
+LIMIT 1;

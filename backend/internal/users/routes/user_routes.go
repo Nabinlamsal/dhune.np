@@ -32,3 +32,12 @@ func RegisterAdminRoutes(
 	admin.PATCH("/business/:id/approve", userController.ApproveBusinessUser)
 	admin.PATCH("/business/:id/reject", userController.RejectBusinessUser)
 }
+func RegisterUserRoutes(
+	router *gin.Engine,
+	userController *controller.UserController,
+	serviceJwt service.JWTService,
+) {
+	user := router.Group("user")
+	user.Use(middleware.JWTAuthMiddleware(serviceJwt))
+	user.GET("/me/profile", userController.GetMyProfile)
+}

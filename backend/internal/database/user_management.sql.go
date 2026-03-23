@@ -59,6 +59,77 @@ func (q *Queries) DisableUser(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getMyProfile = `-- name: GetMyProfile :one
+SELECT
+    -- user core
+    u.id,
+    u.display_name,
+    u.email,
+    u.phone,
+    u.role,
+    u.created_at,
+
+    -- vendor profile (nullable)
+    vp.id AS vendor_profile_id,
+    vp.owner_name AS vendor_owner_name,
+    vp.address AS vendor_address,
+    vp.approval_status AS vendor_approval_status,
+    vp.is_active AS vendor_is_active,
+
+    -- business profile (nullable)
+    bp.id AS business_profile_id,
+    bp.owner_name AS business_owner_name,
+    bp.business_type,
+    bp.approval_status AS business_approval_status
+
+FROM users u
+         LEFT JOIN vendor_profiles vp ON vp.user_id = u.id
+         LEFT JOIN business_profiles bp ON bp.user_id = u.id
+WHERE u.id = $1
+LIMIT 1
+`
+
+type GetMyProfileRow struct {
+	ID                     uuid.UUID
+	DisplayName            string
+	Email                  string
+	Phone                  string
+	Role                   string
+	CreatedAt              time.Time
+	VendorProfileID        uuid.NullUUID
+	VendorOwnerName        sql.NullString
+	VendorAddress          sql.NullString
+	VendorApprovalStatus   sql.NullString
+	VendorIsActive         sql.NullBool
+	BusinessProfileID      uuid.NullUUID
+	BusinessOwnerName      sql.NullString
+	BusinessType           sql.NullString
+	BusinessApprovalStatus sql.NullString
+}
+
+func (q *Queries) GetMyProfile(ctx context.Context, id uuid.UUID) (GetMyProfileRow, error) {
+	row := q.db.QueryRowContext(ctx, getMyProfile, id)
+	var i GetMyProfileRow
+	err := row.Scan(
+		&i.ID,
+		&i.DisplayName,
+		&i.Email,
+		&i.Phone,
+		&i.Role,
+		&i.CreatedAt,
+		&i.VendorProfileID,
+		&i.VendorOwnerName,
+		&i.VendorAddress,
+		&i.VendorApprovalStatus,
+		&i.VendorIsActive,
+		&i.BusinessProfileID,
+		&i.BusinessOwnerName,
+		&i.BusinessType,
+		&i.BusinessApprovalStatus,
+	)
+	return i, err
+}
+
 const getUserDetail = `-- name: GetUserDetail :one
 SELECT
     -- user core
