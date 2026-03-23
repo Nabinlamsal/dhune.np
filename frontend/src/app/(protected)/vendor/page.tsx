@@ -1,18 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock3, PackageCheck, Star, Target, Truck } from "lucide-react";
+import { Building2, Clock3, Mail, MapPin, PackageCheck, Phone, Star, Target, Truck, UserCircle2, UserRound, X } from "lucide-react";
 import { useVendorDashboard } from "@/src/hooks/orders/useDashboard";
 import { KpiCard } from "@/src/components/vendor/dashboard/KpiCard";
 import { PipelineCard } from "@/src/components/vendor/dashboard/PipelineCard";
 import { AnalyticsSection } from "@/src/components/vendor/dashboard/AnalyticsSection";
 import { SmartInsightsCard } from "@/src/components/vendor/dashboard/SmartInsightsCard";
+import { useMyProfile } from "@/src/hooks/users/useMyProfile";
+import { Detail } from "@/src/components/common/DetailItem";
 
 type TimeFilter = "today" | "weekly" | "monthly";
 
 export default function VendorPage() {
     const [timeFilter, setTimeFilter] = useState<TimeFilter>("weekly");
+    const [profileOpen, setProfileOpen] = useState(false);
     const { orders, offers } = useVendorDashboard();
+    const { data: myProfile, isLoading: isProfileLoading } = useMyProfile();
 
     const orderStats = orders.data?.data;
     const offerStats = offers.data?.data;
@@ -84,6 +88,12 @@ export default function VendorPage() {
             : `Cancellation rate is ${cancellationRate}%. Review drop-offs between delivery and completion.`,
     ];
 
+    const businessName = myProfile?.DisplayName || "--";
+    const location = myProfile?.VendorProfile?.Address || "--";
+    const ownerName = myProfile?.VendorProfile?.OwnerName ?? "--";
+    const ratingMock = mockByFilter.rating.toFixed(1);
+    const avatarInitial = myProfile?.DisplayName?.charAt(0).toUpperCase() || "V";
+
     return (
         <div className="space-y-6 bg-slate-50 pb-2">
             <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -104,6 +114,13 @@ export default function VendorPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setProfileOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[#040947]/20 bg-white px-3 py-2 text-sm font-medium text-[#040947] transition hover:bg-[#040947]/5"
+                    >
+                        <UserCircle2 className="size-4" />
+                        My Profile
+                    </button>
                     <label htmlFor="time-filter" className="text-xs font-medium uppercase tracking-wide text-slate-500">
                         Time Filter
                     </label>
@@ -208,6 +225,98 @@ export default function VendorPage() {
             <p className="px-1 text-xs text-slate-500">
                 Helper note: KPI trend percentages are mocked for preview; operational counts use live vendor stats.
             </p>
+
+            {profileOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+                    <div className="w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.28)]">
+                        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                            <div>
+                                <h3 className="text-base font-semibold text-slate-900">My Profile</h3>
+                                <p className="text-xs text-slate-500">Live profile data from backend</p>
+                            </div>
+                            <button
+                                onClick={() => setProfileOpen(false)}
+                                className="rounded-md p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                aria-label="Close profile modal"
+                            >
+                                <X className="size-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 bg-gradient-to-b from-[#040947]/[0.04] to-white p-4 md:p-5">
+                            {isProfileLoading ? (
+                                <p className="text-sm text-slate-500">Loading profile...</p>
+                            ) : (
+                                <>
+                                    <div className="rounded-2xl border border-[#040947]/10 bg-white p-4">
+                                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#040947] to-[#0b2a78] text-2xl font-bold text-white">
+                                                    {avatarInitial}
+                                                </div>
+                                                <div>
+                                                    <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                        <Building2 className="size-3.5" />
+                                                        Business Name
+                                                    </p>
+                                                    <h4 className="text-xl font-bold text-slate-900">{businessName}</h4>
+                                                    <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+                                                        <MapPin className="size-4 text-slate-500" />
+                                                        {location}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                                                <div className="rounded-lg bg-[#040947]/5 px-3 py-2">
+                                                    <p className="text-[11px] uppercase tracking-wide text-slate-500">Rating</p>
+                                                    <p className="font-semibold text-slate-900">{ratingMock} / 5.0 (Mock)</p>
+                                                </div>
+                                                <div className="rounded-lg bg-[#040947]/5 px-3 py-2">
+                                                    <p className="text-[11px] uppercase tracking-wide text-slate-500">Vendor Status</p>
+                                                    <p className="font-semibold text-slate-900">{myProfile?.VendorApprovalStatus ?? myProfile?.VendorProfile?.ApprovalStatus ?? "--"}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                        <div className="rounded-lg border border-[#040947]/15 bg-white px-3 py-2">
+                                            <p className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-600">
+                                                <UserRound className="size-3.5 text-[#040947]" />
+                                                Owner
+                                            </p>
+                                            <p className="text-sm font-medium text-slate-900">{ownerName}</p>
+                                        </div>
+                                        <div className="rounded-lg border border-[#040947]/15 bg-white px-3 py-2">
+                                            <p className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-600">
+                                                <Phone className="size-3.5 text-[#040947]" />
+                                                Phone
+                                            </p>
+                                            <p className="text-sm font-medium text-slate-900">{myProfile?.Phone ?? "--"}</p>
+                                        </div>
+                                        <div className="rounded-lg border border-[#040947]/15 bg-white px-3 py-2 md:col-span-2">
+                                            <p className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-600">
+                                                <Mail className="size-3.5 text-[#040947]" />
+                                                Email
+                                            </p>
+                                            <p className="text-sm font-medium text-slate-900">{myProfile?.Email ?? "--"}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                        <Detail label="Vendor ID" value={myProfile?.ID} />
+                                        <Detail label="Registration Number" value={myProfile?.VendorProfile?.RegistrationNumber} />
+                                        <Detail label="Account Active" value={myProfile?.IsActive ? "Yes" : "No"} />
+                                        <Detail label="Verified" value={myProfile?.IsVerified ? "Yes" : "No"} />
+                                        <Detail label="Joined" value={myProfile?.CreatedAt ? new Date(myProfile.CreatedAt).toLocaleDateString() : undefined} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
