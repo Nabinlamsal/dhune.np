@@ -127,8 +127,8 @@ export function AnalyticsSection({ offerFlowData, orderFlowData, workloadData }:
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
                             <Tooltip />
-                            <Bar dataKey="value" barSize={20} radius={[8, 8, 0, 0]} fill={COLORS.primary} />
-                            <Line type="stepAfter" dataKey="value" stroke={COLORS.warning} strokeWidth={2} dot={{ r: 3 }} />
+                            <Bar dataKey="value" barSize={35} radius={[8, 8, 0, 0]} fill={COLORS.neutral} />
+                            <Line type="stepAfter" dataKey="value" stroke={COLORS.warning} strokeWidth={2} dot={{ r: 2 }} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

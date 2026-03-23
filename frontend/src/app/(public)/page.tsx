@@ -1,4 +1,5 @@
 "use client";
+import DownloadAppSection from "@/src/components/DownloadAppSection";
 import AudienceSection from "../../components/AudienceSection";
 import { useRouter } from "next/navigation";
 
@@ -77,10 +78,9 @@ export default function Home() {
           </div>
 
         </div>
+
       </div>
-      <div className="bg-[#040947] justify-center h-100">
-        <h1 className="text-6xl align-left self-center font-bold text-amber-400 mt-10"> Download<br />Mobile <br />Application <br />Now</h1>
-      </div>
+      <DownloadAppSection />
     </div >
   );
 }

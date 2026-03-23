@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type TrendTone = "good" | "bad" | "neutral";
@@ -27,7 +26,6 @@ export function KpiCard({
     value,
     icon,
     trendText,
-    trendDirection,
     trendTone,
     helperText,
 }: KpiCardProps) {
@@ -47,7 +45,6 @@ export function KpiCard({
                         TREND_STYLES[trendTone]
                     )}
                 >
-                    {trendDirection === "up" ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
                     {trendText}
                 </span>
                 {helperText && <span className="text-xs text-slate-500">{helperText}</span>}

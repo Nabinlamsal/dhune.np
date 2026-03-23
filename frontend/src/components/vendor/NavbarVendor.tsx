@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogout } from "@/src/hooks/auth/useLogout";
+import { useMyProfile } from "@/src/hooks/users/useMyProfile";
+import { formatDisplayId } from "@/src/utils/display";
 
 type NavItem = {
     href: string;
@@ -27,6 +29,7 @@ type NavItem = {
 export default function NavbarVendor() {
     const pathname = usePathname();
     const logout = useLogout();
+    const { data: myProfile } = useMyProfile();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
@@ -40,6 +43,16 @@ export default function NavbarVendor() {
 
     const isActive = (item: NavItem) =>
         item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+    const businessName = myProfile?.DisplayName || "Vendor";
+    const ownerName = myProfile?.VendorProfile?.OwnerName || myProfile?.DisplayName || "Vendor User";
+    const email = myProfile?.Email || "--";
+    const phone = myProfile?.Phone || "--";
+    const vendorId = formatDisplayId(myProfile?.ID, "VND");
+    const registrationNumber = myProfile?.VendorProfile?.RegistrationNumber || "--";
+    const address = myProfile?.VendorProfile?.Address || "--";
+    const vendorStatus = myProfile?.VendorApprovalStatus ?? myProfile?.VendorProfile?.ApprovalStatus ?? "pending";
+    const avatarInitial = businessName.charAt(0).toUpperCase() || "V";
 
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
@@ -102,14 +115,12 @@ export default function NavbarVendor() {
                             aria-haspopup="menu"
                             aria-expanded={profileOpen}
                         >
-                            <img
-                                src="https://i.pravatar.cc/100?img=12"
-                                alt="Vendor profile photo"
-                                className="h-8 w-8 rounded-full border border-white/30 object-cover"
-                            />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/10 text-xs font-semibold text-white">
+                                {avatarInitial}
+                            </div>
                             <div className="text-left leading-tight">
-                                <p className="text-xs font-semibold text-white">Suman Traders</p>
-                                <p className="text-[11px] text-gray-300">Verified vendor</p>
+                                <p className="text-xs font-semibold text-white">{businessName}</p>
+                                <p className="text-[11px] capitalize text-gray-300">{vendorStatus} vendor</p>
                             </div>
                             <ChevronDown className={cn("h-4 w-4 text-gray-300 transition", profileOpen && "rotate-180")} />
                         </button>
@@ -117,33 +128,35 @@ export default function NavbarVendor() {
                         {profileOpen && (
                             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-gray-200 bg-white p-4 text-gray-700 shadow-xl">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                                    <img
-                                        src="https://i.pravatar.cc/100?img=12"
-                                        alt="Vendor profile photo"
-                                        className="h-12 w-12 rounded-full object-cover"
-                                    />
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#040947] text-sm font-semibold text-white">
+                                        {avatarInitial}
+                                    </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">Suman Adhikari</p>
-                                        <p className="text-xs text-gray-500">suman@dhunelogistics.com</p>
+                                        <p className="text-sm font-semibold text-gray-900">{ownerName}</p>
+                                        <p className="text-xs text-gray-500">{email}</p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 py-3 text-xs">
                                     <div className="rounded-lg bg-gray-50 p-2">
                                         <p className="text-gray-500">Business</p>
-                                        <p className="font-medium text-gray-900">Dhune Logistics</p>
+                                        <p className="font-medium text-gray-900">{businessName}</p>
                                     </div>
                                     <div className="rounded-lg bg-gray-50 p-2">
                                         <p className="text-gray-500">Vendor ID</p>
-                                        <p className="font-medium text-gray-900">VDR-2026-148</p>
+                                        <p className="font-medium text-gray-900">{vendorId}</p>
                                     </div>
                                     <div className="rounded-lg bg-gray-50 p-2">
                                         <p className="text-gray-500">Phone</p>
-                                        <p className="font-medium text-gray-900">+977 9812345678</p>
+                                        <p className="font-medium text-gray-900">{phone}</p>
                                     </div>
                                     <div className="rounded-lg bg-gray-50 p-2">
-                                        <p className="text-gray-500">Rating</p>
-                                        <p className="font-medium text-gray-900">4.8 / 5.0</p>
+                                        <p className="text-gray-500">Reg. Number</p>
+                                        <p className="font-medium text-gray-900">{registrationNumber}</p>
+                                    </div>
+                                    <div className="col-span-2 rounded-lg bg-gray-50 p-2">
+                                        <p className="text-gray-500">Address</p>
+                                        <p className="font-medium text-gray-900">{address}</p>
                                     </div>
                                 </div>
 
@@ -173,14 +186,12 @@ export default function NavbarVendor() {
                     <nav className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
                         <div className="mb-2 flex items-center justify-between rounded-lg border border-white/15 bg-white/5 p-2">
                             <div className="flex items-center gap-2">
-                                <img
-                                    src="https://i.pravatar.cc/100?img=12"
-                                    alt="Vendor profile photo"
-                                    className="h-8 w-8 rounded-full object-cover"
-                                />
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
+                                    {avatarInitial}
+                                </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-white">Suman Adhikari</p>
-                                    <p className="text-[11px] text-gray-300">Dhune Logistics</p>
+                                    <p className="text-xs font-semibold text-white">{ownerName}</p>
+                                    <p className="text-[11px] text-gray-300">{businessName}</p>
                                 </div>
                             </div>
                             <button
