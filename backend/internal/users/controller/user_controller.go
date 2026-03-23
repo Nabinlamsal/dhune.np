@@ -95,8 +95,18 @@ func (c *UserController) GetMyProfile(ctx *gin.Context) {
 		return
 	}
 
-	userId, ok := userIdVal.(uuid.UUID)
-	if !ok {
+	var userId uuid.UUID
+	switch v := userIdVal.(type) {
+	case uuid.UUID:
+		userId = v
+	case string:
+		parsed, err := uuid.Parse(v)
+		if err != nil {
+			utils.Error(ctx, 500, "invalid user id in context")
+			return
+		}
+		userId = parsed
+	default:
 		utils.Error(ctx, 500, "invalid user id in context")
 		return
 	}

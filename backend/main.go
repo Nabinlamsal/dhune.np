@@ -126,6 +126,7 @@ func main() {
 	//routes
 	authroutes.RegisterAuthRoutes(router, authController, jwtService)
 	userroutes.RegisterAdminRoutes(router, userController, jwtService)
+	userroutes.RegisterUserRoutes(router, userController, jwtService)
 
 	categoryroutes.RegisterCategoryRoutes(router, categoryController, jwtService)
 
