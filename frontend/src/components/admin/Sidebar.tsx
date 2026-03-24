@@ -41,7 +41,7 @@ export default function Sidebar() {
         <aside
             className="flex h-screen w-64 flex-col border-r border-[#040947]/70 bg-[#040947] text-slate-100"
         >
-            <div className="flex h-16 items-center justify-between border-b border-[#13206e] px-4">
+            <div className="flex h-16 items-center justify-between border-b border-[#13206e] px-3 py-3">
                 <div>
                     <p className="text-sm font-semibold leading-none text-white">Admin Panel</p>
                     <p className="mt-1 text-[11px] text-amber-200/80">Dhune.np workspace</p>
@@ -53,7 +53,7 @@ export default function Sidebar() {
             </div>
 
             {/* Menu */}
-            <div className="flex-1 space-y-1 px-3 py-4">
+            <div className="flex-1 space-y-1.5 px-3 py-3">
                 {menu.map((item) => (
                     <SidebarItem
                         key={item.href}
@@ -67,9 +67,8 @@ export default function Sidebar() {
             </div>
 
             {/* Bottom */}
-            <div className="border-t border-[#13206e] px-3 py-4">
-                <div className="space-y-1.5 rounded-xl border border-amber-300/20 bg-[#0a1154] p-2">
-                    <p className="px-1 pb-1 text-[11px] font-medium uppercase tracking-wide text-amber-200/80">Account</p>
+            <div className="border-t border-[#13206e] px-3 py-3">
+                <div className="space-y-2 rounded-xl border border-amber-300/20 bg-[#0a1154] p-2.5">
                     <SidebarItem
                         href="/admin/settings"
                         label="Settings"
@@ -78,16 +77,16 @@ export default function Sidebar() {
                         compact
                         className="bg-[#040947]/30 hover:bg-[#040947]/40"
                     />
+                    <button
+                        onClick={logout}
+                        type="button"
+                        aria-label="Logout"
+                        className="mt-3 flex w-full items-center gap-3 rounded-lg border border-red-300/40 bg-red-400/10 px-3 py-2.5 text-xs font-semibold text-red-200 transition hover:bg-red-400/20 hover:text-red-100"
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                    </button>
                 </div>
-                <button
-                    onClick={logout}
-                    type="button"
-                    aria-label="Logout"
-                    className="mt-2 flex w-full items-center gap-3 rounded-lg border border-red-300/40 bg-red-400/10 px-3 py-2.5 text-xs font-semibold text-red-200 transition hover:bg-red-400/20 hover:text-red-100"
-                >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                </button>
             </div>
         </aside>
     )
