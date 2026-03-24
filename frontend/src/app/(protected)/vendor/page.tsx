@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock3, PackageCheck, Star, Target, Truck } from "lucide-react";
+import { Card } from "@/src/components/ui/card";
 import { useVendorDashboard } from "@/src/hooks/orders/useDashboard";
-import { KpiCard } from "@/src/components/vendor/dashboard/KpiCard";
 import { PipelineCard } from "@/src/components/vendor/dashboard/PipelineCard";
-import { AnalyticsSection } from "@/src/components/vendor/dashboard/AnalyticsSection";
+import { AnalyticsSection, OrderFlowCard } from "@/src/components/vendor/dashboard/AnalyticsSection";
 import { SmartInsightsCard } from "@/src/components/vendor/dashboard/SmartInsightsCard";
+import { SectionCard } from "@/src/components/vendor/dashboard/SectionCard";
 
 type TimeFilter = "today" | "weekly" | "monthly";
 
@@ -110,54 +110,44 @@ export default function VendorPage() {
             </section>
 
             <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-                <KpiCard
-                    label="Total Orders"
-                    value={String(totalOrders)}
-                    icon={<PackageCheck className="size-4" />}
-                    trendText={mockByFilter.ordersTrend}
-                    trendDirection="up"
-                    trendTone="good"
-                    helperText="vs last period"
-                />
-                <KpiCard
-                    label="Total Offers"
-                    value={String(totalOffers)}
-                    icon={<Target className="size-4" />}
-                    trendText={mockByFilter.offersTrend}
-                    trendDirection="up"
-                    trendTone="neutral"
-                    helperText="vs last period"
-                />
-                <KpiCard
-                    label="Acceptance Rate"
-                    value={`${acceptanceRate}%`}
-                    icon={<Truck className="size-4" />}
-                    trendText={mockByFilter.rateTrend}
-                    trendDirection="up"
-                    trendTone="good"
-                    helperText={`${acceptedOffers}/${Math.max(totalOffers, 0)}`}
-                />
-                <KpiCard
-                    label="Avg Fulfillment Time"
-                    value={`${mockByFilter.avgFulfillment}h`}
-                    icon={<Clock3 className="size-4" />}
-                    trendText="-5%"
-                    trendDirection="down"
-                    trendTone="good"
-                    helperText="lower is better"
-                />
-                <KpiCard
-                    label="Vendor Rating"
-                    value={mockByFilter.rating.toFixed(1)}
-                    icon={<Star className="size-4" />}
-                    trendText="+0.2"
-                    trendDirection="up"
-                    trendTone="good"
-                    helperText="customer score (mock)"
-                />
+                <OrderFlowCard orderFlowData={orderFlowData} className="xl:col-span-3" />
+                <SectionCard title="Performance Snapshot" subtitle="Compact vendor KPIs" className="xl:col-span-2">
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            {
+                                label: "Total Orders",
+                                value: String(totalOrders),
+                                hint: mockByFilter.ordersTrend,
+                            },
+                            {
+                                label: "Total Offers",
+                                value: String(totalOffers),
+                                hint: mockByFilter.offersTrend,
+                            },
+                            {
+                                label: "Acceptance",
+                                value: `${acceptanceRate}%`,
+                                hint: `${acceptedOffers}/${Math.max(totalOffers, 0)}`,
+                            },
+                            {
+                                label: "Completion",
+                                value: `${completionRate}%`,
+                                hint: `${completedOrders}/${Math.max(totalOrders, 0)}`,
+                            },
+                        ].map((item) => (
+                            <Card key={item.label} className="rounded-xl border border-slate-200 p-3 shadow-none">
+                                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{item.label}</p>
+                                <p className="mt-1 text-lg font-bold leading-none text-slate-900">{item.value}</p>
+                                <p className="mt-1 text-[11px] text-slate-400">{item.hint}</p>
+                            </Card>
+                        ))}
+                    </div>
+                </SectionCard>
             </section>
 
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <AnalyticsSection offerFlowData={offerFlowData} workloadData={workloadData} />
+
+            <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
                 <PipelineCard
                     title="Offer Pipeline"
                     subtitle="Bid quality and conversion"
@@ -188,11 +178,8 @@ export default function VendorPage() {
                             : "Cancellation rate is elevated. Check pickup-to-delivery handoff."
                     }
                 />
+                <SmartInsightsCard insights={insights} />
             </section>
-
-            <AnalyticsSection offerFlowData={offerFlowData} orderFlowData={orderFlowData} workloadData={workloadData} />
-
-            <SmartInsightsCard insights={insights} />
 
             <p className="px-1 text-xs text-slate-500">
                 Helper note: KPI trend percentages are mocked for preview; operational counts use live vendor stats.
