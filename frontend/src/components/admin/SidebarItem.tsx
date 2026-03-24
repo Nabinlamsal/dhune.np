@@ -8,8 +8,8 @@ interface SidebarItemProps {
   icon: React.ReactNode
   label: string
   active?: boolean
-  collapsed?: boolean
   compact?: boolean
+  className?: string
 }
 
 export default function SidebarItem({
@@ -17,23 +17,23 @@ export default function SidebarItem({
   icon,
   label,
   active,
-  collapsed,
   compact,
+  className,
 }: SidebarItemProps) {
   return (
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3 rounded-lg font-medium transition",
-        collapsed && "justify-center",
+        "group flex items-center gap-3 rounded-lg border border-transparent font-medium transition",
         compact ? "px-3 py-2.5 text-xs" : "px-4 py-3 text-sm",
         active
-          ? "bg-orange-500 text-black"
-          : "text-gray-300 hover:bg-white/10 hover:text-white"
+          ? "border-amber-300/70 bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500 text-[#040947] shadow-sm"
+          : "text-slate-200 hover:border-amber-300/40 hover:bg-amber-400/15 hover:text-amber-100",
+        className
       )}
     >
-      <span className={cn(compact ? "w-4 h-4" : "w-5 h-5")}>{icon}</span>
-      {label}
+      <span className={cn("shrink-0", compact ? "w-4 h-4" : "w-5 h-5")}>{icon}</span>
+      <span>{label}</span>
     </Link>
   )
 }

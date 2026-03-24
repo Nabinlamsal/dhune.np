@@ -20,10 +20,10 @@ type PipelineCardProps = {
 };
 
 const BAR_STYLES: Record<PipelineItem["tone"], string> = {
-    success: "bg-emerald-500",
+    success: "bg-emerald-600",
     warning: "bg-amber-500",
-    danger: "bg-red-500",
-    neutral: "bg-[#040947]",
+    danger: "bg-rose-500",
+    neutral: "bg-slate-700",
 };
 
 export function PipelineCard({
@@ -42,15 +42,15 @@ export function PipelineCard({
         <SectionCard
             title={title}
             subtitle={subtitle}
-            rightSlot={<p className="rounded-md bg-[#040947]/10 px-2 py-1 text-sm font-semibold text-[#040947]">{primaryCount} / {total}</p>}
+            rightSlot={<p className="rounded-md border border-[#040947]/20 bg-[#040947]/8 px-2 py-1 text-xs font-semibold text-[#040947]">{primaryCount} / {total}</p>}
         >
             <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-700">{primaryLabel}</p>
-                <p className="rounded-md bg-amber-100 px-2 py-1 text-sm font-bold text-[#040947]">{primaryRate}%</p>
+                <p className="rounded-md bg-amber-100 px-2 py-1 text-sm font-semibold text-[#040947]">{primaryRate}%</p>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                    className="h-full rounded-full bg-[#040947] transition-all duration-300"
+                    className="h-full rounded-full bg-slate-800 transition-all duration-300"
                     style={{ width: `${Math.min(primaryRate, 100)}%` }}
                 />
             </div>
@@ -75,7 +75,7 @@ export function PipelineCard({
                 })}
             </div>
 
-            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-slate-700">{insight}</p>
+            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-slate-700">{insight}</p>
         </SectionCard>
     );
 }

@@ -54,7 +54,7 @@ export function OfferConversionCard({ offerFlowData, className }: OfferConversio
     return (
         <SectionCard
             title="Offer Conversion"
-            subtitle="Most offers are accepted - strong performance"
+            subtitle="Distribution of submitted offers by outcome"
             className={className}
         >
             <div className="h-56">
@@ -80,7 +80,7 @@ export function WorkloadDistributionCard({ workloadData, className }: WorkloadDi
     const totalOffers = workloadData.reduce((sum, item) => sum + item.value, 0);
 
     return (
-        <SectionCard title="Workload Distribution" subtitle="Offer workload by stage" className={className}>
+        <SectionCard title="Workload Distribution" subtitle="Current mix of offer and order workload" className={className}>
             <div className="relative h-56">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -102,7 +102,7 @@ export function WorkloadDistributionCard({ workloadData, className }: WorkloadDi
                                     const cy = viewBox && "cy" in viewBox ? viewBox.cy : 0;
                                     return (
                                         <text x={cx} y={cy} textAnchor="middle">
-                                            <tspan x={cx} dy="-0.2em" className="fill-slate-500 text-[12px]">Total Offers</tspan>
+                                            <tspan x={cx} dy="-0.2em" className="fill-slate-500 text-[12px]">Total Items</tspan>
                                             <tspan x={cx} dy="1.6em" className="fill-slate-900 text-[22px] font-semibold">
                                                 {totalOffers}
                                             </tspan>
@@ -143,7 +143,7 @@ export function OrderFlowCard({ orderFlowData, className }: OrderFlowCardProps) 
     }
 
     return (
-        <SectionCard title="Order Flow" subtitle="Step flow across operations" className={className}>
+        <SectionCard title="Order Flow" subtitle="Progression across active order stages" className={className}>
             <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={orderFlowData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
@@ -156,7 +156,7 @@ export function OrderFlowCard({ orderFlowData, className }: OrderFlowCardProps) 
                     </BarChart>
                 </ResponsiveContainer>
             </div>
-            <p className="mt-3 text-xs text-slate-600">
+            <p className="mt-3 text-xs leading-relaxed text-slate-600">
                 {largestDrop > 0 ? `Potential bottleneck: ${dropLabel} (drop of ${largestDrop})` : "No major bottlenecks detected in flow."}
             </p>
         </SectionCard>

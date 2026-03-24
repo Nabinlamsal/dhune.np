@@ -15,15 +15,15 @@ export function SectionCard({ title, subtitle, rightSlot, className, children }:
     return (
         <section
             className={cn(
-                "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md",
+                "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5",
                 className
             )}
         >
             {(title || subtitle || rightSlot) && (
-                <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
-                        {title && <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">{title}</h3>}
-                        {subtitle && <p className="mt-1 text-xs text-slate-500">{subtitle}</p>}
+                        {title && <h3 className="text-[15px] font-semibold text-slate-800">{title}</h3>}
+                        {subtitle && <p className="mt-1 text-xs leading-relaxed text-slate-500">{subtitle}</p>}
                     </div>
                     {rightSlot}
                 </div>

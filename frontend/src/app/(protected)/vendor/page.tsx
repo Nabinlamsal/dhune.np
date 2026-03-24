@@ -37,12 +37,6 @@ export default function VendorPage() {
     const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
     const cancellationRate = totalOrders > 0 ? Math.round((cancelledOrders / totalOrders) * 100) : 0;
 
-    const mockByFilter = {
-        today: { avgFulfillment: 10.2, rating: 4.7, ordersTrend: "+5%", offersTrend: "+7%", rateTrend: "+2%" },
-        weekly: { avgFulfillment: 8.9, rating: 4.8, ordersTrend: "+12%", offersTrend: "+15%", rateTrend: "+4%" },
-        monthly: { avgFulfillment: 9.4, rating: 4.6, ordersTrend: "+9%", offersTrend: "+11%", rateTrend: "+3%" },
-    }[timeFilter];
-
     const offerFlowData = useMemo(
         () => [
             { name: "Pending", value: pendingOffers },
@@ -77,30 +71,30 @@ export default function VendorPage() {
     );
 
     const insights = [
-        `Your acceptance rate is ${acceptanceRate}% (${mockByFilter.rateTrend}) in this ${timeFilter} window.`,
-        `Average fulfillment is ${mockByFilter.avgFulfillment} hours, improving delivery consistency.`,
+        `Offer acceptance is ${acceptanceRate}% (${acceptedOffers} of ${totalOffers}).`,
+        `${pendingOffers} offers are pending and ${activeOrders} orders are currently active.`,
         cancellationRate === 0
-            ? "No cancellations recorded in this period - great operational control."
-            : `Cancellation rate is ${cancellationRate}%. Review drop-offs between delivery and completion.`,
+            ? "No cancelled orders recorded in this period."
+            : `${cancelledOrders} orders were cancelled (${cancellationRate}%). Review handoff and ETA clarity.`,
     ];
 
     return (
         <div className="space-y-6 bg-slate-50 pb-2">
             <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#040947]">Vendor Dashboard</h1>
-                    <p className="mt-1 text-sm text-slate-500">Performance overview</p>
+                    <h1 className="text-3xl font-semibold text-[#040947]">Vendor Dashboard</h1>
+                    <p className="mt-1 text-sm text-slate-500">Operational view of offers and order execution</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <label htmlFor="time-filter" className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Time Filter
+                    <label htmlFor="time-filter" className="text-xs font-medium text-slate-500">
+                        Time range
                     </label>
                     <select
                         id="time-filter"
                         value={timeFilter}
                         onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
-                        className="rounded-lg border border-[#040947]/20 bg-white px-3 py-2 text-sm text-[#040947] outline-none ring-amber-200 transition focus:ring-2"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none ring-amber-200 transition focus:ring-2"
                     >
                         <option value="today">Today</option>
                         <option value="weekly">Weekly</option>
@@ -111,18 +105,18 @@ export default function VendorPage() {
 
             <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <OrderFlowCard orderFlowData={orderFlowData} className="xl:col-span-3" />
-                <SectionCard title="Performance Snapshot" subtitle="Compact vendor KPIs" className="xl:col-span-2">
+                <SectionCard title="Performance Snapshot" subtitle="Core KPIs for the selected period" className="xl:col-span-2">
                     <div className="grid grid-cols-2 gap-3">
                         {[
                             {
                                 label: "Total Orders",
                                 value: String(totalOrders),
-                                hint: mockByFilter.ordersTrend,
+                                hint: `${completedOrders} completed`,
                             },
                             {
                                 label: "Total Offers",
                                 value: String(totalOffers),
-                                hint: mockByFilter.offersTrend,
+                                hint: `${pendingOffers} pending`,
                             },
                             {
                                 label: "Acceptance",
@@ -135,9 +129,9 @@ export default function VendorPage() {
                                 hint: `${completedOrders}/${Math.max(totalOrders, 0)}`,
                             },
                         ].map((item) => (
-                            <Card key={item.label} className="rounded-xl border border-slate-200 p-3 shadow-none">
-                                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{item.label}</p>
-                                <p className="mt-1 text-lg font-bold leading-none text-slate-900">{item.value}</p>
+                            <Card key={item.label} className="rounded-xl border border-slate-200 p-3.5 shadow-none transition hover:border-[#040947]/20 hover:bg-[#040947]/[0.03]">
+                                <p className="text-[11px] font-medium text-slate-500">{item.label}</p>
+                                <p className="mt-1 text-lg font-semibold leading-none text-slate-900">{item.value}</p>
                                 <p className="mt-1 text-[11px] text-slate-400">{item.hint}</p>
                             </Card>
                         ))}
@@ -150,7 +144,7 @@ export default function VendorPage() {
             <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
                 <PipelineCard
                     title="Offer Pipeline"
-                    subtitle="Bid quality and conversion"
+                    subtitle="Status split for submitted offers"
                     total={totalOffers}
                     primaryLabel="Accepted Ratio"
                     primaryCount={acceptedOffers}
@@ -159,11 +153,11 @@ export default function VendorPage() {
                         { label: "Pending", count: pendingOffers, tone: "warning" },
                         { label: "Rejected", count: rejectedOffers, tone: "danger" },
                     ]}
-                    insight={acceptanceRate >= 55 ? "High acceptance rate this week." : "Acceptance can improve with tighter pricing and timing."}
+                    insight={acceptanceRate >= 55 ? "Acceptance is healthy. Keep response time and pricing consistent." : "Acceptance is below target. Review pricing and quote turnaround time."}
                 />
                 <PipelineCard
                     title="Order Pipeline"
-                    subtitle="Execution and throughput"
+                    subtitle="Current execution progress"
                     total={totalOrders}
                     primaryLabel="Completion Ratio"
                     primaryCount={completedOrders}
@@ -174,16 +168,12 @@ export default function VendorPage() {
                     ]}
                     insight={
                         cancellationRate <= 5
-                            ? `Low cancellations and healthy flow (${completionRate}% completion).`
-                            : "Cancellation rate is elevated. Check pickup-to-delivery handoff."
+                            ? `Flow is stable with ${completionRate}% completion.`
+                            : "Cancellation rate is elevated. Check pickup timing and customer communication."
                     }
                 />
                 <SmartInsightsCard insights={insights} />
             </section>
-
-            <p className="px-1 text-xs text-slate-500">
-                Helper note: KPI trend percentages are mocked for preview; operational counts use live vendor stats.
-            </p>
         </div>
     );
 }

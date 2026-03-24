@@ -29,14 +29,20 @@ export default function DashboardPage() {
     const pickedUpOrders = orderStats?.data?.picked_up_orders ?? 0;
     const inProgressOrders = orderStats?.data?.in_progress_orders ?? 0;
     const deliveringOrders = orderStats?.data?.delivering_orders ?? 0;
+    const totalOrders = orderStats?.data?.total_orders ?? 0;
     const completedOrders = orderStats?.data?.completed_orders ?? 0;
     const cancelledOrders = orderStats?.data?.cancelled_orders ?? 0;
+    const pendingOffers = offerStats?.data?.pending_offers ?? 0;
 
     const activeOrders =
         acceptedOrders + pickedUpOrders + inProgressOrders + deliveringOrders;
 
     const conversionRate =
         totalRequests > 0 ? (completedOrders / totalRequests) * 100 : 0;
+    const offerAcceptanceRate =
+        totalOffers > 0 ? (acceptedOffers / totalOffers) * 100 : 0;
+    const orderCompletionRate =
+        totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
 
     const funnelMax = Math.max(
         totalRequests,
@@ -63,17 +69,17 @@ export default function DashboardPage() {
                 <h2 className="text-2xl font-bold text-gray-900">
                     Admin Dashboard
                 </h2>
-                <p className="text-sm text-gray-500">Marketplace analytics overview</p>
+                <p className="text-sm text-gray-500">Operational summary across requests, offers, and orders</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
                 {[
-                    { label: "Total Requests", value: totalRequests, hint: "All requests" },
-                    { label: "Total Offers", value: totalOffers, hint: "All offers" },
-                    { label: "Active Orders", value: activeOrders, hint: "Accepted to delivering" },
-                    { label: "Completed", value: completedOrders, hint: "Done orders" },
-                    { label: "Cancelled", value: cancelledOrders, hint: "Cancelled orders" },
-                    { label: "Conversion", value: `${conversionRate.toFixed(1)}%`, hint: "Completed / requests" },
+                    { label: "Total Requests", value: totalRequests, hint: "Current volume" },
+                    { label: "Total Offers", value: totalOffers, hint: `${pendingOffers} still pending` },
+                    { label: "Active Orders", value: activeOrders, hint: "In execution" },
+                    { label: "Completed", value: completedOrders, hint: "Delivered successfully" },
+                    { label: "Cancelled", value: cancelledOrders, hint: "Needs attention" },
+                    { label: "Request Conversion", value: `${conversionRate.toFixed(1)}%`, hint: "Requests to completed" },
                 ].map((item) => (
                     <Card key={item.label} className="p-4">
                         <p className="text-xs font-medium text-gray-500">{item.label}</p>
@@ -115,31 +121,26 @@ export default function DashboardPage() {
                 <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-1">
                     <Card className="p-5">
                         <p className="text-xs font-medium text-gray-500">
-                            Payment Metric (Mock)
+                            Offer Acceptance Rate
                         </p>
                         <h3 className="mt-1 text-xl font-bold text-gray-900">
-                            NPR 0
+                            {offerAcceptanceRate.toFixed(1)}%
                         </h3>
                         <p className="mt-1 text-xs text-gray-400">
-                            Total Commission Generated
-                        </p>
-                        <p className="mt-4 text-[11px] text-gray-400">
-                            Pending backend endpoint for settled payouts
+                            {acceptedOffers} accepted out of {totalOffers} offers
                         </p>
                     </Card>
 
                     <Card className="p-5">
                         <p className="text-xs font-medium text-gray-500">
-                            Vendor Metric (Mock)
+                            Order Completion Rate
                         </p>
-                        <h3 className="mt-1 text-base font-bold text-gray-900">
-                            Top Vendors
+                        <h3 className="mt-1 text-xl font-bold text-gray-900">
+                            {orderCompletionRate.toFixed(1)}%
                         </h3>
-                        <div className="mt-3 space-y-2 text-sm text-gray-600">
-                            <p>1. Vendor A - 0 completed</p>
-                            <p>2. Vendor B - 0 completed</p>
-                            <p>3. Vendor C - 0 completed</p>
-                        </div>
+                        <p className="mt-1 text-xs text-gray-400">
+                            {completedOrders} completed out of {totalOrders} total orders
+                        </p>
                     </Card>
                 </div>
             </div>
