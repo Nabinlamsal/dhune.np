@@ -2,6 +2,7 @@
 import DownloadAppSection from "@/src/components/DownloadAppSection";
 import AudienceSection from "../../components/AudienceSection";
 import { useRouter } from "next/navigation";
+import FeaturesSection from "@/src/components/FeaturesSection";
 
 export default function Home() {
   const router = useRouter();
@@ -76,10 +77,9 @@ export default function Home() {
 
             <AudienceSection />
           </div>
-
         </div>
-
       </div>
+      <FeaturesSection />
       <DownloadAppSection />
     </div >
   );
