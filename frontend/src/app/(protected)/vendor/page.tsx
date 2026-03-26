@@ -1,10 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Card } from "@/src/components/ui/card";
 import { useVendorDashboard } from "@/src/hooks/orders/useDashboard";
+import { useVendorRatings } from "@/src/hooks/ratings/useRatings";
 import { PipelineCard } from "@/src/components/vendor/dashboard/PipelineCard";
-import { AnalyticsSection, OrderFlowCard } from "@/src/components/vendor/dashboard/AnalyticsSection";
+import {
+    OfferConversionCard,
+    OrderFlowCard,
+    WorkloadDistributionCard,
+} from "@/src/components/vendor/dashboard/AnalyticsSection";
 import { SmartInsightsCard } from "@/src/components/vendor/dashboard/SmartInsightsCard";
 import { SectionCard } from "@/src/components/vendor/dashboard/SectionCard";
 
@@ -13,6 +19,7 @@ type TimeFilter = "today" | "weekly" | "monthly";
 export default function VendorPage() {
     const [timeFilter, setTimeFilter] = useState<TimeFilter>("weekly");
     const { orders, offers } = useVendorDashboard();
+    const { data: ratingsData } = useVendorRatings(3, 0);
 
     const orderStats = orders.data?.data;
     const offerStats = offers.data?.data;
@@ -36,6 +43,7 @@ export default function VendorPage() {
     const acceptanceRate = totalOffers > 0 ? Math.round((acceptedOffers / totalOffers) * 100) : 0;
     const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
     const cancellationRate = totalOrders > 0 ? Math.round((cancelledOrders / totalOrders) * 100) : 0;
+    const ratingSummary = ratingsData?.summary;
 
     const offerFlowData = useMemo(
         () => [
@@ -139,7 +147,34 @@ export default function VendorPage() {
                 </SectionCard>
             </section>
 
-            <AnalyticsSection offerFlowData={offerFlowData} workloadData={workloadData} />
+            <section className="grid grid-cols-1 gap-5 xl:grid-cols-6">
+                <OfferConversionCard offerFlowData={offerFlowData} className="xl:col-span-2" />
+                <WorkloadDistributionCard workloadData={workloadData} className="xl:col-span-2" />
+                <SectionCard
+                    title="Ratings Snapshot"
+                    subtitle="Your current customer rating status"
+                    className="xl:col-span-2"
+                >
+                    <div className="grid grid-cols-2 gap-3">
+                        <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
+                            <p className="text-[11px] font-medium text-slate-500">Avg Rating</p>
+                            <p className="mt-1 text-xl font-semibold text-slate-900">
+                                {ratingSummary?.average_rating ?? "0.00"}<span className="text-sm text-slate-500">/5</span>
+                            </p>
+                        </Card>
+                        <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
+                            <p className="text-[11px] font-medium text-slate-500">Reviews</p>
+                            <p className="mt-1 text-xl font-semibold text-slate-900">{ratingSummary?.total_ratings ?? 0}</p>
+                        </Card>
+                    </div>
+                    <Link
+                        href="/vendor/ratings"
+                        className="mt-3 inline-flex rounded-lg border border-[#040947]/20 bg-[#040947]/5 px-3 py-1.5 text-xs font-medium text-[#040947] transition hover:bg-[#040947]/10"
+                    >
+                        Open all ratings and reviews
+                    </Link>
+                </SectionCard>
+            </section>
 
             <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
                 <PipelineCard

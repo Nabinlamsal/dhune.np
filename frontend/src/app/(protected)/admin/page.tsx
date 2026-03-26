@@ -10,6 +10,8 @@ import { MarketplaceComparisonChart } from "@/src/components/admin/MarketplaceCo
 import { useAdminRequestStats } from "@/src/hooks/orders/useRequest";
 import { useAdminOfferStats } from "@/src/hooks/orders/useOffer";
 import { useAdminOrderStats } from "@/src/hooks/orders/useOrder";
+import { useAdminTopRatedVendors } from "@/src/hooks/ratings/useRatings";
+import Link from "next/link";
 
 export default function DashboardPage() {
     const { data: requestStats, isLoading: loadingRequests } =
@@ -18,8 +20,9 @@ export default function DashboardPage() {
         useAdminOfferStats();
     const { data: orderStats, isLoading: loadingOrders } =
         useAdminOrderStats();
+    const { data: topRated, isLoading: loadingRatings } = useAdminTopRatedVendors(5, 0);
 
-    const isLoading = loadingRequests || loadingOffers || loadingOrders;
+    const isLoading = loadingRequests || loadingOffers || loadingOrders || loadingRatings;
 
     const totalRequests = requestStats?.data?.total_requests ?? 0;
     const totalOffers = offerStats?.data?.total_offers ?? 0;
@@ -141,6 +144,32 @@ export default function DashboardPage() {
                         <p className="mt-1 text-xs text-gray-400">
                             {completedOrders} completed out of {totalOrders} total orders
                         </p>
+                    </Card>
+
+                    <Card className="p-5">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <p className="text-xs font-medium text-gray-500">Top Rated Vendors</p>
+                                <h3 className="mt-1 text-sm font-semibold text-gray-900">Avg rating leaderboard</h3>
+                            </div>
+                            <Link
+                                href="/admin/ratings"
+                                className="rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-700 transition hover:bg-slate-50"
+                            >
+                                View all
+                            </Link>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                            {(topRated ?? []).slice(0, 3).map((item) => (
+                                <div key={item.vendor_id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                                    <p className="text-xs font-medium text-slate-800">{item.vendor_name}</p>
+                                    <p className="text-xs font-semibold text-amber-700">{item.average_rating}/5</p>
+                                </div>
+                            ))}
+                            {(topRated ?? []).length === 0 ? (
+                                <p className="text-xs text-slate-500">No ratings available yet.</p>
+                            ) : null}
+                        </div>
                     </Card>
                 </div>
             </div>
