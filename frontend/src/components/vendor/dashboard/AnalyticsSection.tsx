@@ -88,8 +88,8 @@ export function WorkloadDistributionCard({ workloadData, className }: WorkloadDi
                             data={workloadData}
                             dataKey="value"
                             nameKey="name"
-                            innerRadius={76}
-                            outerRadius={86}
+                            innerRadius={40}
+                            outerRadius={90}
                             paddingAngle={3}
                         >
                             {workloadData.map((entry, index) => (
@@ -151,7 +151,7 @@ export function OrderFlowCard({ orderFlowData, className }: OrderFlowCardProps) 
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
                         <Tooltip />
-                        <Bar dataKey="value" barSize={26} radius={[8, 8, 0, 0]} fill={COLORS.neutral} />
+                        <Bar dataKey="value" barSize={30} radius={[8, 8, 0, 0]} fill={COLORS.neutral} />
                         <Line type="stepAfter" dataKey="value" stroke={COLORS.warning} strokeWidth={2} dot={{ r: 2 }} />
                     </BarChart>
                 </ResponsiveContainer>
