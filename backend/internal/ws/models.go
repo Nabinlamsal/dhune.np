@@ -1,6 +1,8 @@
-package websockets
+package ws
 
-import "golang.org/x/net/websocket"
+import (
+	gorilla "github.com/gorilla/websocket"
+)
 
 type Message struct {
 	Type     string      `json:"type"`
@@ -10,6 +12,6 @@ type Message struct {
 
 type Client struct {
 	ID   string
-	Conn *websocket.Conn
+	Conn *gorilla.Conn
 	Send chan Message
 }

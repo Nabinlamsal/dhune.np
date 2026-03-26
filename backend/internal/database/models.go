@@ -337,6 +337,17 @@ type Order struct {
 	UpdatedAt     time.Time
 }
 
+type Rating struct {
+	ID        uuid.UUID
+	OrderID   uuid.UUID
+	UserID    uuid.UUID
+	VendorID  uuid.UUID
+	Rating    int16
+	Review    sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type Request struct {
 	ID             uuid.UUID
 	UserID         uuid.UUID

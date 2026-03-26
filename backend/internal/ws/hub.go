@@ -1,4 +1,4 @@
-package websockets
+package ws
 
 type Hub struct {
 	Clients    map[string]*Client

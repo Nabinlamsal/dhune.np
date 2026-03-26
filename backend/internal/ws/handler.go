@@ -1,22 +1,26 @@
-package websockets
+package ws
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	gorilla "github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
+var upgrader = gorilla.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // change in production
+		return true
 	},
 }
 
 func ServeWS(hub *Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		userID := c.Query("userId") // later replace with JWT
+		userID := c.Query("userId")
+		if userID == "" {
+			c.JSON(400, gin.H{"error": "userId required"})
+			return
+		}
 
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
@@ -26,7 +30,7 @@ func ServeWS(hub *Hub) gin.HandlerFunc {
 		client := &Client{
 			ID:   userID,
 			Conn: conn,
-			Send: make(chan Message),
+			Send: make(chan Message, 10), // buffered
 		}
 
 		hub.Register <- client
@@ -51,7 +55,11 @@ func readPump(hub *Hub, client *Client) {
 }
 
 func writePump(client *Client) {
+	defer client.Conn.Close()
+
 	for msg := range client.Send {
-		client.Conn.WriteJSON(msg)
+		if err := client.Conn.WriteJSON(msg); err != nil {
+			break
+		}
 	}
 }

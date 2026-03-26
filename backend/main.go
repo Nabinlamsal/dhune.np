@@ -40,6 +40,9 @@ import (
 	orderrepo "github.com/Nabinlamsal/dhune.np/internal/orders/repository"
 	orderroutes "github.com/Nabinlamsal/dhune.np/internal/orders/routes"
 	orderservice "github.com/Nabinlamsal/dhune.np/internal/orders/service"
+
+	// RATINGS MODULE
+	ratings "github.com/Nabinlamsal/dhune.np/internal/ratings"
 )
 
 func main() {
@@ -70,6 +73,7 @@ func main() {
 	orderRepo := orderrepo.NewOrderRepository(queries)
 	requestRepo := orderrepo.NewRequestRepositoryImpl(queries)
 	offerRepo := orderrepo.NewOfferRepositoryImpl(queries)
+	ratingsRepo := ratings.NewRepository(queries)
 
 	//services
 	passwordService := authservice.Password()
@@ -103,6 +107,7 @@ func main() {
 		orderRepo,
 		requestRepo,
 	)
+	ratingsService := ratings.NewService(ratingsRepo)
 
 	//controllers
 	authController := authcontroller.NewAuthController(authService)
@@ -114,6 +119,7 @@ func main() {
 	requestController := ordercontroller.NewRequestHandler(requestService)
 	offerController := ordercontroller.NewOfferHandler(offerService)
 	orderController := ordercontroller.NewOrderHandler(orderService)
+	ratingsController := ratings.NewController(ratingsService)
 
 	//routes
 	router := gin.Default()
@@ -133,6 +139,7 @@ func main() {
 	orderroutes.RegisterRequestRoutes(router, requestController, jwtService)
 	orderroutes.RegisterOfferRoutes(router, offerController, jwtService)
 	orderroutes.RegisterOrderRoutes(router, orderController, jwtService)
+	ratings.RegisterRoutes(router, ratingsController, jwtService)
 
 	//start server
 	log.Println("Server listening on port:", config.AppConfig.ServerPort)
