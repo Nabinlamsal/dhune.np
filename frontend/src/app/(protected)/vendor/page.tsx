@@ -86,6 +86,41 @@ export default function VendorPage() {
             : `${cancelledOrders} orders were cancelled (${cancellationRate}%). Review handoff and ETA clarity.`,
     ];
 
+    const performanceCards = [
+        {
+            label: "Total Orders",
+            value: String(totalOrders),
+            hint: `${completedOrders} completed`,
+            progress: completionRate,
+            tone: "from-blue-500/20 to-blue-100/20 border-blue-200/70",
+            badge: "Delivery",
+        },
+        {
+            label: "Total Offers",
+            value: String(totalOffers),
+            hint: `${pendingOffers} pending`,
+            progress: acceptanceRate,
+            tone: "from-amber-500/20 to-amber-100/20 border-amber-200/70",
+            badge: "Bids",
+        },
+        {
+            label: "Acceptance",
+            value: `${acceptanceRate}%`,
+            hint: `${acceptedOffers}/${Math.max(totalOffers, 0)}`,
+            progress: acceptanceRate,
+            tone: "from-emerald-500/20 to-emerald-100/20 border-emerald-200/70",
+            badge: "Rate",
+        },
+        {
+            label: "Completion",
+            value: `${completionRate}%`,
+            hint: `${completedOrders}/${Math.max(totalOrders, 0)}`,
+            progress: completionRate,
+            tone: "from-indigo-500/20 to-indigo-100/20 border-indigo-200/70",
+            badge: "Closure",
+        },
+    ];
+
     return (
         <div className="space-y-6 bg-slate-50 pb-2">
             <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -115,32 +150,28 @@ export default function VendorPage() {
                 <OrderFlowCard orderFlowData={orderFlowData} className="xl:col-span-3" />
                 <SectionCard title="Performance Snapshot" subtitle="Core KPIs for the selected period" className="xl:col-span-2">
                     <div className="grid grid-cols-2 gap-3">
-                        {[
-                            {
-                                label: "Total Orders",
-                                value: String(totalOrders),
-                                hint: `${completedOrders} completed`,
-                            },
-                            {
-                                label: "Total Offers",
-                                value: String(totalOffers),
-                                hint: `${pendingOffers} pending`,
-                            },
-                            {
-                                label: "Acceptance",
-                                value: `${acceptanceRate}%`,
-                                hint: `${acceptedOffers}/${Math.max(totalOffers, 0)}`,
-                            },
-                            {
-                                label: "Completion",
-                                value: `${completionRate}%`,
-                                hint: `${completedOrders}/${Math.max(totalOrders, 0)}`,
-                            },
-                        ].map((item) => (
-                            <Card key={item.label} className="rounded-xl border border-slate-200 p-3.5 shadow-none transition hover:border-[#040947]/20 hover:bg-[#040947]/[0.03]">
-                                <p className="text-[11px] font-medium text-slate-500">{item.label}</p>
-                                <p className="mt-1 text-lg font-semibold leading-none text-slate-900">{item.value}</p>
-                                <p className="mt-1 text-[11px] text-slate-400">{item.hint}</p>
+                        {performanceCards.map((item) => (
+                            <Card
+                                key={item.label}
+                                className={`group relative overflow-hidden rounded-xl border bg-gradient-to-br p-3.5 shadow-sm shadow-slate-200/50 transition hover:-translate-y-0.5 hover:shadow-md ${item.tone}`}
+                            >
+                                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-white/40 blur-xl transition group-hover:bg-white/55" />
+                                <div className="relative">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-[11px] font-medium text-slate-600">{item.label}</p>
+                                        <span className="rounded-md bg-white/75 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                                            {item.badge}
+                                        </span>
+                                    </div>
+                                    <p className="mt-2 text-xl font-semibold leading-none text-slate-900">{item.value}</p>
+                                    <p className="mt-1 text-[11px] text-slate-500">{item.hint}</p>
+                                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/75">
+                                        <div
+                                            className="h-full rounded-full bg-[#040947]/70 transition-all"
+                                            style={{ width: `${Math.min(Math.max(item.progress, 0), 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
                             </Card>
                         ))}
                     </div>
@@ -156,20 +187,22 @@ export default function VendorPage() {
                     className="xl:col-span-2"
                 >
                     <div className="grid grid-cols-2 gap-3">
-                        <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
-                            <p className="text-[11px] font-medium text-slate-500">Avg Rating</p>
-                            <p className="mt-1 text-xl font-semibold text-slate-900">
-                                {ratingSummary?.average_rating ?? "0.00"}<span className="text-sm text-slate-500">/5</span>
+                        <Card className="relative overflow-hidden rounded-xl border border-[#040947]/25 bg-gradient-to-br from-[#22254a] to-[#696eb8] p-3 shadow-sm shadow-[#040947]/20">
+                            <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/15 blur-xl" />
+                            <p className="relative text-[11px] font-medium text-[#e3bc1f]">Avg Rating</p>
+                            <p className="relative mt-1 text-xl font-semibold text-white">
+                                {ratingSummary?.average_rating ?? "0.00"}<span className="text-sm text-blue-100">/5</span>
                             </p>
                         </Card>
-                        <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
-                            <p className="text-[11px] font-medium text-slate-500">Reviews</p>
-                            <p className="mt-1 text-xl font-semibold text-slate-900">{ratingSummary?.total_ratings ?? 0}</p>
+                        <Card className="relative overflow-hidden rounded-xl border border-[#040947]/25 bg-gradient-to-br from-[#22254a] to-[#696eb8] p-3 shadow-sm shadow-[#040947]/20">
+                            <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/15 blur-xl" />
+                            <p className="relative text-[11px] font-medium text-[#e3bc1f]">Reviews</p>
+                            <p className="relative mt-1 text-xl font-semibold text-white">{ratingSummary?.total_ratings ?? 0}</p>
                         </Card>
                     </div>
                     <Link
                         href="/vendor/ratings"
-                        className="mt-3 inline-flex rounded-lg border border-[#040947]/20 bg-[#040947]/5 px-3 py-1.5 text-xs font-medium text-[#040947] transition hover:bg-[#040947]/10"
+                        className="mt-3 inline-flex rounded-lg border border-[#040947]/40 bg-[#040947] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-[#09106a]"
                     >
                         Open all ratings and reviews
                     </Link>
