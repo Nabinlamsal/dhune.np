@@ -10,6 +10,7 @@ import { useVendorOffers, useVendorOfferStats, useUpdateOffer, useWithdrawOffer 
 import { Offer } from "@/src/types/orders/offers";
 import { OfferStatus } from "@/src/types/orders/orders-enums";
 import EditOfferModal from "@/src/components/vendor/EditOfferModel";
+import { Button } from "@/src/components/ui/button";
 import { ClipboardList, FileText, ShieldCheck } from "lucide-react";
 import { formatDisplayId } from "@/src/utils/display";
 
@@ -33,9 +34,13 @@ export default function VendorOffersPage() {
     const [filter, setFilter] = useState<OfferStatus | "ALL">("ALL");
     const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
     const [editOpen, setEditOpen] = useState(false);
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
 
     const { data: offers, isLoading, isError } = useVendorOffers({
         status: filter === "ALL" ? undefined : filter,
+        limit: pageSize,
+        offset: page * pageSize,
     });
 
     const { data: stats } = useVendorOfferStats();
@@ -49,6 +54,7 @@ export default function VendorOffersPage() {
             : [];
 
     const selectedOffer = offerRows.find((offer) => offer.id === selectedOfferId);
+    const canGoNext = offerRows.length === pageSize;
 
     const columns = [
         {
@@ -79,31 +85,24 @@ export default function VendorOffersPage() {
         <>
             <h2 className="mb-5 text-2xl font-bold">My Offers</h2>
 
-            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Total</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.total_offers ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Pending</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.pending_offers ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Accepted</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.accepted_offers ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Rejected</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.rejected_offers ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Withdrawn</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.withdrawn_offers ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-center">
-                    <p className="text-xs text-gray-500">Expired</p>
-                    <p className="text-lg font-semibold text-gray-900">{stats?.data.expired_offers ?? 0}</p>
-                </div>
+            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                {[
+                    { label: "Total", value: stats?.data.total_offers ?? 0, tone: "from-[#040947] to-[#1a236e]", labelClass: "text-blue-100" },
+                    { label: "Pending", value: stats?.data.pending_offers ?? 0, tone: "from-[#ebbc01] to-[#e3a901]", labelClass: "text-[#4f3a00]" },
+                    { label: "Accepted", value: stats?.data.accepted_offers ?? 0, tone: "from-[#040947] to-[#213087]", labelClass: "text-blue-100" },
+                    { label: "Rejected", value: stats?.data.rejected_offers ?? 0, tone: "from-[#ebbc01] to-[#d89b00]", labelClass: "text-[#4f3a00]" },
+                    { label: "Withdrawn", value: stats?.data.withdrawn_offers ?? 0, tone: "from-[#040947] to-[#1f2b7d]", labelClass: "text-blue-100" },
+                    { label: "Expired", value: stats?.data.expired_offers ?? 0, tone: "from-[#ebbc01] to-[#c98b00]", labelClass: "text-[#4f3a00]" },
+                ].map((item) => (
+                    <div
+                        key={item.label}
+                        className={`relative overflow-hidden rounded-xl border border-[#040947]/15 bg-gradient-to-br ${item.tone} px-3.5 py-3 shadow-sm shadow-[#040947]/10`}
+                    >
+                        <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/20 blur-xl" />
+                        <p className={`relative text-[11px] font-medium ${item.labelClass}`}>{item.label}</p>
+                        <p className="relative mt-1 text-xl font-semibold leading-none text-white">{item.value}</p>
+                    </div>
+                ))}
             </div>
 
             <FilterTabs
@@ -116,7 +115,10 @@ export default function VendorOffersPage() {
                     { label: "Expired", value: "EXPIRED" },
                 ]}
                 active={filter}
-                onChange={(value) => setFilter(value as OfferStatus | "ALL")}
+                onChange={(value) => {
+                    setPage(0);
+                    setFilter(value as OfferStatus | "ALL");
+                }}
             />
 
             <div className="mt-4">
@@ -135,6 +137,27 @@ export default function VendorOffersPage() {
                 ) : (
                     <DataTable columns={columns} data={offerRows} onRowClick={(offer: Offer) => setSelectedOfferId(offer.id)} />
                 )}
+            </div>
+
+            <div className="mt-4 flex items-center justify-end gap-2">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 0}
+                    onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                    className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                >
+                    Previous
+                </Button>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!canGoNext}
+                    onClick={() => setPage((prev) => prev + 1)}
+                    className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                >
+                    Next
+                </Button>
             </div>
 
             <DetailsDrawer open={!!selectedOfferId} onClose={() => setSelectedOfferId(null)} title="Offer Details">

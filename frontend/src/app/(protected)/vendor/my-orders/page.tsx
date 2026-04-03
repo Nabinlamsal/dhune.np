@@ -13,6 +13,7 @@ import {
     useVendorOrders,
     useUpdateOrderStatus,
     useOrderDetail,
+    useVendorOrderStats,
 } from "@/src/hooks/orders/useOrder";
 
 import { OrderListItem } from "@/src/types/orders/orders";
@@ -67,18 +68,21 @@ function getNextButtonLabel(status: OrderStatus) {
 }
 
 export default function VendorOrdersPage() {
-
     const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
 
     const { data: orders, isLoading, isError } = useVendorOrders({
         status: filter === "ALL" ? undefined : filter,
+        limit: pageSize,
+        offset: page * pageSize,
     });
+    const { data: stats } = useVendorOrderStats();
 
     const { mutate: updateStatus } = useUpdateOrderStatus();
 
-    const { data: detail, isLoading: isDetailLoading } =
-        useOrderDetail(selectedOrderId ?? undefined);
+    const { data: detail, isLoading: isDetailLoading } = useOrderDetail(selectedOrderId ?? undefined);
 
     const orderRows = Array.isArray(orders)
         ? orders
@@ -86,39 +90,31 @@ export default function VendorOrdersPage() {
             ? ((orders as { data?: OrderListItem[] }).data ?? [])
             : [];
 
-    const columns = [
+    const canGoNext = orderRows.length === pageSize;
 
+    const columns = [
         {
             key: "id",
             header: "Order",
             render: (o: OrderListItem) => formatDisplayId(o.id, "ORD"),
         },
-
         {
             key: "customer",
             header: "Customer",
-            render: (o: OrderListItem) =>
-                o.user_name ?? "-",
+            render: (o: OrderListItem) => o.user_name ?? "-",
         },
-
         {
             key: "amount",
             header: "Amount",
-            render: (o: OrderListItem) =>
-                `Rs. ${o.final_price}`,
+            render: (o: OrderListItem) => `Rs. ${o.final_price}`,
         },
-
         {
             key: "status",
             header: "Order Status",
             render: (o: OrderListItem) => (
-                <StatusBadge
-                    status={mapOrderStatusToBadge(o.order_status)}
-                    label={o.order_status}
-                />
+                <StatusBadge status={mapOrderStatusToBadge(o.order_status)} label={o.order_status} />
             ),
         },
-
         {
             key: "payment",
             header: "Payment",
@@ -135,25 +131,38 @@ export default function VendorOrdersPage() {
                 />
             ),
         },
-
         {
             key: "created",
             header: "Created",
-            render: (o: OrderListItem) =>
-                new Date(o.created_at).toLocaleDateString(),
+            render: (o: OrderListItem) => new Date(o.created_at).toLocaleDateString(),
         },
-
     ];
 
     return (
         <>
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                    Vendor Orders
-                </h2>
-                <p className="text-sm text-gray-500">
-                    Manage laundry orders and update their progress
-                </p>
+                <h2 className="text-2xl font-bold text-gray-900">Vendor Orders</h2>
+                <p className="text-sm text-gray-500">Manage laundry orders and update their progress</p>
+            </div>
+
+            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                {[
+                    { label: "Total", value: stats?.data.total_orders ?? 0, tone: "from-[#040947] to-[#1a236e]", labelClass: "text-blue-100" },
+                    { label: "Accepted", value: stats?.data.accepted_orders ?? 0, tone: "from-[#ebbc01] to-[#e3a901]", labelClass: "text-[#4f3a00]" },
+                    { label: "In Progress", value: stats?.data.in_progress_orders ?? 0, tone: "from-[#040947] to-[#213087]", labelClass: "text-blue-100" },
+                    { label: "Delivering", value: stats?.data.delivering_orders ?? 0, tone: "from-[#ebbc01] to-[#d89b00]", labelClass: "text-[#4f3a00]" },
+                    { label: "Completed", value: stats?.data.completed_orders ?? 0, tone: "from-[#040947] to-[#1f2b7d]", labelClass: "text-blue-100" },
+                    { label: "Cancelled", value: stats?.data.cancelled_orders ?? 0, tone: "from-[#ebbc01] to-[#c98b00]", labelClass: "text-[#4f3a00]" },
+                ].map((item) => (
+                    <div
+                        key={item.label}
+                        className={`relative overflow-hidden rounded-xl border border-[#040947]/15 bg-gradient-to-br ${item.tone} px-3.5 py-3 shadow-sm shadow-[#040947]/10`}
+                    >
+                        <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/20 blur-xl" />
+                        <p className={`relative text-[11px] font-medium ${item.labelClass}`}>{item.label}</p>
+                        <p className="relative mt-1 text-xl font-semibold leading-none text-white">{item.value}</p>
+                    </div>
+                ))}
             </div>
 
             <FilterTabs
@@ -167,21 +176,17 @@ export default function VendorOrdersPage() {
                     { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 active={filter}
-                onChange={(v) =>
-                    setFilter(v as OrderStatus)
-                }
+                onChange={(v) => {
+                    setPage(0);
+                    setFilter(v as OrderStatus);
+                }}
             />
 
             <div className="mt-4">
-
                 {isLoading ? (
-                    <div className="p-6 text-sm text-gray-500">
-                        Loading orders...
-                    </div>
+                    <div className="p-6 text-sm text-gray-500">Loading orders...</div>
                 ) : isError ? (
-                    <div className="p-6 text-sm text-red-500">
-                        Failed to load orders.
-                    </div>
+                    <div className="p-6 text-sm text-red-500">Failed to load orders.</div>
                 ) : orderRows.length === 0 ? (
                     <div className="rounded-xl border border-gray-100 bg-white p-6 text-sm text-gray-500">
                         No orders found for this filter.
@@ -190,12 +195,30 @@ export default function VendorOrdersPage() {
                     <DataTable
                         columns={columns}
                         data={orderRows}
-                        onRowClick={(o: OrderListItem) =>
-                            setSelectedOrderId(o.id)
-                        }
+                        onRowClick={(o: OrderListItem) => setSelectedOrderId(o.id)}
                     />
                 )}
+            </div>
 
+            <div className="mt-4 flex items-center justify-end gap-2">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 0}
+                    onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                    className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                >
+                    Previous
+                </Button>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!canGoNext}
+                    onClick={() => setPage((prev) => prev + 1)}
+                    className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                >
+                    Next
+                </Button>
             </div>
 
             <DetailsDrawer
@@ -203,19 +226,13 @@ export default function VendorOrdersPage() {
                 onClose={() => setSelectedOrderId(null)}
                 title="Order Details"
             >
-
-                {isDetailLoading && (
-                    <p className="text-sm text-gray-500">
-                        Loading details...
-                    </p>
-                )}
+                {isDetailLoading && <p className="text-sm text-gray-500">Loading details...</p>}
 
                 {detail && (
-
                     <div className="space-y-3 text-sm">
                         <div className="grid gap-3 md:grid-cols-2">
                             <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
-                                <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                <h3 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 text-base font-semibold text-slate-900">
                                     <ClipboardList className="size-4 text-[#040947]" />
                                     Order Information
                                 </h3>
@@ -226,7 +243,7 @@ export default function VendorOrdersPage() {
                             </div>
 
                             <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
-                                <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                                <h3 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 text-base font-semibold text-slate-900">
                                     <ClipboardList className="size-4 text-[#040947]" />
                                     Pickup Details
                                 </h3>
@@ -241,7 +258,7 @@ export default function VendorOrdersPage() {
                         </div>
 
                         <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-3">
-                            <h3 className="flex items-center gap-2 text-base font-semibold border-b border-[#040947]/15 pb-2 text-slate-900">
+                            <h3 className="flex items-center gap-2 border-b border-[#040947]/15 pb-2 text-base font-semibold text-slate-900">
                                 <UserRound className="size-4 text-[#040947]" />
                                 Customer Details
                             </h3>
@@ -249,23 +266,21 @@ export default function VendorOrdersPage() {
                             <Detail label="Email" value={detail.user.email} />
                         </div>
 
-                        <div className="pt-3 border-t border-[#040947]/15">
-                            <h4 className="font-semibold mb-2 flex items-center gap-2 text-slate-900">
+                        <div className="border-t border-[#040947]/15 pt-3">
+                            <h4 className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
                                 <ShoppingBag className="size-4 text-[#040947]" />
                                 Services
                             </h4>
 
                             {detail.services.map((s, i) => (
                                 <div key={i}>
-                                    {s.category_name} — {s.quantity_value} {s.selected_unit}
+                                    {s.category_name} - {s.quantity_value} {s.selected_unit}
                                 </div>
                             ))}
                         </div>
 
                         {getNextButtonLabel(detail.order_status) && (
-
-                            <div className="pt-6 border-t">
-
+                            <div className="border-t pt-6">
                                 <Button
                                     className="bg-[#040947] hover:bg-[#030736]"
                                     onClick={() =>
@@ -279,17 +294,11 @@ export default function VendorOrdersPage() {
                                 >
                                     {getNextButtonLabel(detail.order_status)}
                                 </Button>
-
                             </div>
-
                         )}
-
                     </div>
-
                 )}
-
             </DetailsDrawer>
         </>
     );
 }
-

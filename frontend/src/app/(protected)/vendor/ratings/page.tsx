@@ -59,20 +59,24 @@ export default function VendorRatingsPage() {
                 <p className="text-sm text-slate-500">All feedback received from completed or delivering orders</p>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Card className="rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-white p-3 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Average Rating</p>
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+            <div className="flex flex-wrap gap-3">
+                <Card className="relative min-h-[132px] w-full max-w-[220px] overflow-hidden rounded-xl border border-[#cf9b00] bg-[#ebbc01] p-4 shadow-sm">
+                    <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/20 blur-xl" />
+                    <div className="relative flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-[#4f3a00]">Average Rating</p>
+                        <Star className="h-4 w-4 fill-[#4f3a00] text-[#4f3a00]" />
                     </div>
-                    <p className="mt-1 text-lg font-bold text-slate-900">{summary?.average_rating ?? "0.00"} <span className="text-sm text-slate-500">/ 5</span></p>
+                    <p className="relative mt-3 text-2xl font-bold text-[#1f1700]">
+                        {summary?.average_rating ?? "0.00"} <span className="text-sm text-[#4f3a00]">/ 5</span>
+                    </p>
                 </Card>
-                <Card className="rounded-xl border border-[#040947]/15 bg-gradient-to-br from-[#040947]/[0.04] to-white p-3 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-[#040947]">Total Ratings</p>
-                        <MessageSquareText className="h-4 w-4 text-[#040947]" />
+                <Card className="relative min-h-[132px] w-full max-w-[220px] overflow-hidden rounded-xl border border-[#040947]/40 bg-[#040947] p-4 shadow-sm">
+                    <div className="absolute -right-5 -top-5 h-14 w-14 rounded-full bg-white/15 blur-xl" />
+                    <div className="relative flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-100">Total Ratings</p>
+                        <MessageSquareText className="h-4 w-4 text-blue-100" />
                     </div>
-                    <p className="mt-1 text-lg font-bold text-slate-900">{summary?.total_ratings ?? 0}</p>
+                    <p className="relative mt-3 text-2xl font-bold text-white">{summary?.total_ratings ?? 0}</p>
                 </Card>
             </div>
 

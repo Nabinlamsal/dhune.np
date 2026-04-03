@@ -91,16 +91,16 @@ export default function AdminRatingsPage() {
                     <p className="text-sm text-slate-500">Loading reviews...</p>
                 ) : (
                     <div className="space-y-3">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
-                                <p className="text-xs text-slate-500">Average Rating</p>
-                                <p className="mt-1 text-lg font-bold text-slate-900">
-                                    {vendorReviews?.summary?.average_rating ?? "0.00"} / 5
+                        <div className="flex flex-wrap items-stretch gap-3">
+                            <Card className="min-h-[118px] w-full max-w-[220px] rounded-xl border border-[#cf9b00] bg-[#ebbc01] p-4 shadow-none">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#040947]/80">Average Rating</p>
+                                <p className="mt-2 text-2xl font-extrabold text-[#040947]">
+                                    {vendorReviews?.summary?.average_rating ?? "0.00"} <span className="text-sm font-semibold text-[#040947]/75">/ 5</span>
                                 </p>
                             </Card>
-                            <Card className="rounded-xl border border-slate-200 p-3 shadow-none">
-                                <p className="text-xs text-slate-500">Total Ratings</p>
-                                <p className="mt-1 text-lg font-bold text-slate-900">
+                            <Card className="min-h-[118px] w-full max-w-[220px] rounded-xl border border-[#040947]/60 bg-[#040947] p-4 shadow-none">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#ebbc01]/90">Total Ratings</p>
+                                <p className="mt-2 text-2xl font-extrabold text-[#ebbc01]">
                                     {vendorReviews?.summary?.total_ratings ?? 0}
                                 </p>
                             </Card>
