@@ -33,12 +33,14 @@ SELECT
     r.*,
     rs.id AS service_id,
     rs.category_id,
+    c.name AS category_name,
     rs.selected_unit,
     rs.quantity_value,
     rs.items_json,
     rs.description
 FROM requests r
          LEFT JOIN request_services rs ON rs.request_id = r.id
+         LEFT JOIN categories c ON c.id = rs.category_id
 WHERE r.id = $1;
 
 

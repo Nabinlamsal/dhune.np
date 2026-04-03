@@ -22,6 +22,7 @@ type RequestResponseDTO struct {
 }
 type RequestServiceDTO struct {
 	CategoryID    string  `json:"category_id" binding:"required,uuid"`
+	CategoryName  string  `json:"category_name,omitempty"`
 	SelectedUnit  string  `json:"selected_unit" binding:"required"`
 	QuantityValue float64 `json:"quantity_value" binding:"required,gt=0"`
 	ItemsJSON     any     `json:"items_json,omitempty"`

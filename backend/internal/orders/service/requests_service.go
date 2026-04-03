@@ -171,6 +171,11 @@ func (s *RequestService) GetDetail(
 			QuantityValue: r.QuantityValue.Float64,
 		}
 
+		if r.CategoryName.Valid {
+			categoryName := r.CategoryName.String
+			item.CategoryName = &categoryName
+		}
+
 		if r.Description.Valid {
 			desc := r.Description.String
 			item.Description = &desc

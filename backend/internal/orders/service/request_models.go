@@ -30,6 +30,7 @@ type CreateRequestServiceInput struct {
 type RequestServiceItem struct {
 	ServiceID     uuid.UUID
 	CategoryID    uuid.UUID
+	CategoryName  *string
 	SelectedUnit  db.PricingUnit
 	QuantityValue float64
 	ItemsJSON     []byte

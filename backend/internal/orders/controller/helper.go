@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -55,10 +56,19 @@ func (h *RequestHandler) mapDetailToDTO(
 	var services []dto.RequestServiceDTO
 
 	for _, s := range r.Services {
+		var items any
+		if len(s.ItemsJSON) > 0 {
+			if err := json.Unmarshal(s.ItemsJSON, &items); err != nil {
+				items = string(s.ItemsJSON)
+			}
+		}
+
 		services = append(services, dto.RequestServiceDTO{
 			CategoryID:    s.CategoryID.String(),
+			CategoryName:  derefString(s.CategoryName),
 			SelectedUnit:  string(s.SelectedUnit),
 			QuantityValue: s.QuantityValue,
+			ItemsJSON:     items,
 			Description:   derefString(s.Description),
 		})
 	}

@@ -3,12 +3,12 @@ package service
 import "time"
 
 type OrderServiceModel struct {
-	CategoryID    string   `json:"category_id"`
-	CategoryName  string   `json:"category_name"`
-	SelectedUnit  string   `json:"selected_unit"`
-	QuantityValue float64  `json:"quantity_value"`
-	Items         []string `json:"items,omitempty"`
-	Description   string   `json:"description,omitempty"`
+	CategoryID    string  `json:"category_id"`
+	CategoryName  string  `json:"category_name"`
+	SelectedUnit  string  `json:"selected_unit"`
+	QuantityValue float64 `json:"quantity_value"`
+	ItemsJSON     any     `json:"items_json,omitempty"`
+	Description   string  `json:"description,omitempty"`
 }
 
 type OrderSummary struct {
@@ -29,7 +29,7 @@ type OrderSummary struct {
 	PickupLat     float64 `json:"pickup_lat"`
 	PickupLng     float64 `json:"pickup_lng"`
 
-	Services []OrderService `json:"services"`
+	Services []OrderServiceModel `json:"services"`
 }
 
 type OrderDetail struct {
@@ -50,7 +50,7 @@ type OrderDetail struct {
 
 	Request RequestInfo `json:"request"`
 
-	Services []OrderService `json:"services"`
+	Services []OrderServiceModel `json:"services"`
 }
 
 type UserInfo struct {

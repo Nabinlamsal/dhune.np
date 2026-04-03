@@ -187,12 +187,14 @@ SELECT
     r.id, r.user_id, r.pickup_address, r.pickup_time_from, r.pickup_time_to, r.payment_method, r.status, r.expires_at, r.created_at, r.updated_at, r.pickup_lat, r.pickup_lng,
     rs.id AS service_id,
     rs.category_id,
+    c.name AS category_name,
     rs.selected_unit,
     rs.quantity_value,
     rs.items_json,
     rs.description
 FROM requests r
          LEFT JOIN request_services rs ON rs.request_id = r.id
+         LEFT JOIN categories c ON c.id = rs.category_id
 WHERE r.id = $1
 `
 
@@ -211,6 +213,7 @@ type GetRequestWithServicesRow struct {
 	PickupLng      sql.NullFloat64
 	ServiceID      uuid.NullUUID
 	CategoryID     uuid.NullUUID
+	CategoryName   sql.NullString
 	SelectedUnit   NullPricingUnit
 	QuantityValue  sql.NullFloat64
 	ItemsJson      pqtype.NullRawMessage
@@ -242,6 +245,7 @@ func (q *Queries) GetRequestWithServices(ctx context.Context, id uuid.UUID) ([]G
 			&i.PickupLng,
 			&i.ServiceID,
 			&i.CategoryID,
+			&i.CategoryName,
 			&i.SelectedUnit,
 			&i.QuantityValue,
 			&i.ItemsJson,

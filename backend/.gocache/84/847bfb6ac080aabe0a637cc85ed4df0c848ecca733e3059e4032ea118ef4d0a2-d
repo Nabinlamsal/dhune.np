@@ -1,0 +1,9 @@
+./auth_management.sql.go
+./categories.sql.go
+./db.go
+./models.go
+./offers.sql.go
+./orders.sql.go
+./ratings.sql.go
+./requests.sql.go
+./user_management.sql.go

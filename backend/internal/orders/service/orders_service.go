@@ -20,8 +20,8 @@ func NewOrderService(repo repository.OrderRepository) *OrderService {
 	}
 }
 
-func parseServices(data []byte) ([]OrderService, error) {
-	var services []OrderService
+func parseServices(data []byte) ([]OrderServiceModel, error) {
+	var services []OrderServiceModel
 
 	if len(data) == 0 {
 		return services, nil
