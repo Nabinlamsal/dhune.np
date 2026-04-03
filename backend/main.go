@@ -42,7 +42,9 @@ import (
 	orderservice "github.com/Nabinlamsal/dhune.np/internal/orders/service"
 
 	// RATINGS MODULE
+	"github.com/Nabinlamsal/dhune.np/internal/events"
 	ratings "github.com/Nabinlamsal/dhune.np/internal/ratings"
+	"github.com/Nabinlamsal/dhune.np/internal/ws"
 )
 
 func main() {
@@ -62,6 +64,11 @@ func main() {
 	}
 
 	queries := db.New(conn)
+
+	// realtime subsystem bootstrap (event -> ws delivery)
+	hub := ws.NewHub()
+	go hub.Run()
+	events.Init(hub)
 
 	//repositories
 	authRepo := authrepo.NewAuthRepository(queries)

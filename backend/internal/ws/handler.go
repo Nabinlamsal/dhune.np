@@ -21,6 +21,10 @@ func ServeWS(hub *Hub) gin.HandlerFunc {
 			c.JSON(400, gin.H{"error": "userId required"})
 			return
 		}
+		role := c.Query("role")
+		if role == "" {
+			role = "user"
+		}
 
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
@@ -29,6 +33,7 @@ func ServeWS(hub *Hub) gin.HandlerFunc {
 
 		client := &Client{
 			ID:   userID,
+			Role: role,
 			Conn: conn,
 			Send: make(chan Message, 10), // buffered
 		}
