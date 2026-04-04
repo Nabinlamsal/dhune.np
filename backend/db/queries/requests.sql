@@ -64,6 +64,25 @@ SELECT
     r.pickup_time_to,
     r.expires_at,
     r.created_at,
+    CASE
+        WHEN sqlc.narg(vendor_lat)::double precision IS NULL
+            OR sqlc.narg(vendor_lng)::double precision IS NULL
+            OR r.pickup_lat IS NULL
+            OR r.pickup_lng IS NULL
+            THEN NULL
+        ELSE (
+            6371 * acos(
+                least(
+                    1,
+                    cos(radians(sqlc.narg(vendor_lat)::double precision)) *
+                    cos(radians(r.pickup_lat)) *
+                    cos(radians(r.pickup_lng) - radians(sqlc.narg(vendor_lng)::double precision)) +
+                    sin(radians(sqlc.narg(vendor_lat)::double precision)) *
+                    sin(radians(r.pickup_lat))
+                )
+            )
+        )
+    END AS distance_km,
 
     COUNT(rs.id) AS service_count,
     COALESCE(SUM(rs.quantity_value), 0)::double precision AS total_quantity,
@@ -90,9 +109,58 @@ WHERE r.status = 'OPEN'
     sqlc.narg(category_id)::uuid IS NULL
         OR rs.category_id = sqlc.narg(category_id)::uuid
     )
+  AND (
+    sqlc.narg(max_distance_km)::double precision IS NULL
+        OR (
+            r.pickup_lat IS NOT NULL
+            AND r.pickup_lng IS NOT NULL
+            AND sqlc.narg(vendor_lat)::double precision IS NOT NULL
+            AND sqlc.narg(vendor_lng)::double precision IS NOT NULL
+            AND (
+                6371 * acos(
+                    least(
+                        1,
+                        cos(radians(sqlc.narg(vendor_lat)::double precision)) *
+                        cos(radians(r.pickup_lat)) *
+                        cos(radians(r.pickup_lng) - radians(sqlc.narg(vendor_lng)::double precision)) +
+                        sin(radians(sqlc.narg(vendor_lat)::double precision)) *
+                        sin(radians(r.pickup_lat))
+                    )
+                )
+            ) <= sqlc.narg(max_distance_km)::double precision
+        )
+    )
 
 GROUP BY r.id
-ORDER BY r.created_at DESC
+ORDER BY
+    CASE
+        WHEN sqlc.arg(sort_by) = 'nearest'
+            THEN
+                CASE
+                    WHEN sqlc.narg(vendor_lat)::double precision IS NULL
+                        OR sqlc.narg(vendor_lng)::double precision IS NULL
+                        OR r.pickup_lat IS NULL
+                        OR r.pickup_lng IS NULL
+                        THEN 1000000000
+                    ELSE (
+                        6371 * acos(
+                            least(
+                                1,
+                                cos(radians(sqlc.narg(vendor_lat)::double precision)) *
+                                cos(radians(r.pickup_lat)) *
+                                cos(radians(r.pickup_lng) - radians(sqlc.narg(vendor_lng)::double precision)) +
+                                sin(radians(sqlc.narg(vendor_lat)::double precision)) *
+                                sin(radians(r.pickup_lat))
+                            )
+                        )
+                    )
+                END
+        END ASC,
+    CASE
+        WHEN sqlc.arg(sort_by) = 'expiring'
+            THEN r.expires_at
+        END ASC,
+    r.created_at DESC
 LIMIT $1 OFFSET $2;
 
 

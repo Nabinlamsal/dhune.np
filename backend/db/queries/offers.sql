@@ -38,10 +38,37 @@ WHERE id = $1
 
 -- Used by: User (View offers on my request) / Admin
 -- name: ListOffersByRequest :many
-SELECT *
-FROM offers
-WHERE request_id = $1
-ORDER BY created_at DESC;
+SELECT
+    o.id,
+    o.request_id,
+    o.vendor_id,
+    o.bid_price,
+    o.completion_time,
+    o.service_options,
+    o.description,
+    o.status,
+    o.created_at,
+    o.updated_at,
+    u.display_name AS vendor_name,
+    COALESCE(ROUND(AVG(r.rating)::numeric, 2), 0)::double precision AS average_rating,
+    COUNT(r.id)::bigint AS total_ratings
+FROM offers o
+JOIN users u ON u.id = o.vendor_id
+LEFT JOIN ratings r ON r.vendor_id = o.vendor_id
+WHERE o.request_id = $1
+GROUP BY
+    o.id,
+    o.request_id,
+    o.vendor_id,
+    o.bid_price,
+    o.completion_time,
+    o.service_options,
+    o.description,
+    o.status,
+    o.created_at,
+    o.updated_at,
+    u.display_name
+ORDER BY o.created_at DESC;
 
 
 
