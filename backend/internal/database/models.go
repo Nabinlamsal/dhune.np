@@ -14,6 +14,136 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
+type DisputeRaisedBy string
+
+const (
+	DisputeRaisedByUSER   DisputeRaisedBy = "USER"
+	DisputeRaisedByVENDOR DisputeRaisedBy = "VENDOR"
+)
+
+func (e *DisputeRaisedBy) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DisputeRaisedBy(s)
+	case string:
+		*e = DisputeRaisedBy(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DisputeRaisedBy: %T", src)
+	}
+	return nil
+}
+
+type NullDisputeRaisedBy struct {
+	DisputeRaisedBy DisputeRaisedBy
+	Valid           bool // Valid is true if DisputeRaisedBy is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDisputeRaisedBy) Scan(value interface{}) error {
+	if value == nil {
+		ns.DisputeRaisedBy, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DisputeRaisedBy.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDisputeRaisedBy) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DisputeRaisedBy), nil
+}
+
+type DisputeStatus string
+
+const (
+	DisputeStatusOPEN        DisputeStatus = "OPEN"
+	DisputeStatusUNDERREVIEW DisputeStatus = "UNDER_REVIEW"
+	DisputeStatusRESOLVED    DisputeStatus = "RESOLVED"
+	DisputeStatusREJECTED    DisputeStatus = "REJECTED"
+)
+
+func (e *DisputeStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DisputeStatus(s)
+	case string:
+		*e = DisputeStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DisputeStatus: %T", src)
+	}
+	return nil
+}
+
+type NullDisputeStatus struct {
+	DisputeStatus DisputeStatus
+	Valid         bool // Valid is true if DisputeStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDisputeStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.DisputeStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DisputeStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDisputeStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DisputeStatus), nil
+}
+
+type DisputeType string
+
+const (
+	DisputeTypeQuantity DisputeType = "quantity"
+	DisputeTypeDamage   DisputeType = "damage"
+	DisputeTypeMissing  DisputeType = "missing"
+	DisputeTypePricing  DisputeType = "pricing"
+)
+
+func (e *DisputeType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DisputeType(s)
+	case string:
+		*e = DisputeType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DisputeType: %T", src)
+	}
+	return nil
+}
+
+type NullDisputeType struct {
+	DisputeType DisputeType
+	Valid       bool // Valid is true if DisputeType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDisputeType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DisputeType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DisputeType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDisputeType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DisputeType), nil
+}
+
 type OfferStatus string
 
 const (
@@ -297,6 +427,21 @@ type Category struct {
 	IsActive     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+type Dispute struct {
+	ID               uuid.UUID
+	OrderID          uuid.UUID
+	RaisedBy         DisputeRaisedBy
+	RaisedByID       uuid.UUID
+	DisputeType      DisputeType
+	Description      string
+	ImageUrl         sql.NullString
+	Status           DisputeStatus
+	AdminDecision    sql.NullString
+	AdjustmentAmount sql.NullString
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 type Document struct {

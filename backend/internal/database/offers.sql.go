@@ -248,22 +248,65 @@ func (q *Queries) ListOffersAdmin(ctx context.Context, arg ListOffersAdminParams
 }
 
 const listOffersByRequest = `-- name: ListOffersByRequest :many
-SELECT id, request_id, vendor_id, bid_price, completion_time, service_options, description, status, created_at, updated_at
-FROM offers
-WHERE request_id = $1
-ORDER BY created_at DESC
+SELECT
+    o.id,
+    o.request_id,
+    o.vendor_id,
+    o.bid_price,
+    o.completion_time,
+    o.service_options,
+    o.description,
+    o.status,
+    o.created_at,
+    o.updated_at,
+    u.display_name AS vendor_name,
+    COALESCE(ROUND(AVG(r.rating)::numeric, 2), 0)::double precision AS average_rating,
+    COUNT(r.id)::bigint AS total_ratings
+FROM offers o
+JOIN users u ON u.id = o.vendor_id
+LEFT JOIN ratings r ON r.vendor_id = o.vendor_id
+WHERE o.request_id = $1
+GROUP BY
+    o.id,
+    o.request_id,
+    o.vendor_id,
+    o.bid_price,
+    o.completion_time,
+    o.service_options,
+    o.description,
+    o.status,
+    o.created_at,
+    o.updated_at,
+    u.display_name
+ORDER BY o.created_at DESC
 `
 
+type ListOffersByRequestRow struct {
+	ID             uuid.UUID
+	RequestID      uuid.UUID
+	VendorID       uuid.UUID
+	BidPrice       string
+	CompletionTime time.Time
+	ServiceOptions pqtype.NullRawMessage
+	Description    sql.NullString
+	Status         OfferStatus
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	VendorName     string
+	AverageRating  float64
+	TotalRatings   int64
+}
+
 // Used by: User (View offers on my request) / Admin
-func (q *Queries) ListOffersByRequest(ctx context.Context, requestID uuid.UUID) ([]Offer, error) {
+func (q *Queries) ListOffersByRequest(ctx context.Context, requestID uuid.UUID) ([]ListOffersByRequestRow, error) {
 	rows, err := q.db.QueryContext(ctx, listOffersByRequest, requestID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Offer
+	var items []ListOffersByRequestRow
 	for rows.Next() {
-		var i Offer
+		var i ListOffersByRequestRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.RequestID,
@@ -275,6 +318,9 @@ func (q *Queries) ListOffersByRequest(ctx context.Context, requestID uuid.UUID) 
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.VendorName,
+			&i.AverageRating,
+			&i.TotalRatings,
 		); err != nil {
 			return nil, err
 		}

@@ -17,7 +17,11 @@ type UpdateOfferDTO struct {
 type OfferResponseDTO struct {
 	ID             string   `json:"id"`
 	RequestID      string   `json:"request_id"`
+	VendorID       string   `json:"vendor_id,omitempty"`
+	VendorName     string   `json:"vendor_name,omitempty"`
 	BidPrice       float64  `json:"bid_price"`
+	AverageRating  *float64 `json:"average_rating,omitempty"`
+	TotalRatings   int64    `json:"total_ratings,omitempty"`
 	Status         string   `json:"status"`
 	CompletionTime string   `json:"completion_time"`
 	ServiceOptions []string `json:"service_options"`

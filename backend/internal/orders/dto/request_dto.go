@@ -64,6 +64,7 @@ type MarketplaceRequestSummaryDTO struct {
 	PickupTimeTo   string                  `json:"pickup_time_to"`
 	ExpiresAt      string                  `json:"expires_at"`
 	CreatedAt      string                  `json:"created_at"`
+	DistanceKm     *float64                `json:"distance_km,omitempty"`
 	ServiceCount   int64                   `json:"service_count"`
 	TotalQuantity  float64                 `json:"total_quantity"`
 	Services       []MarketplaceServiceDTO `json:"services"`

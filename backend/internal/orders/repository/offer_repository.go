@@ -12,7 +12,7 @@ type OfferRepository interface {
 	Update(ctx context.Context, params db.UpdateOfferParams) (db.Offer, error)
 	Withdraw(ctx context.Context, offerID uuid.UUID) error
 
-	ListByRequest(ctx context.Context, requestID uuid.UUID) ([]db.Offer, error)
+	ListByRequest(ctx context.Context, requestID uuid.UUID) ([]db.ListOffersByRequestRow, error)
 	ListByVendor(
 		ctx context.Context,
 		vendorID uuid.UUID,

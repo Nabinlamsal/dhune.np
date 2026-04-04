@@ -43,7 +43,7 @@ func (r *offerRepository) Withdraw(
 func (r *offerRepository) ListByRequest(
 	ctx context.Context,
 	requestID uuid.UUID,
-) ([]db.Offer, error) {
+) ([]db.ListOffersByRequestRow, error) {
 	return r.q.ListOffersByRequest(ctx, requestID)
 }
 func (r *offerRepository) GetByID(ctx context.Context, offerID uuid.UUID) (db.Offer, error) {

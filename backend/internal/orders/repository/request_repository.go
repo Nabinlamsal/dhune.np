@@ -13,7 +13,15 @@ type RequestRepository interface {
 
 	GetWithServices(ctx context.Context, requestID uuid.UUID) ([]db.GetRequestWithServicesRow, error)
 	ListByUser(ctx context.Context, userID uuid.UUID, limit, offset int32) ([]db.Request, error)
-	ListMarketplace(ctx context.Context, categoryID uuid.NullUUID, limit, offset int32) ([]db.ListMarketplaceRequestsRow, error)
+	ListMarketplace(
+		ctx context.Context,
+		categoryID uuid.NullUUID,
+		vendorLat *float64,
+		vendorLng *float64,
+		maxDistanceKm *float64,
+		sortBy string,
+		limit, offset int32,
+	) ([]db.ListMarketplaceRequestsRow, error)
 	ListAdmin(ctx context.Context, status *db.RequestsStatus, limit, offset int32) ([]db.ListRequestsAdminRow, error)
 
 	Cancel(ctx context.Context, requestID uuid.UUID) error

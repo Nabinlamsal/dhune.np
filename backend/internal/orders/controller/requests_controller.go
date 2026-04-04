@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
@@ -157,6 +158,7 @@ func (h *RequestHandler) ListMy(c *gin.Context) {
 func (h *RequestHandler) ListMarketplace(c *gin.Context) {
 
 	categoryStr := c.Query("category_id")
+	sortBy := c.DefaultQuery("sort", "newest")
 
 	var categoryID *uuid.UUID
 	if categoryStr != "" {
@@ -168,11 +170,45 @@ func (h *RequestHandler) ListMarketplace(c *gin.Context) {
 		categoryID = &id
 	}
 
+	var vendorLat *float64
+	if raw := c.Query("vendor_lat"); raw != "" {
+		value, err := strconv.ParseFloat(raw, 64)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid vendor_lat")
+			return
+		}
+		vendorLat = &value
+	}
+
+	var vendorLng *float64
+	if raw := c.Query("vendor_lng"); raw != "" {
+		value, err := strconv.ParseFloat(raw, 64)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid vendor_lng")
+			return
+		}
+		vendorLng = &value
+	}
+
+	var maxDistanceKm *float64
+	if raw := c.Query("max_distance_km"); raw != "" {
+		value, err := strconv.ParseFloat(raw, 64)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "invalid max_distance_km")
+			return
+		}
+		maxDistanceKm = &value
+	}
+
 	limit, offset := parsePagination(c)
 
 	requests, err := h.service.ListMarketplace(
 		c.Request.Context(),
 		categoryID,
+		vendorLat,
+		vendorLng,
+		maxDistanceKm,
+		sortBy,
 		limit,
 		offset,
 	)

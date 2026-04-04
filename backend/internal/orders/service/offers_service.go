@@ -163,9 +163,40 @@ func (s *OfferService) Accept(
 func (s *OfferService) ListByRequest(
 	ctx context.Context,
 	requestID uuid.UUID,
-) ([]db.Offer, error) {
+) ([]OfferSummary, error) {
 
-	return s.offerRepo.ListByRequest(ctx, requestID)
+	rows, err := s.offerRepo.ListByRequest(ctx, requestID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]OfferSummary, 0, len(rows))
+	for _, row := range rows {
+		price, _ := strconv.ParseFloat(row.BidPrice, 64)
+
+		var description *string
+		if row.Description.Valid {
+			description = &row.Description.String
+		}
+
+		averageRating := row.AverageRating
+
+		result = append(result, OfferSummary{
+			ID:             row.ID,
+			RequestID:      row.RequestID,
+			VendorID:       row.VendorID,
+			VendorName:     row.VendorName,
+			BidPrice:       price,
+			AverageRating:  &averageRating,
+			TotalRatings:   row.TotalRatings,
+			Description:    description,
+			Status:         string(row.Status),
+			CompletionTime: row.CompletionTime,
+			CreatedAt:      row.CreatedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (s *OfferService) ListByVendor(
@@ -298,6 +329,7 @@ func mapOffer(o db.Offer) *OfferSummary {
 		RequestID:      o.RequestID,
 		VendorID:       o.VendorID,
 		BidPrice:       price,
+		Description:    nullStringPtr(o.Description),
 		Status:         string(o.Status),
 		CompletionTime: o.CompletionTime,
 		CreatedAt:      o.CreatedAt,
@@ -312,4 +344,12 @@ func toNullJSON(b []byte) pqtype.NullRawMessage {
 		RawMessage: b,
 		Valid:      true,
 	}
+}
+
+func nullStringPtr(v sql.NullString) *string {
+	if !v.Valid {
+		return nil
+	}
+	value := v.String
+	return &value
 }

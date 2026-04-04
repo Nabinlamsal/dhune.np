@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/google/uuid"
@@ -38,13 +39,35 @@ func (r *requestRepo) ListByUser(ctx context.Context, userID uuid.UUID, limit, o
 func (r *requestRepo) ListMarketplace(
 	ctx context.Context,
 	categoryId uuid.NullUUID,
+	vendorLat *float64,
+	vendorLng *float64,
+	maxDistanceKm *float64,
+	sortBy string,
 	limit, offset int32,
 ) ([]db.ListMarketplaceRequestsRow, error) {
+	var dbVendorLat sql.NullFloat64
+	if vendorLat != nil {
+		dbVendorLat = sql.NullFloat64{Float64: *vendorLat, Valid: true}
+	}
+
+	var dbVendorLng sql.NullFloat64
+	if vendorLng != nil {
+		dbVendorLng = sql.NullFloat64{Float64: *vendorLng, Valid: true}
+	}
+
+	var dbMaxDistance sql.NullFloat64
+	if maxDistanceKm != nil {
+		dbMaxDistance = sql.NullFloat64{Float64: *maxDistanceKm, Valid: true}
+	}
 
 	return r.q.ListMarketplaceRequests(ctx, db.ListMarketplaceRequestsParams{
-		CategoryID: categoryId,
-		Limit:      limit,
-		Offset:     offset,
+		CategoryID:    categoryId,
+		VendorLat:     dbVendorLat,
+		VendorLng:     dbVendorLng,
+		MaxDistanceKm: dbMaxDistance,
+		SortBy:        sortBy,
+		Limit:         limit,
+		Offset:        offset,
 	})
 }
 

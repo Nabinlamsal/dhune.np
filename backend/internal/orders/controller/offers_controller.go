@@ -181,14 +181,17 @@ func (h *OfferHandler) ListByRequest(c *gin.Context) {
 	var response []dto.OfferResponseDTO
 
 	for _, o := range offers {
-		price, _ := strconv.ParseFloat(o.BidPrice, 64)
-
 		response = append(response, dto.OfferResponseDTO{
 			ID:             o.ID.String(),
 			RequestID:      o.RequestID.String(),
-			BidPrice:       price,
-			Status:         string(o.Status),
+			VendorID:       o.VendorID.String(),
+			VendorName:     o.VendorName,
+			BidPrice:       o.BidPrice,
+			AverageRating:  o.AverageRating,
+			TotalRatings:   o.TotalRatings,
+			Status:         o.Status,
 			CompletionTime: o.CompletionTime.Format(time.RFC3339),
+			Description:    derefString(o.Description),
 		})
 	}
 

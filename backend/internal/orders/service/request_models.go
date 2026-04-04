@@ -75,6 +75,7 @@ type MarketplaceRequestSummary struct {
 	PickupTimeTo   time.Time
 	ExpiresAt      time.Time
 	CreatedAt      time.Time
+	DistanceKm     *float64
 	ServiceCount   int64
 	TotalQuantity  float64
 	Services       []MarketplaceServiceItem

@@ -27,7 +27,11 @@ type OfferSummary struct {
 	ID             uuid.UUID
 	RequestID      uuid.UUID
 	VendorID       uuid.UUID
+	VendorName     string
 	BidPrice       float64
+	AverageRating  *float64
+	TotalRatings   int64
+	Description    *string
 	Status         string
 	CompletionTime time.Time
 	CreatedAt      time.Time

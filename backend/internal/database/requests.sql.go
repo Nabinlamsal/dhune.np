@@ -274,6 +274,25 @@ SELECT
     r.pickup_time_to,
     r.expires_at,
     r.created_at,
+    CASE
+        WHEN $3::double precision IS NULL
+            OR $4::double precision IS NULL
+            OR r.pickup_lat IS NULL
+            OR r.pickup_lng IS NULL
+            THEN NULL
+        ELSE (
+            6371 * acos(
+                least(
+                    1,
+                    cos(radians($3::double precision)) *
+                    cos(radians(r.pickup_lat)) *
+                    cos(radians(r.pickup_lng) - radians($4::double precision)) +
+                    sin(radians($3::double precision)) *
+                    sin(radians(r.pickup_lat))
+                )
+            )
+        )
+    END AS distance_km,
 
     COUNT(rs.id) AS service_count,
     COALESCE(SUM(rs.quantity_value), 0)::double precision AS total_quantity,
@@ -297,19 +316,72 @@ FROM requests r
 WHERE r.status = 'OPEN'
   AND r.expires_at > now()
   AND (
-    $3::uuid IS NULL
-        OR rs.category_id = $3::uuid
+    $5::uuid IS NULL
+        OR rs.category_id = $5::uuid
+    )
+  AND (
+    $6::double precision IS NULL
+        OR (
+            r.pickup_lat IS NOT NULL
+            AND r.pickup_lng IS NOT NULL
+            AND $3::double precision IS NOT NULL
+            AND $4::double precision IS NOT NULL
+            AND (
+                6371 * acos(
+                    least(
+                        1,
+                        cos(radians($3::double precision)) *
+                        cos(radians(r.pickup_lat)) *
+                        cos(radians(r.pickup_lng) - radians($4::double precision)) +
+                        sin(radians($3::double precision)) *
+                        sin(radians(r.pickup_lat))
+                    )
+                )
+            ) <= $6::double precision
+        )
     )
 
 GROUP BY r.id
-ORDER BY r.created_at DESC
+ORDER BY
+    CASE
+        WHEN $7 = 'nearest'
+            THEN
+                CASE
+                    WHEN $3::double precision IS NULL
+                        OR $4::double precision IS NULL
+                        OR r.pickup_lat IS NULL
+                        OR r.pickup_lng IS NULL
+                        THEN 1000000000
+                    ELSE (
+                        6371 * acos(
+                            least(
+                                1,
+                                cos(radians($3::double precision)) *
+                                cos(radians(r.pickup_lat)) *
+                                cos(radians(r.pickup_lng) - radians($4::double precision)) +
+                                sin(radians($3::double precision)) *
+                                sin(radians(r.pickup_lat))
+                            )
+                        )
+                    )
+                END
+        END ASC,
+    CASE
+        WHEN $7 = 'expiring'
+            THEN r.expires_at
+        END ASC,
+    r.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListMarketplaceRequestsParams struct {
-	Limit      int32
-	Offset     int32
-	CategoryID uuid.NullUUID
+	Limit         int32
+	Offset        int32
+	VendorLat     sql.NullFloat64
+	VendorLng     sql.NullFloat64
+	CategoryID    uuid.NullUUID
+	MaxDistanceKm sql.NullFloat64
+	SortBy        interface{}
 }
 
 type ListMarketplaceRequestsRow struct {
@@ -321,6 +393,7 @@ type ListMarketplaceRequestsRow struct {
 	PickupTimeTo   time.Time
 	ExpiresAt      sql.NullTime
 	CreatedAt      time.Time
+	DistanceKm     interface{}
 	ServiceCount   int64
 	TotalQuantity  float64
 	ServicesJson   []byte
@@ -328,7 +401,15 @@ type ListMarketplaceRequestsRow struct {
 
 // Used by Vendor Dashboard
 func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketplaceRequestsParams) ([]ListMarketplaceRequestsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMarketplaceRequests, arg.Limit, arg.Offset, arg.CategoryID)
+	rows, err := q.db.QueryContext(ctx, listMarketplaceRequests,
+		arg.Limit,
+		arg.Offset,
+		arg.VendorLat,
+		arg.VendorLng,
+		arg.CategoryID,
+		arg.MaxDistanceKm,
+		arg.SortBy,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -345,6 +426,7 @@ func (q *Queries) ListMarketplaceRequests(ctx context.Context, arg ListMarketpla
 			&i.PickupTimeTo,
 			&i.ExpiresAt,
 			&i.CreatedAt,
+			&i.DistanceKm,
 			&i.ServiceCount,
 			&i.TotalQuantity,
 			&i.ServicesJson,

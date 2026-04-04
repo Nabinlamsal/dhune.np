@@ -42,6 +42,10 @@ import (
 	orderservice "github.com/Nabinlamsal/dhune.np/internal/orders/service"
 
 	// RATINGS MODULE
+	disputecontroller "github.com/Nabinlamsal/dhune.np/internal/disputes/controller"
+	disputerepo "github.com/Nabinlamsal/dhune.np/internal/disputes/repository"
+	disputeroutes "github.com/Nabinlamsal/dhune.np/internal/disputes/routes"
+	disputeservice "github.com/Nabinlamsal/dhune.np/internal/disputes/service"
 	"github.com/Nabinlamsal/dhune.np/internal/events"
 	ratings "github.com/Nabinlamsal/dhune.np/internal/ratings"
 	"github.com/Nabinlamsal/dhune.np/internal/ws"
@@ -81,6 +85,7 @@ func main() {
 	requestRepo := orderrepo.NewRequestRepositoryImpl(queries)
 	offerRepo := orderrepo.NewOfferRepositoryImpl(queries)
 	ratingsRepo := ratings.NewRepository(queries)
+	disputeRepo := disputerepo.NewRepository(queries)
 
 	//services
 	passwordService := authservice.Password()
@@ -115,6 +120,7 @@ func main() {
 		requestRepo,
 	)
 	ratingsService := ratings.NewService(ratingsRepo)
+	disputeService := disputeservice.NewService(disputeRepo)
 
 	//controllers
 	authController := authcontroller.NewAuthController(authService)
@@ -127,6 +133,7 @@ func main() {
 	offerController := ordercontroller.NewOfferHandler(offerService)
 	orderController := ordercontroller.NewOrderHandler(orderService)
 	ratingsController := ratings.NewController(ratingsService)
+	disputeController := disputecontroller.NewController(disputeService)
 
 	//routes
 	router := gin.Default()
@@ -147,6 +154,7 @@ func main() {
 	orderroutes.RegisterOfferRoutes(router, offerController, jwtService)
 	orderroutes.RegisterOrderRoutes(router, orderController, jwtService)
 	ratings.RegisterRoutes(router, ratingsController, jwtService)
+	disputeroutes.RegisterRoutes(router, disputeController, jwtService)
 
 	//start server
 	log.Println("Server listening on port:", config.AppConfig.ServerPort)

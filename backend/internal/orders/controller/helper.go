@@ -116,6 +116,7 @@ func (h *RequestHandler) mapMarketplaceSummaryList(
 			PickupTimeTo:   r.PickupTimeTo.Format(time.RFC3339),
 			ExpiresAt:      r.ExpiresAt.Format(time.RFC3339),
 			CreatedAt:      r.CreatedAt.Format(time.RFC3339),
+			DistanceKm:     r.DistanceKm,
 			ServiceCount:   r.ServiceCount,
 			TotalQuantity:  r.TotalQuantity,
 			Services:       services,

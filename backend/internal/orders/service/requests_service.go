@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/Nabinlamsal/dhune.np/internal/catalog/service"
@@ -222,6 +223,10 @@ func (s *RequestService) ListByUser(
 func (s *RequestService) ListMarketplace(
 	ctx context.Context,
 	categoryID *uuid.UUID,
+	vendorLat *float64,
+	vendorLng *float64,
+	maxDistanceKm *float64,
+	sortBy string,
 	limit,
 	offset int32,
 ) ([]MarketplaceRequestSummary, error) {
@@ -234,7 +239,16 @@ func (s *RequestService) ListMarketplace(
 		}
 	}
 
-	rows, err := s.repo.ListMarketplace(ctx, dbCategory, limit, offset)
+	rows, err := s.repo.ListMarketplace(
+		ctx,
+		dbCategory,
+		vendorLat,
+		vendorLng,
+		maxDistanceKm,
+		sortBy,
+		limit,
+		offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -263,6 +277,7 @@ func (s *RequestService) ListMarketplace(
 			PickupTimeTo:   r.PickupTimeTo,
 			ExpiresAt:      expires,
 			CreatedAt:      r.CreatedAt,
+			DistanceKm:     nullableDistance(r.DistanceKm),
 			ServiceCount:   r.ServiceCount,
 			TotalQuantity:  r.TotalQuantity,
 			Services:       services,
@@ -359,4 +374,35 @@ func nullFloat64Value(v sql.NullFloat64) float64 {
 		return 0
 	}
 	return v.Float64
+}
+
+func nullFloat64Ptr(v sql.NullFloat64) *float64 {
+	if !v.Valid {
+		return nil
+	}
+	value := v.Float64
+	return &value
+}
+
+func nullableDistance(v interface{}) *float64 {
+	switch value := v.(type) {
+	case nil:
+		return nil
+	case float64:
+		return &value
+	case []byte:
+		parsed, err := strconv.ParseFloat(string(value), 64)
+		if err != nil {
+			return nil
+		}
+		return &parsed
+	case string:
+		parsed, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil
+		}
+		return &parsed
+	default:
+		return nil
+	}
 }
