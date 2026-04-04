@@ -51,18 +51,30 @@ export const useCancelRequest = () => {
 //vendor requests
 export const useMarketplaceRequests = ({
     categoryId,
+    sort = "newest",
+    vendorLat,
+    vendorLng,
+    maxDistanceKm,
     limit = 10,
     offset = 0,
 }: {
     categoryId?: string;
+    sort?: "newest" | "nearest" | "expiring";
+    vendorLat?: number;
+    vendorLng?: number;
+    maxDistanceKm?: number;
     limit?: number;
     offset?: number;
 }) => {
     return useQuery({
-        queryKey: ["marketplace-requests", categoryId, limit, offset],
+        queryKey: ["marketplace-requests", categoryId, sort, vendorLat, vendorLng, maxDistanceKm, limit, offset],
         queryFn: async () => {
             const res = await getMarketplaceRequests({
                 categoryId,
+                sort,
+                vendorLat,
+                vendorLng,
+                maxDistanceKm,
                 limit,
                 offset,
             });

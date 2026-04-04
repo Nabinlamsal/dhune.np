@@ -17,6 +17,7 @@ interface RequestCardProps {
     pickupAddress: string
     pickupLat: number
     pickupLng: number
+    distanceKm?: number
     pickupTimeFrom: string
     pickupTimeTo: string
     expiresAt: string
@@ -30,6 +31,7 @@ export default function RequestCard({
     pickupAddress,
     pickupLat,
     pickupLng,
+    distanceKm,
     pickupTimeFrom,
     pickupTimeTo,
     expiresAt,
@@ -81,6 +83,11 @@ export default function RequestCard({
                         <MapPin size={15} />
                         <span className="truncate">{pickupAddress}</span>
                     </div>
+                    {distanceKm !== undefined && (
+                        <div className="text-xs font-medium text-[#040947]">
+                            {distanceKm.toFixed(1)} km away
+                        </div>
+                    )}
                     <div className="text-xs text-gray-500">{pickupLat}, {pickupLng}</div>
                 </div>
 

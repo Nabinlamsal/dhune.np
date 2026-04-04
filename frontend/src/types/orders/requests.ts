@@ -7,7 +7,7 @@ export interface RequestServiceItem {
     selected_unit: PricingUnit;
     quantity_value: number;
     description?: string;
-    items_json?: any;
+    items_json?: unknown;
 }
 
 //create requests layload
@@ -62,6 +62,7 @@ export interface MarketplaceRequest {
     pickup_time_to: string;
     expires_at: string;
     created_at: string;
+    distance_km?: number;
     service_count: number;
     total_quantity: number;
     services: MarketplaceServiceItem[];

@@ -45,6 +45,10 @@ export const cancelRequest = async (
 export const getMarketplaceRequests = async (
     options?: {
         categoryId?: string;
+        sort?: "newest" | "nearest" | "expiring";
+        vendorLat?: number;
+        vendorLng?: number;
+        maxDistanceKm?: number;
         limit?: number;
         offset?: number;
     }
@@ -52,14 +56,30 @@ export const getMarketplaceRequests = async (
 
     const {
         categoryId,
+        sort = "newest",
+        vendorLat,
+        vendorLng,
+        maxDistanceKm,
         limit = 10,
         offset = 0
     } = options || {};
 
-    let url = `/marketplace/requests?limit=${limit}&offset=${offset}`;
+    let url = `/marketplace/requests?limit=${limit}&offset=${offset}&sort=${sort}`;
 
     if (categoryId) {
         url += `&category_id=${categoryId}`;
+    }
+
+    if (vendorLat !== undefined) {
+        url += `&vendor_lat=${vendorLat}`;
+    }
+
+    if (vendorLng !== undefined) {
+        url += `&vendor_lng=${vendorLng}`;
+    }
+
+    if (maxDistanceKm !== undefined) {
+        url += `&max_distance_km=${maxDistanceKm}`;
     }
 
     return api<ListMarketplaceResponse>(url, {

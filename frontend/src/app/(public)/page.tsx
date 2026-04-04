@@ -85,6 +85,21 @@ export default function Home() {
       <HowItWorksSection />
       <DownloadAppSection />
       <FaqSection />
+
+      <footer className="mt-10 border-t-4 border-[#ebbc01] bg-[#040947] px-6 py-8 text-[#F7F5EE] sm:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <p className="text-lg font-bold">Dhune.np</p>
+            <p className="text-sm text-[#F7F5EE]/80">
+              Nepal&apos;s laundry marketplace platform.
+            </p>
+          </div>
+          <div className="text-sm text-[#F7F5EE]/80">
+            &copy; {new Date().getFullYear()} Dhune.np. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div >
   );
 }
+

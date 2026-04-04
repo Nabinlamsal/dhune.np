@@ -9,6 +9,7 @@ import {
     ShoppingBag,
     Store,
     Star,
+    ShieldAlert,
     LogOut,
     Menu,
     X,
@@ -40,6 +41,7 @@ export default function NavbarVendor() {
         { href: "/vendor/marketplace", label: "Marketplace", icon: <Store className="h-4 w-4" /> },
         { href: "/vendor/my-offers", label: "My Offers", icon: <Gavel className="h-4 w-4" /> },
         { href: "/vendor/my-orders", label: "My Orders", icon: <ShoppingBag className="h-4 w-4" /> },
+        { href: "/vendor/disputes", label: "Disputes", icon: <ShieldAlert className="h-4 w-4" /> },
         { href: "/vendor/ratings", label: "Ratings", icon: <Star className="h-4 w-4" /> },
     ];
 

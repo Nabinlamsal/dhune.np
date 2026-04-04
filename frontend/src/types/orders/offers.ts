@@ -5,7 +5,10 @@ export interface Offer {
     id: string;
     request_id: string;
     vendor_id?: string;
+    vendor_name?: string;
     bid_price: number;
+    average_rating?: number;
+    total_ratings?: number;
     completion_time: string;
     status: OfferStatus;
     description?: string;

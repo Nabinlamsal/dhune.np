@@ -8,6 +8,15 @@ import { FilterTabs } from "@/src/components/common/FilterTabs";
 import { StatusBadge, Status } from "@/src/components/common/StatusBadge";
 import { Detail } from "@/src/components/common/DetailItem";
 import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/src/components/ui/select";
 
 import {
     useVendorOrders,
@@ -18,7 +27,9 @@ import {
 
 import { OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
-import { ClipboardList, ShoppingBag, UserRound } from "lucide-react";
+import { CreateDisputePayload, DisputeType } from "@/src/types/disputes/disputes";
+import { useCreateDispute } from "@/src/hooks/disputes/useDisputes";
+import { ClipboardList, Image as ImageIcon, ShieldAlert, ShoppingBag, UserRound } from "lucide-react";
 import { formatDisplayId, formatPickupDuration } from "@/src/utils/display";
 
 function mapOrderStatusToBadge(status: string): Status {
@@ -70,7 +81,14 @@ function getNextButtonLabel(status: OrderStatus) {
 export default function VendorOrdersPage() {
     const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+    const [reportDisputeOpen, setReportDisputeOpen] = useState(false);
     const [page, setPage] = useState(0);
+    const [disputeForm, setDisputeForm] = useState<CreateDisputePayload>({
+        order_id: "",
+        dispute_type: "quantity",
+        description: "",
+        image_file: null,
+    });
     const pageSize = 10;
 
     const { data: orders, isLoading, isError } = useVendorOrders({
@@ -81,6 +99,7 @@ export default function VendorOrdersPage() {
     const { data: stats } = useVendorOrderStats();
 
     const { mutate: updateStatus } = useUpdateOrderStatus();
+    const { mutate: createDispute, isPending: isCreatingDispute } = useCreateDispute();
 
     const { data: detail, isLoading: isDetailLoading } = useOrderDetail(selectedOrderId ?? undefined);
 
@@ -91,6 +110,15 @@ export default function VendorOrdersPage() {
             : [];
 
     const canGoNext = orderRows.length === pageSize;
+
+    const resetDisputeForm = (orderId?: string) => {
+        setDisputeForm({
+            order_id: orderId ?? "",
+            dispute_type: "quantity",
+            description: "",
+            image_file: null,
+        });
+    };
 
     const columns = [
         {
@@ -136,6 +164,13 @@ export default function VendorOrdersPage() {
             header: "Created",
             render: (o: OrderListItem) => new Date(o.created_at).toLocaleDateString(),
         },
+    ];
+
+    const disputeTypeOptions: { label: string; value: DisputeType }[] = [
+        { label: "Quantity Issue", value: "quantity" },
+        { label: "Damage", value: "damage" },
+        { label: "Missing Item", value: "missing" },
+        { label: "Pricing Issue", value: "pricing" },
     ];
 
     return (
@@ -279,9 +314,10 @@ export default function VendorOrdersPage() {
                             ))}
                         </div>
 
-                        {getNextButtonLabel(detail.order_status) && (
-                            <div className="border-t pt-6">
+                        {(getNextButtonLabel(detail.order_status) || detail.order_status !== "COMPLETED") && (
+                            <div className="border-t pt-6 flex flex-wrap gap-3">
                                 <Button
+                                    disabled={!getNextButtonLabel(detail.order_status)}
                                     className="bg-[#040947] hover:bg-[#030736]"
                                     onClick={() =>
                                         updateStatus({
@@ -292,12 +328,125 @@ export default function VendorOrdersPage() {
                                         })
                                     }
                                 >
-                                    {getNextButtonLabel(detail.order_status)}
+                                    {getNextButtonLabel(detail.order_status) ?? "Update Status Unavailable"}
                                 </Button>
+
+                                {detail.order_status !== "COMPLETED" && (
+                                    <Button
+                                        variant="outline"
+                                        className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                                        onClick={() => {
+                                            resetDisputeForm(detail.id);
+                                            setReportDisputeOpen(true);
+                                        }}
+                                    >
+                                        Report Dispute
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
                 )}
+            </DetailsDrawer>
+
+            <DetailsDrawer
+                open={reportDisputeOpen}
+                onClose={() => {
+                    setReportDisputeOpen(false);
+                    resetDisputeForm();
+                }}
+                title="Report Dispute"
+            >
+                <div className="space-y-4 text-sm">
+                    <div className="rounded-xl border border-[#040947]/15 bg-white p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                            <ShieldAlert className="size-4 text-[#040947]" />
+                            <h3 className="font-semibold text-slate-900">Vendor Dispute Form</h3>
+                        </div>
+                        <Detail label="Order ID" value={disputeForm.order_id ? formatDisplayId(disputeForm.order_id, "ORD") : "-"} />
+                    </div>
+
+                    <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-4">
+                        <label className="text-sm font-medium text-slate-700">Dispute Type</label>
+                        <Select
+                            value={disputeForm.dispute_type}
+                            onValueChange={(value: DisputeType) =>
+                                setDisputeForm((prev) => ({ ...prev, dispute_type: value }))
+                            }
+                        >
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Select dispute type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {disputeTypeOptions.map((item) => (
+                                    <SelectItem key={item.value} value={item.value}>
+                                        {item.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-4">
+                        <label className="text-sm font-medium text-slate-700">Description</label>
+                        <Textarea
+                            value={disputeForm.description}
+                            onChange={(e) =>
+                                setDisputeForm((prev) => ({ ...prev, description: e.target.value }))
+                            }
+                            placeholder="Describe the issue clearly for admin review..."
+                            className="min-h-28 bg-white"
+                        />
+                    </div>
+
+                    <div className="space-y-2 rounded-xl border border-[#040947]/15 bg-white p-4">
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <ImageIcon className="size-4 text-[#040947]" />
+                            Proof Image
+                        </label>
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                                setDisputeForm((prev) => ({
+                                    ...prev,
+                                    image_file: e.target.files?.[0] ?? null,
+                                }))
+                            }
+                            className="bg-white"
+                        />
+                        <p className="text-xs text-slate-500">
+                            Optional. The image will be uploaded using Cloudinary before the dispute is stored.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setReportDisputeOpen(false);
+                                resetDisputeForm();
+                            }}
+                            className="border-slate-300 text-slate-700"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            disabled={isCreatingDispute || !disputeForm.order_id || !disputeForm.description.trim()}
+                            onClick={() => {
+                                createDispute({
+                                    ...disputeForm,
+                                    description: disputeForm.description.trim(),
+                                });
+                                setReportDisputeOpen(false);
+                                resetDisputeForm();
+                            }}
+                            className="bg-[#040947] text-white hover:bg-[#030736]"
+                        >
+                            {isCreatingDispute ? "Submitting..." : "Submit Dispute"}
+                        </Button>
+                    </div>
+                </div>
             </DetailsDrawer>
         </>
     );

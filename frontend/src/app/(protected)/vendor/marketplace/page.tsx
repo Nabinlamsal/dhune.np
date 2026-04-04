@@ -1,29 +1,45 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo, useState } from "react"
 import RequestCard from "@/src/components/vendor/RequestCard"
-import { FilterTabs } from "@/src/components/common/FilterTabs"
 import { DetailsDrawer } from "@/src/components/common/DetailsDrawer"
 import { Button } from "@/src/components/ui/button"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/src/components/ui/select"
 import { useMarketplaceRequests } from "@/src/hooks/orders/useRequest"
 import { MarketplaceRequest } from "@/src/types/orders/requests"
 import VendorSendOfferModal from "@/src/components/vendor/VendorSendOfferModal"
 import { Detail } from "@/src/components/common/DetailItem"
-import { ClipboardList, ShoppingBag } from "lucide-react"
+import { ClipboardList, MapPinned, ShoppingBag } from "lucide-react"
 import { formatPickupDuration } from "@/src/utils/display"
+
+const NEARBY_RADIUS_KM = 10
 
 export default function VendorMarketplacePage() {
 
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [offerRequestId, setOfferRequestId] = useState<string | null>(null)
-    const [filter, setFilter] = useState("OPEN")
+    const [sortOption, setSortOption] = useState<"newest" | "nearest" | "expiring">("newest")
     const [page, setPage] = useState(0)
-    const [nowTs] = useState(() => Date.now())
+    const [vendorCoords, setVendorCoords] = useState<{ lat: number; lng: number } | null>(null)
+    const [locationError, setLocationError] = useState<string | null>(null)
+    const [isResolvingLocation, setIsResolvingLocation] = useState(false)
 
     const limit = 9
     const offset = page * limit
+    const browserSupportsGeolocation =
+        typeof window !== "undefined" && typeof navigator !== "undefined" && "geolocation" in navigator
 
     const { data, isLoading } = useMarketplaceRequests({
+        sort: sortOption,
+        vendorLat: vendorCoords?.lat,
+        vendorLng: vendorCoords?.lng,
+        maxDistanceKm: sortOption === "nearest" && vendorCoords ? NEARBY_RADIUS_KM : undefined,
         limit,
         offset,
     })
@@ -32,18 +48,44 @@ export default function VendorMarketplacePage() {
         () => (Array.isArray(data) ? data : []),
         [data]
     )
-    const filteredRequests = useMemo(() => {
-        if (filter === "OPEN") return requests
-        return requests.filter((request) => {
-            const minutes = Math.floor((new Date(request.expires_at).getTime() - nowTs) / (1000 * 60))
-            return minutes > 0 && minutes <= 120
-        })
-    }, [requests, filter, nowTs])
 
     const selectedRequest = useMemo(
-        () => filteredRequests.find(r => r.id === selectedId) ?? requests.find(r => r.id === selectedId),
-        [selectedId, filteredRequests, requests]
+        () => requests.find(r => r.id === selectedId),
+        [selectedId, requests]
     )
+
+    const requestVendorLocation = () => {
+        if (!browserSupportsGeolocation || vendorCoords || isResolvingLocation) {
+            return
+        }
+
+        setIsResolvingLocation(true)
+        setLocationError(null)
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setVendorCoords({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                })
+                setIsResolvingLocation(false)
+            },
+            () => {
+                setLocationError("Enable location access to sort requests by nearby pickup points.")
+                setIsResolvingLocation(false)
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 5 * 60 * 1000,
+            }
+        )
+    }
+
+    const nearbyHint =
+        !browserSupportsGeolocation
+            ? "Location access is not available in this browser."
+            : locationError
 
     return (
         <>
@@ -57,15 +99,50 @@ export default function VendorMarketplacePage() {
                 </p>
             </div>
 
-            {/* Filter */}
-            <FilterTabs
-                tabs={[
-                    { label: "Open Requests", value: "OPEN" },
-                    { label: "Expiring Soon", value: "EXPIRING" },
-                ]}
-                active={filter}
-                onChange={(v) => setFilter(v)}
-            />
+            <div className="mb-5 flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                    Sort Requests By
+                </span>
+
+                <Select
+                    value={sortOption}
+                    onValueChange={(value: "newest" | "nearest" | "expiring") => {
+                        setPage(0)
+                        setSortOption(value)
+                        if (value === "nearest") {
+                            requestVendorLocation()
+                        }
+                    }}
+                >
+                    <SelectTrigger className="h-9 w-[170px] border-[#040947]/15 bg-white text-slate-700 shadow-none focus:ring-1 focus:ring-[#040947]/20">
+                        <SelectValue placeholder="Newest" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                        <SelectItem value="newest">Newest</SelectItem>
+                        <SelectItem value="nearest">Nearby</SelectItem>
+                        <SelectItem value="expiring">Expiring Soon</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {sortOption === "nearest" && (
+                <div className="mt-4 flex items-center justify-between rounded-xl border border-[#040947]/10 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <MapPinned className="size-4 text-[#040947]" />
+                        <span>
+                            Showing requests within {NEARBY_RADIUS_KM} km, sorted by nearest pickup location.
+                        </span>
+                    </div>
+                    <span className="text-xs text-slate-500">
+                        {vendorCoords ? "Live location ready" : isResolvingLocation ? "Fetching location..." : "Location required"}
+                    </span>
+                </div>
+            )}
+
+            {sortOption === "nearest" && nearbyHint && (
+                <p className="mt-3 text-sm text-red-600">{nearbyHint}</p>
+            )}
 
             {/* Grid */}
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -76,19 +153,20 @@ export default function VendorMarketplacePage() {
                     </p>
                 )}
 
-                {!isLoading && filteredRequests.length === 0 && (
+                {!isLoading && requests.length === 0 && (
                     <p className="text-gray-500 col-span-full">
-                        No requests available for this filter.
+                        No requests available for this sort option.
                     </p>
                 )}
 
-                {filteredRequests.map((r) => (
+                {requests.map((r) => (
                     <RequestCard
                         key={r.id}
                         id={r.id}
                         pickupAddress={r.pickup_address}
                         pickupLat={r.pickup_lat}
                         pickupLng={r.pickup_lng}
+                        distanceKm={r.distance_km}
                         pickupTimeFrom={r.pickup_time_from}
                         pickupTimeTo={r.pickup_time_to}
                         expiresAt={r.expires_at}
@@ -115,7 +193,7 @@ export default function VendorMarketplacePage() {
                 </button>
 
                 <button
-                    disabled={filteredRequests.length < limit}
+                    disabled={requests.length < limit}
                     onClick={() => setPage((p) => p + 1)}
                     className="px-4 py-2 border rounded-lg text-sm disabled:opacity-50"
                 >
@@ -152,6 +230,9 @@ export default function VendorMarketplacePage() {
                                 <Detail label="Pickup Address" value={selectedRequest.pickup_address} />
                                 <Detail label="Pickup Latitude" value={String(selectedRequest.pickup_lat)} />
                                 <Detail label="Pickup Longitude" value={String(selectedRequest.pickup_lng)} />
+                                {selectedRequest.distance_km !== undefined && (
+                                    <Detail label="Distance" value={`${selectedRequest.distance_km.toFixed(1)} km`} />
+                                )}
                                 <Detail
                                     label="Pickup Duration"
                                     value={formatPickupDuration(
@@ -210,4 +291,3 @@ export default function VendorMarketplacePage() {
         </>
     )
 }
-
