@@ -1,7 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
 
+export const API_BASE_URL = "http://localhost:8111";
+
 const apiClient = axios.create({
-    baseURL: "http://localhost:8111",
+    baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
@@ -10,7 +12,6 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
     if (typeof window !== "undefined") {
         const token = localStorage.getItem("token");
-        console.log("Token", token)
         if (token) {
             config.headers = config.headers ?? {};
             config.headers.Authorization = `Bearer ${token}`;
@@ -31,8 +32,16 @@ export async function api<T>(
         });
 
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         // normalize error
         throw error;
     }
 }
+
+export const getWebSocketUrl = (token: string) => {
+    const url = new URL(API_BASE_URL);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    url.pathname = "/ws";
+    url.searchParams.set("token", token);
+    return url.toString();
+};

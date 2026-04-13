@@ -15,6 +15,7 @@ import {
 } from "../ui/select";
 import { useState } from "react"
 import { useLogin } from "@/src/hooks/auth/useLogin"
+import { AxiosError } from "axios"
 export function LoginForm({
     onSignupSelect
 }: { onSignupSelect: (type: "user_signup" | "business_signup" | "vendor_signup") => void }) {
@@ -50,7 +51,9 @@ export function LoginForm({
                                         setEmailOrPhone("");
                                         setPassword("");
                                     },
-                                    onError: (err: any) => {
+                                    onError: (err: AxiosError) => {
+                                        console.log(err.response?.data);
+
                                         if (err?.response?.status === 401) {
                                             setAuthError(
                                                 "Your account is pending admin approval or credentials are incorrect."

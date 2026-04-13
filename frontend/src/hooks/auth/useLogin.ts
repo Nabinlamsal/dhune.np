@@ -2,6 +2,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/src/services/auth/auth.service";
 import { useRouter } from "next/navigation";
+import { error } from "console";
 
 export const useLogin = () => {
     const router = useRouter();
@@ -23,6 +24,9 @@ export const useLogin = () => {
                 return;
             }
             router.replace("/mobile-app");
+        },
+        onError: (error: any) => {
+            console.log("login :", error);
         }
     });
 };

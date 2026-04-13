@@ -1,7 +1,6 @@
 "use client"
 
 import {
-    Bell,
     ChevronDown,
     ChevronRight,
     LayoutDashboard,
@@ -21,6 +20,7 @@ import { usePathname } from "next/navigation"
 import { useLogout } from "@/src/hooks/auth/useLogout"
 import { cn } from "@/lib/utils"
 import { useMemo, useState } from "react"
+import NotificationBell from "@/src/components/common/NotificationBell"
 
 export default function Sidebar() {
     const pathname = usePathname()
@@ -62,10 +62,7 @@ export default function Sidebar() {
                     <p className="text-sm font-semibold leading-none text-white">Admin Panel</p>
                     <p className="mt-1 text-[11px] text-amber-200/80">Dhune.np workspace</p>
                 </div>
-                <button className="relative rounded-lg p-2 text-slate-300 transition hover:bg-amber-300/15 hover:text-amber-100">
-                    <Bell className="h-4 w-4" />
-                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300" />
-                </button>
+                <NotificationBell role="admin" theme="dark" />
             </div>
 
             {/* Menu */}

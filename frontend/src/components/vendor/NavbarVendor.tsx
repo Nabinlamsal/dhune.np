@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useLogout } from "@/src/hooks/auth/useLogout";
 import { useMyProfile } from "@/src/hooks/users/useMyProfile";
 import { formatDisplayId } from "@/src/utils/display";
+import NotificationBell from "@/src/components/common/NotificationBell";
 
 type NavItem = {
     href: string;
@@ -101,6 +102,8 @@ export default function NavbarVendor() {
                 </nav>
 
                 <div className="flex items-center gap-2">
+                    <NotificationBell role="vendor" theme="light" />
+
                     <div className="relative hidden lg:block" ref={profileRef}>
                         <button
                             onClick={() => setProfileOpen((v) => !v)}
