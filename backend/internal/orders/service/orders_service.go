@@ -6,6 +6,7 @@ import (
 	"time"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
+	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
 	"github.com/google/uuid"
 )
@@ -236,34 +237,149 @@ func (s *OrderService) UpdateStatus(
 	orderID uuid.UUID,
 	status string,
 ) error {
+	detail, err := s.GetDetail(ctx, orderID)
+	if err != nil {
+		return err
+	}
 
 	next := db.OrderStatus(status)
 
-	return s.repo.UpdateStatus(ctx, orderID, next)
+	if err := s.repo.UpdateStatus(ctx, orderID, next); err != nil {
+		return err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "ORDER_STATUS_UPDATED",
+		Data: events.NotificationEvent{
+			Title:   "Order status updated",
+			Body:    "Your order status was updated to " + status + ".",
+			UserIDs: []string{detail.User.ID, detail.Vendor.ID},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"order_id":     orderID.String(),
+				"request_id":   detail.RequestID,
+				"user_id":      detail.User.ID,
+				"vendor_id":    detail.Vendor.ID,
+				"order_status": status,
+			},
+			EntityType:  "order",
+			EntityID:    orderID.String(),
+			ActorUserID: detail.Vendor.ID,
+		},
+	})
+
+	return nil
 }
 
 func (s *OrderService) Cancel(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
+	detail, err := s.GetDetail(ctx, orderID)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.Cancel(ctx, orderID)
+	if err := s.repo.Cancel(ctx, orderID); err != nil {
+		return err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "ORDER_CANCELLED",
+		Data: events.NotificationEvent{
+			Title:   "Order cancelled",
+			Body:    "An order has been cancelled.",
+			UserIDs: []string{detail.User.ID, detail.Vendor.ID},
+			Roles:   []string{"admin"},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"order_id":     orderID.String(),
+				"request_id":   detail.RequestID,
+				"user_id":      detail.User.ID,
+				"vendor_id":    detail.Vendor.ID,
+				"order_status": string(db.OrderStatusCANCELLED),
+			},
+			EntityType:  "order",
+			EntityID:    orderID.String(),
+			ActorUserID: detail.User.ID,
+		},
+	})
+
+	return nil
 }
 
 func (s *OrderService) MarkPaid(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
+	detail, err := s.GetDetail(ctx, orderID)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.MarkPaid(ctx, orderID)
+	if err := s.repo.MarkPaid(ctx, orderID); err != nil {
+		return err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "ORDER_MARKED_PAID",
+		Data: events.NotificationEvent{
+			Title:   "Payment received",
+			Body:    "Payment has been marked as paid for your order.",
+			UserIDs: []string{detail.User.ID, detail.Vendor.ID},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"order_id":       orderID.String(),
+				"request_id":     detail.RequestID,
+				"user_id":        detail.User.ID,
+				"vendor_id":      detail.Vendor.ID,
+				"payment_status": string(db.PaymentStatusPAID),
+			},
+			EntityType: "order",
+			EntityID:   orderID.String(),
+		},
+	})
+
+	return nil
 }
 
 func (s *OrderService) MarkRefunded(
 	ctx context.Context,
 	orderID uuid.UUID,
 ) error {
+	detail, err := s.GetDetail(ctx, orderID)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.MarkRefunded(ctx, orderID)
+	if err := s.repo.MarkRefunded(ctx, orderID); err != nil {
+		return err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "ORDER_REFUNDED",
+		Data: events.NotificationEvent{
+			Title:   "Payment refunded",
+			Body:    "Payment has been refunded for your order.",
+			UserIDs: []string{detail.User.ID, detail.Vendor.ID},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"order_id":       orderID.String(),
+				"request_id":     detail.RequestID,
+				"user_id":        detail.User.ID,
+				"vendor_id":      detail.Vendor.ID,
+				"payment_status": string(db.PaymentStatusREFUNDED),
+			},
+			EntityType: "order",
+			EntityID:   orderID.String(),
+		},
+	})
+
+	return nil
 }
 
 func (s *OrderService) GetUserStats(

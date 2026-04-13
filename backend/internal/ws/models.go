@@ -10,8 +10,9 @@ type Message struct {
 }
 
 type Client struct {
-	ID   string
-	Role string
-	Conn *gorilla.Conn
-	Send chan Message
+	ID     string
+	UserID string
+	Role   string
+	Conn   *gorilla.Conn
+	Send   chan Message
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Nabinlamsal/dhune.np/internal/catalog/service"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
+	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
@@ -122,7 +123,31 @@ func (s *RequestService) Create(
 		return nil, err
 	}
 
-	return s.GetDetail(ctx, req.ID)
+	detail, err := s.GetDetail(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "REQUEST_CREATED",
+		Data: events.NotificationEvent{
+			Title:   "New service request",
+			Body:    "A new customer request is available in the marketplace.",
+			Roles:   []string{"vendor"},
+			Persist: true,
+			Push:    false,
+			Data: map[string]interface{}{
+				"request_id": req.ID.String(),
+				"user_id":    input.UserID.String(),
+				"status":     string(detail.Status),
+			},
+			EntityType:  "request",
+			EntityID:    req.ID.String(),
+			ActorUserID: input.UserID.String(),
+		},
+	})
+
+	return detail, nil
 }
 
 // get details
@@ -332,7 +357,29 @@ func (s *RequestService) Cancel(
 		return errors.New("only OPEN requests can be cancelled")
 	}
 
-	return s.repo.Cancel(ctx, requestID)
+	if err := s.repo.Cancel(ctx, requestID); err != nil {
+		return err
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "REQUEST_CANCELLED",
+		Data: events.NotificationEvent{
+			Title:   "Request cancelled",
+			Body:    "Your request has been cancelled.",
+			UserIDs: []string{detail.UserID.String()},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"request_id": requestID.String(),
+				"status":     string(db.RequestsStatusCANCELLED),
+			},
+			EntityType:  "request",
+			EntityID:    requestID.String(),
+			ActorUserID: detail.UserID.String(),
+		},
+	})
+
+	return nil
 }
 
 // Mark request as order created

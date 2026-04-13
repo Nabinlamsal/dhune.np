@@ -2,8 +2,10 @@ package ws
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	gorilla "github.com/gorilla/websocket"
 )
 
@@ -13,17 +15,18 @@ var upgrader = gorilla.Upgrader{
 	},
 }
 
-func ServeWS(hub *Hub) gin.HandlerFunc {
+func ServeWS(hub *Hub, validateToken func(string) (string, string, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		userID := c.Query("userId")
-		if userID == "" {
-			c.JSON(400, gin.H{"error": "userId required"})
+		token := extractToken(c)
+		if token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization token required"})
 			return
 		}
-		role := c.Query("role")
-		if role == "" {
-			role = "user"
+
+		userID, role, err := validateToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
+			return
 		}
 
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -32,10 +35,11 @@ func ServeWS(hub *Hub) gin.HandlerFunc {
 		}
 
 		client := &Client{
-			ID:   userID,
-			Role: role,
-			Conn: conn,
-			Send: make(chan Message, 10), // buffered
+			ID:     uuid.NewString(),
+			UserID: userID,
+			Role:   role,
+			Conn:   conn,
+			Send:   make(chan Message, 32),
 		}
 
 		hub.Register <- client
@@ -43,6 +47,20 @@ func ServeWS(hub *Hub) gin.HandlerFunc {
 		go writePump(client)
 		go readPump(hub, client)
 	}
+}
+
+func extractToken(c *gin.Context) string {
+	if token := strings.TrimSpace(c.Query("token")); token != "" {
+		return token
+	}
+
+	authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return strings.TrimSpace(parts[1])
+	}
+
+	return ""
 }
 
 func readPump(hub *Hub, client *Client) {

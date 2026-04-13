@@ -1,14 +1,22 @@
 package events
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
+	"github.com/Nabinlamsal/dhune.np/internal/notifications"
 	"github.com/Nabinlamsal/dhune.np/internal/ws"
 )
 
 func HandleEvent(event Event) {
+	if payload, ok := event.Data.(NotificationEvent); ok {
+		handleNotificationEvent(event.Type, payload)
+		return
+	}
+
 	msg := ws.Message{
 		Type: event.Type,
 		Data: event.Data,
@@ -43,6 +51,50 @@ func HandleEvent(event Event) {
 	}
 
 	// TODO: send push notification for offline users
+}
+
+func handleNotificationEvent(eventType string, payload NotificationEvent) {
+	msg := ws.Message{
+		Type: eventType,
+		Data: map[string]interface{}{
+			"title":         payload.Title,
+			"body":          payload.Body,
+			"entity_type":   payload.EntityType,
+			"entity_id":     payload.EntityID,
+			"actor_user_id": payload.ActorUserID,
+			"data":          payload.Data,
+		},
+	}
+
+	for _, userID := range payload.UserIDs {
+		if userID == "" {
+			continue
+		}
+		ws.SendToUser(userID, msg)
+	}
+
+	for _, role := range payload.Roles {
+		if role == "" {
+			continue
+		}
+		ws.BroadcastToRole(role, msg)
+	}
+
+	if err := notifications.Dispatch(context.Background(), notifications.DispatchInput{
+		Type:        eventType,
+		Title:       payload.Title,
+		Body:        payload.Body,
+		EntityType:  payload.EntityType,
+		EntityID:    payload.EntityID,
+		ActorUserID: payload.ActorUserID,
+		UserIDs:     payload.UserIDs,
+		Roles:       payload.Roles,
+		Data:        payload.Data,
+		Persist:     payload.Persist,
+		Push:        payload.Push,
+	}); err != nil {
+		log.Printf("events: notification dispatch failed for %s: %v", eventType, err)
+	}
 }
 
 func firstID(data interface{}, keys ...string) string {

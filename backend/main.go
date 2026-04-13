@@ -47,6 +47,8 @@ import (
 	disputeroutes "github.com/Nabinlamsal/dhune.np/internal/disputes/routes"
 	disputeservice "github.com/Nabinlamsal/dhune.np/internal/disputes/service"
 	"github.com/Nabinlamsal/dhune.np/internal/events"
+	"github.com/Nabinlamsal/dhune.np/internal/notifications"
+	notificationroutes "github.com/Nabinlamsal/dhune.np/internal/notifications/routes"
 	ratings "github.com/Nabinlamsal/dhune.np/internal/ratings"
 	"github.com/Nabinlamsal/dhune.np/internal/ws"
 )
@@ -86,6 +88,7 @@ func main() {
 	offerRepo := orderrepo.NewOfferRepositoryImpl(queries)
 	ratingsRepo := ratings.NewRepository(queries)
 	disputeRepo := disputerepo.NewRepository(queries)
+	notificationRepo := notifications.NewRepository(conn)
 
 	//services
 	passwordService := authservice.Password()
@@ -121,6 +124,8 @@ func main() {
 	)
 	ratingsService := ratings.NewService(ratingsRepo)
 	disputeService := disputeservice.NewService(disputeRepo)
+	notificationService := notifications.NewService(notificationRepo, nil)
+	notifications.SetDefaultService(notificationService)
 
 	//controllers
 	authController := authcontroller.NewAuthController(authService)
@@ -134,6 +139,7 @@ func main() {
 	orderController := ordercontroller.NewOrderHandler(orderService)
 	ratingsController := ratings.NewController(ratingsService)
 	disputeController := disputecontroller.NewController(disputeService)
+	notificationController := notifications.NewController(notificationService)
 
 	//routes
 	router := gin.Default()
@@ -142,6 +148,13 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "dhune backend running"})
 	})
+	router.GET("/ws", ws.ServeWS(hub, func(token string) (string, string, error) {
+		claims, err := jwtService.ValidateToken(token)
+		if err != nil {
+			return "", "", err
+		}
+		return claims.Subject, claims.Role, nil
+	}))
 
 	//routes
 	authroutes.RegisterAuthRoutes(router, authController, jwtService)
@@ -155,6 +168,7 @@ func main() {
 	orderroutes.RegisterOrderRoutes(router, orderController, jwtService)
 	ratings.RegisterRoutes(router, ratingsController, jwtService)
 	disputeroutes.RegisterRoutes(router, disputeController, jwtService)
+	notificationroutes.RegisterRoutes(router, notificationController, jwtService)
 
 	//start server
 	log.Println("Server listening on port:", config.AppConfig.ServerPort)

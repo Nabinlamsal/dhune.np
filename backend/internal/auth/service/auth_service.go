@@ -10,6 +10,7 @@ import (
 	"github.com/Nabinlamsal/dhune.np/internal/auth/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/auth/repository"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
+	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
 )
 
@@ -161,6 +162,31 @@ func (s *AuthService) Signup(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	adminBody := user.DisplayName + " registered as " + role + "."
+	if role == "vendor" || role == "business" {
+		adminBody = user.DisplayName + " registered as " + role + " and is waiting for admin approval."
+	}
+
+	events.EmitEvent(events.Event{
+		Type: "USER_REGISTERED",
+		Data: events.NotificationEvent{
+			Title:   "New user registration",
+			Body:    adminBody,
+			Roles:   []string{"admin"},
+			Persist: true,
+			Push:    false,
+			Data: map[string]interface{}{
+				"user_id":         user.ID.String(),
+				"display_name":    user.DisplayName,
+				"role":            role,
+				"requires_review": role == "vendor" || role == "business",
+			},
+			EntityType:  "user",
+			EntityID:    user.ID.String(),
+			ActorUserID: user.ID.String(),
+		},
+	})
 
 	//responce
 	msg := "Signup successful. Please login."

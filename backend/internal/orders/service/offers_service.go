@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
+	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
@@ -66,7 +67,30 @@ func (s *OfferService) Create(
 		return nil, err
 	}
 
-	return mapOffer(offer), nil
+	result := mapOffer(offer)
+
+	events.EmitEvent(events.Event{
+		Type: "OFFER_CREATED",
+		Data: events.NotificationEvent{
+			Title:   "New offer received",
+			Body:    "A vendor sent a new offer for your request.",
+			UserIDs: []string{request.UserID.String()},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"offer_id":   offer.ID.String(),
+				"request_id": input.RequestID.String(),
+				"vendor_id":  input.VendorID.String(),
+				"status":     result.Status,
+				"bid_price":  result.BidPrice,
+			},
+			EntityType:  "offer",
+			EntityID:    offer.ID.String(),
+			ActorUserID: input.VendorID.String(),
+		},
+	})
+
+	return result, nil
 }
 
 func (s *OfferService) Update(
@@ -85,14 +109,72 @@ func (s *OfferService) Update(
 		return nil, err
 	}
 
-	return mapOffer(offer), nil
+	result := mapOffer(offer)
+
+	requestRows, err := s.requestRepo.GetWithServices(ctx, offer.RequestID)
+	if err == nil && len(requestRows) > 0 {
+		events.EmitEvent(events.Event{
+			Type: "OFFER_UPDATED",
+			Data: events.NotificationEvent{
+				Title:   "Offer updated",
+				Body:    "A vendor updated an offer on your request.",
+				UserIDs: []string{requestRows[0].UserID.String()},
+				Persist: true,
+				Push:    true,
+				Data: map[string]interface{}{
+					"offer_id":   offer.ID.String(),
+					"request_id": offer.RequestID.String(),
+					"vendor_id":  offer.VendorID.String(),
+					"status":     result.Status,
+					"bid_price":  result.BidPrice,
+				},
+				EntityType:  "offer",
+				EntityID:    offer.ID.String(),
+				ActorUserID: offer.VendorID.String(),
+			},
+		})
+	}
+
+	return result, nil
 }
 
 func (s *OfferService) Withdraw(
 	ctx context.Context,
 	offerID uuid.UUID,
 ) error {
-	return s.offerRepo.Withdraw(ctx, offerID)
+	offer, err := s.offerRepo.GetByID(ctx, offerID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.offerRepo.Withdraw(ctx, offerID); err != nil {
+		return err
+	}
+
+	requestRows, err := s.requestRepo.GetWithServices(ctx, offer.RequestID)
+	if err == nil && len(requestRows) > 0 {
+		events.EmitEvent(events.Event{
+			Type: "OFFER_WITHDRAWN",
+			Data: events.NotificationEvent{
+				Title:   "Offer withdrawn",
+				Body:    "A vendor withdrew an offer from your request.",
+				UserIDs: []string{requestRows[0].UserID.String()},
+				Persist: true,
+				Push:    true,
+				Data: map[string]interface{}{
+					"offer_id":   offer.ID.String(),
+					"request_id": offer.RequestID.String(),
+					"vendor_id":  offer.VendorID.String(),
+					"status":     string(db.OfferStatusWITHDRAWN),
+				},
+				EntityType:  "offer",
+				EntityID:    offer.ID.String(),
+				ActorUserID: offer.VendorID.String(),
+			},
+		})
+	}
+
+	return nil
 }
 
 func (s *OfferService) Accept(
@@ -154,6 +236,57 @@ func (s *OfferService) Accept(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	userID := request[0].UserID.String()
+	vendorID := offer.VendorID.String()
+	orderID := order.ID.String()
+	requestID := offer.RequestID.String()
+	offerID := offer.ID.String()
+
+	events.EmitEvent(events.Event{
+		Type: "OFFER_ACCEPTED",
+		Data: events.NotificationEvent{
+			Title:   "Offer accepted",
+			Body:    "Your offer has been accepted by the customer.",
+			UserIDs: []string{vendorID},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"offer_id":     offerID,
+				"request_id":   requestID,
+				"order_id":     orderID,
+				"vendor_id":    vendorID,
+				"user_id":      userID,
+				"offer_status": string(db.OfferStatusACCEPTED),
+			},
+			EntityType:  "offer",
+			EntityID:    offerID,
+			ActorUserID: userID,
+		},
+	})
+
+	events.EmitEvent(events.Event{
+		Type: "ORDER_CREATED",
+		Data: events.NotificationEvent{
+			Title:   "Order created",
+			Body:    "A new order has been created from an accepted offer.",
+			UserIDs: []string{userID, vendorID},
+			Roles:   []string{"admin"},
+			Persist: true,
+			Push:    true,
+			Data: map[string]interface{}{
+				"order_id":   orderID,
+				"request_id": requestID,
+				"offer_id":   offerID,
+				"user_id":    userID,
+				"vendor_id":  vendorID,
+				"status":     string(db.OrderStatusACCEPTED),
+			},
+			EntityType:  "order",
+			EntityID:    orderID,
+			ActorUserID: userID,
+		},
+	})
 
 	return &AcceptOfferResult{
 		OrderID: order.ID,

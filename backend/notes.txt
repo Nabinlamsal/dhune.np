@@ -15,8 +15,12 @@ This is your complete Order + Marketplace operation list.
 User Side
 
 ✅ Create Request
-
-✅ View My Requests (paginated)
+Multi-role system (User, Vendor, Admin)
+Mobile app (React Native + Expo) ⭐
+Geolocation input using maps ⭐
+Request & order management
+Vendor offer system (price + time comparison) ⭐
+Rating & review system✅ View My Requests (paginated)
 
 ✅ View Single Request Details
 
