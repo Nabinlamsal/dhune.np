@@ -1,6 +1,6 @@
 "use client";
 
-import Sidebar from "@/src/components/admin/Sidebar";
+import AdminNavbar from "@/src/components/admin/AdminNavbar";
 import { AuthGuard } from "@/src/components/auth/AuthGuard";
 
 
@@ -11,17 +11,13 @@ export default function AdminLayout({
 }) {
     return (
         <AuthGuard allow={["admin"]}>
-            <div className="flex h-[100dvh] overflow-hidden bg-gray-50">
-                {/* Sidebar */}
-                <Sidebar />
-
-                {/* Main Content */}
-                <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-                    {/* Page Content */}
-                    <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.08),_transparent_28%),linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)]">
+                <AdminNavbar />
+                <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    <div className="min-h-[calc(100vh-8rem)]">
                         {children}
-                    </main>
-                </div>
+                    </div>
+                </main>
             </div>
         </AuthGuard>
     );

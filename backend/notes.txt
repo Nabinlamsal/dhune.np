@@ -2,7 +2,7 @@ $env:GOOSE_DRIVER="postgres"
 $env:GOOSE_DBSTRING="postgres://postgres:nabin@localhost:5432/dhune_db?sslmode=disable"
 
 goose -env=none -dir db/migrations up
-
+# codex resume 019d957c-29ef-7fc0-8c4d-ff63fd68c5f1
 
 
 📋 2️⃣ COMPLETE LIST OF OPERATIONS (Full Order Module)
