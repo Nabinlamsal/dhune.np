@@ -19,6 +19,8 @@ import {
 } from "../ui/field";
 import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
+import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { AxiosError } from "axios";
 
 export function VendorSignupForm({ onBack }: { onBack: () => void }) {
     const { mutate, isPending } = useSignup();
@@ -59,6 +61,13 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                         className="flex flex-col gap-4"
                         onSubmit={(e) => {
                             e.preventDefault();
+                            setSuccessMessage(null);
+                            setErrorMessage(null);
+
+                            if (!isValidPhone(phoneNumber)) {
+                                setErrorMessage("Phone number must be exactly 10 digits.");
+                                return;
+                            }
 
                             const formData = new FormData();
 
@@ -79,7 +88,7 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                             }
 
                             mutate(formData, {
-                                onSuccess: () => {
+                                onSuccess: (data) => {
                                     setName("");
                                     setOwner("");
                                     setAddress("");
@@ -89,12 +98,11 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                                     setPassword("");
                                     setDocumentFile(null);
 
-                                    setSuccessMessage(
-                                        "Registration successful! Your vendor account is pending admin approval."
-                                    );
+                                    setSuccessMessage(data.response_message ?? data.message ?? "Registration successful! Your vendor account is pending admin approval.");
                                 },
-                                onError: () => {
-                                    setErrorMessage("Something went wrong. Please try again.");
+                                onError: (error) => {
+                                    const axiosError = error as AxiosError<{ error?: string }>;
+                                    setErrorMessage(axiosError.response?.data?.error ?? "Something went wrong. Please try again.");
                                 },
                             });
                         }}
@@ -140,9 +148,10 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                                     type="tel"
                                     value={phoneNumber}
                                     onChange={(e) =>
-                                        setPhoneNumber(e.target.value)
+                                        setPhoneNumber(sanitizePhoneInput(e.target.value))
                                     }
-                                    placeholder="+977 98XXXXXXXX"
+                                    placeholder="98XXXXXXXX"
+                                    maxLength={10}
                                     required
                                 />
                             </Field>

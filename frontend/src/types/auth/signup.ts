@@ -22,5 +22,7 @@ export type SignupRequest = {
 export type SignupResponse = {
     user_id: string;
     role: Role;
-    message: string;
+    message?: string;
+    status?: string;
+    response_message?: string;
 };

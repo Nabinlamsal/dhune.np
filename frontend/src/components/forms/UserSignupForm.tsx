@@ -20,6 +20,8 @@ import {
 import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
 import { useState } from "react";
+import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { AxiosError } from "axios";
 export function UserSignupForm({ onBack }: { onBack: () => void }) {
     const { mutate, isPending } = useSignup()
     const [name, setName] = useState("")
@@ -50,6 +52,11 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                             setSuccessMessage(null);
                             setErrorMessage(null);
 
+                            if (!isValidPhone(phoneNumber)) {
+                                setErrorMessage("Phone number must be exactly 10 digits.");
+                                return;
+                            }
+
                             const formData = new FormData();
                             formData.append("role", "user");
                             formData.append("display_name", name);
@@ -58,22 +65,23 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                             formData.append("password", password);
 
                             mutate(formData, {
-                                onSuccess: () => {
+                                onSuccess: (data) => {
                                     // clear form
                                     setName("");
                                     setEmail("");
                                     setPhoneNumber("");
                                     setPassword("");
 
-                                    setSuccessMessage("Registration successful! Please login.");
+                                    setSuccessMessage(data.response_message ?? data.message ?? "Registration successful. Please verify your email before logging in.");
 
                                     // optional: auto switch to login after 2 sec
                                     setTimeout(() => {
                                         onBack();
                                     }, 2000);
                                 },
-                                onError: () => {
-                                    setErrorMessage("Something went wrong. Please try again.");
+                                onError: (error) => {
+                                    const axiosError = error as AxiosError<{ error?: string }>;
+                                    setErrorMessage(axiosError.response?.data?.error ?? "Something went wrong. Please try again.");
                                 },
                             });
                         }}>
@@ -98,9 +106,10 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
                                 <Input
                                     id="contactNumber"
                                     type="tel"
-                                    placeholder="+977 98XXXXXXXX"
+                                    placeholder="98XXXXXXXX"
                                     value={phoneNumber}
-                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    onChange={(e) => setPhoneNumber(sanitizePhoneInput(e.target.value))}
+                                    maxLength={10}
                                     required
                                 />
                             </Field>

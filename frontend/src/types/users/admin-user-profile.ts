@@ -9,6 +9,7 @@ export interface AdminUserProfile {
     DisplayName: string;
     Email: string;
     Phone: string;
+    ProfileImageURL?: string;
     Role: Role;
     IsActive: boolean;
     IsVerified: boolean;

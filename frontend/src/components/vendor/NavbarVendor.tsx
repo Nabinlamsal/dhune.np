@@ -15,6 +15,7 @@ import {
     X,
     ChevronDown,
     Building2,
+    Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogout } from "@/src/hooks/auth/useLogout";
@@ -58,6 +59,7 @@ export default function NavbarVendor() {
     const address = myProfile?.VendorProfile?.Address || "--";
     const vendorStatus = myProfile?.VendorApprovalStatus ?? myProfile?.VendorProfile?.ApprovalStatus ?? "pending";
     const avatarInitial = businessName.charAt(0).toUpperCase() || "V";
+    const profileImage = myProfile?.ProfileImageURL || "";
 
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
@@ -111,9 +113,17 @@ export default function NavbarVendor() {
                             aria-haspopup="menu"
                             aria-expanded={profileOpen}
                         >
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#040947]/20 bg-[#040947]/8 text-xs font-semibold text-[#040947]">
-                                {avatarInitial}
-                            </div>
+                            {profileImage ? (
+                                <img
+                                    src={profileImage}
+                                    alt={businessName}
+                                    className="h-8 w-8 rounded-full border border-[#040947]/20 object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#040947]/20 bg-[#040947]/8 text-xs font-semibold text-[#040947]">
+                                    {avatarInitial}
+                                </div>
+                            )}
                             <div className="text-left leading-tight">
                                 <p className="text-xs font-semibold text-slate-900">{businessName}</p>
                                 <p className="text-[11px] text-slate-500">Vendor account</p>
@@ -124,9 +134,17 @@ export default function NavbarVendor() {
                         {profileOpen && (
                             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-4 text-slate-700 shadow-lg">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-                                        {avatarInitial}
-                                    </div>
+                                    {profileImage ? (
+                                        <img
+                                            src={profileImage}
+                                            alt={ownerName}
+                                            className="h-12 w-12 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                                            {avatarInitial}
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900">{ownerName}</p>
                                         <p className="text-xs text-slate-500">{email}</p>
@@ -159,6 +177,15 @@ export default function NavbarVendor() {
                                     </div>
                                 </div>
 
+                                <Link
+                                    href="/vendor/profile"
+                                    onClick={() => setProfileOpen(false)}
+                                    className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    Profile settings
+                                </Link>
+
                                 <button
                                     onClick={logout}
                                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
@@ -185,9 +212,17 @@ export default function NavbarVendor() {
                     <nav className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
                         <div className="mb-2 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-2">
                             <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700">
-                                    {avatarInitial}
-                                </div>
+                                {profileImage ? (
+                                    <img
+                                        src={profileImage}
+                                        alt={ownerName}
+                                        className="h-8 w-8 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700">
+                                        {avatarInitial}
+                                    </div>
+                                )}
                                 <div>
                                     <p className="text-xs font-semibold text-slate-900">{ownerName}</p>
                                     <p className="text-[11px] text-slate-500">{businessName}</p>
@@ -214,6 +249,15 @@ export default function NavbarVendor() {
                                 {item.label}
                             </Link>
                         ))}
+
+                        <Link
+                            href="/vendor/profile"
+                            onClick={() => setMobileOpen(false)}
+                            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                        >
+                            <Settings className="h-4 w-4" />
+                            Profile settings
+                        </Link>
 
                         <button
                             onClick={logout}

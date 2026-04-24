@@ -2,7 +2,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/src/services/auth/auth.service";
 import { useRouter } from "next/navigation";
-import { error } from "console";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
+
+const getAuthErrorMessage = (error: unknown) => {
+    const axiosError = error as AxiosError<{ error?: string }>;
+    return axiosError.response?.data?.error ?? "Unable to login";
+};
 
 export const useLogin = () => {
     const router = useRouter();
@@ -11,8 +17,8 @@ export const useLogin = () => {
         mutationFn: login,
         onSuccess: (res) => {
             localStorage.setItem("token", res.access_token);
+            toast.success("Logged in successfully");
 
-            // console.log("LOGIN RESPONSE:", res);
             const role = res.user.role
 
             if (role === "admin") {
@@ -25,8 +31,8 @@ export const useLogin = () => {
             }
             router.replace("/mobile-app");
         },
-        onError: (error: any) => {
-            console.log("login :", error);
+        onError: (error) => {
+            toast.error(getAuthErrorMessage(error));
         }
     });
 };
