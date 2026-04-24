@@ -66,7 +66,10 @@ SELECT
     u.display_name,
     u.email,
     u.phone,
+    u.profile_image_url,
     u.role,
+    u.is_verified,
+    u.is_active,
     u.created_at,
 
     -- vendor profile (nullable)
@@ -94,7 +97,10 @@ type GetMyProfileRow struct {
 	DisplayName            string
 	Email                  string
 	Phone                  string
+	ProfileImageUrl        sql.NullString
 	Role                   string
+	IsVerified             bool
+	IsActive               bool
 	CreatedAt              time.Time
 	VendorProfileID        uuid.NullUUID
 	VendorOwnerName        sql.NullString
@@ -115,7 +121,10 @@ func (q *Queries) GetMyProfile(ctx context.Context, id uuid.UUID) (GetMyProfileR
 		&i.DisplayName,
 		&i.Email,
 		&i.Phone,
+		&i.ProfileImageUrl,
 		&i.Role,
+		&i.IsVerified,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.VendorProfileID,
 		&i.VendorOwnerName,
@@ -137,6 +146,7 @@ SELECT
     u.display_name,
     u.email,
     u.phone,
+    u.profile_image_url,
     u.role,
     u.is_active,
     u.is_verified,
@@ -173,6 +183,7 @@ type GetUserDetailRow struct {
 	DisplayName                string
 	Email                      string
 	Phone                      string
+	ProfileImageUrl            sql.NullString
 	Role                       string
 	IsActive                   bool
 	IsVerified                 bool
@@ -199,6 +210,7 @@ func (q *Queries) GetUserDetail(ctx context.Context, id uuid.UUID) (GetUserDetai
 		&i.DisplayName,
 		&i.Email,
 		&i.Phone,
+		&i.ProfileImageUrl,
 		&i.Role,
 		&i.IsActive,
 		&i.IsVerified,
@@ -269,7 +281,7 @@ func (q *Queries) GetUserDocuments(ctx context.Context, userID uuid.UUID) ([]Get
 
 const getUsersAdminView = `-- name: GetUsersAdminView :many
 SELECT
-    u.id, u.display_name, u.email, u.phone, u.password_hash, u.role, u.is_verified, u.is_active, u.created_at, u.updated_at,
+    u.id, u.display_name, u.email, u.phone, u.password_hash, u.role, u.is_verified, u.is_active, u.created_at, u.updated_at, u.profile_image_url,
     bp.approval_status AS business_approval_status,
     vp.approval_status AS vendor_approval_status
 FROM users u
@@ -343,6 +355,7 @@ type GetUsersAdminViewRow struct {
 	IsActive               bool
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
+	ProfileImageUrl        sql.NullString
 	BusinessApprovalStatus sql.NullString
 	VendorApprovalStatus   sql.NullString
 }
@@ -374,6 +387,7 @@ func (q *Queries) GetUsersAdminView(ctx context.Context, arg GetUsersAdminViewPa
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ProfileImageUrl,
 			&i.BusinessApprovalStatus,
 			&i.VendorApprovalStatus,
 		); err != nil {
@@ -446,4 +460,111 @@ const suspendUser = `-- name: SuspendUser :exec
 func (q *Queries) SuspendUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, suspendUser, id)
 	return err
+}
+
+const updateRestrictedSelfProfile = `-- name: UpdateRestrictedSelfProfile :one
+UPDATE users
+SET phone = COALESCE($2, phone),
+    profile_image_url = COALESCE($3, profile_image_url),
+    updated_at = now()
+WHERE id = $1
+RETURNING id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
+`
+
+type UpdateRestrictedSelfProfileParams struct {
+	ID              uuid.UUID
+	Phone           sql.NullString
+	ProfileImageUrl sql.NullString
+}
+
+func (q *Queries) UpdateRestrictedSelfProfile(ctx context.Context, arg UpdateRestrictedSelfProfileParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateRestrictedSelfProfile, arg.ID, arg.Phone, arg.ProfileImageUrl)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.DisplayName,
+		&i.Email,
+		&i.Phone,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsVerified,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ProfileImageUrl,
+	)
+	return i, err
+}
+
+const updateUserProfileImage = `-- name: UpdateUserProfileImage :one
+UPDATE users
+SET profile_image_url = $2,
+    updated_at = now()
+WHERE id = $1
+RETURNING id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
+`
+
+type UpdateUserProfileImageParams struct {
+	ID              uuid.UUID
+	ProfileImageUrl sql.NullString
+}
+
+func (q *Queries) UpdateUserProfileImage(ctx context.Context, arg UpdateUserProfileImageParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserProfileImage, arg.ID, arg.ProfileImageUrl)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.DisplayName,
+		&i.Email,
+		&i.Phone,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsVerified,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ProfileImageUrl,
+	)
+	return i, err
+}
+
+const updateUserSelfProfile = `-- name: UpdateUserSelfProfile :one
+UPDATE users
+SET display_name = COALESCE($2, display_name),
+    phone = COALESCE($3, phone),
+    profile_image_url = COALESCE($4, profile_image_url),
+    updated_at = now()
+WHERE id = $1
+RETURNING id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
+`
+
+type UpdateUserSelfProfileParams struct {
+	ID              uuid.UUID
+	DisplayName     sql.NullString
+	Phone           sql.NullString
+	ProfileImageUrl sql.NullString
+}
+
+func (q *Queries) UpdateUserSelfProfile(ctx context.Context, arg UpdateUserSelfProfileParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserSelfProfile,
+		arg.ID,
+		arg.DisplayName,
+		arg.Phone,
+		arg.ProfileImageUrl,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.DisplayName,
+		&i.Email,
+		&i.Phone,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsVerified,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ProfileImageUrl,
+	)
+	return i, err
 }

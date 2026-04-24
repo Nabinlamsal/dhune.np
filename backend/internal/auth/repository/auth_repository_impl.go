@@ -44,6 +44,24 @@ func (r *authRepository) FindUserByID(
 	return r.q.GetUserByID(ctx, id)
 }
 
+func (r *authRepository) VerifyUserEmail(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return r.q.VerifyUserEmail(ctx, id)
+}
+
+func (r *authRepository) UpdateUserPassword(
+	ctx context.Context,
+	id uuid.UUID,
+	passwordHash string,
+) error {
+	return r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:           id,
+		PasswordHash: passwordHash,
+	})
+}
+
 func (r *authRepository) CreateBusinessUserProfile(
 	ctx context.Context,
 	arg db.CreateBusinessUserProfileParams,

@@ -18,6 +18,9 @@ type JWTService interface {
 	GenerateAccessToken(userID uuid.UUID, role string) (string, error)
 	GenerateRefreshToken(userID uuid.UUID) (string, error)
 	ValidateToken(tokenString string) (*JWTClaims, error)
+	GenerateEmailVerificationToken(userID uuid.UUID, email string) (string, error)
+	GeneratePasswordResetToken(userID uuid.UUID, email string) (string, error)
+	ValidateActionToken(tokenString, purpose string) (*ActionTokenClaims, error)
 }
 
 type jwtService struct {

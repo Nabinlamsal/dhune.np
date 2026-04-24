@@ -28,6 +28,19 @@ FROM users
 WHERE phone = $1
 LIMIT 1;
 
+-- name: VerifyUserEmail :exec
+UPDATE users
+SET is_verified = TRUE,
+    updated_at = now()
+WHERE id = $1
+  AND role = 'user';
+
+-- name: UpdateUserPassword :exec
+UPDATE users
+SET password_hash = $2,
+    updated_at = now()
+WHERE id = $1;
+
 -- name: CreateBusinessUserProfile :one
 INSERT INTO business_profiles(
         user_id,

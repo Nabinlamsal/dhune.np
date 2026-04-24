@@ -40,4 +40,6 @@ func RegisterUserRoutes(
 	user := router.Group("user")
 	user.Use(middleware.JWTAuthMiddleware(serviceJwt))
 	user.GET("/me/profile", userController.GetMyProfile)
+	user.PUT("/me/profile", userController.UpdateMyProfile)
+	user.POST("/upload-profile-image", userController.UploadProfileImage)
 }

@@ -454,6 +454,22 @@ type Document struct {
 	UpdatedAt    time.Time
 }
 
+type Notification struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Type        string
+	Title       string
+	Body        string
+	EntityType  sql.NullString
+	EntityID    uuid.NullUUID
+	ActorUserID uuid.NullUUID
+	Data        []byte
+	IsRead      bool
+	ReadAt      sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type Offer struct {
 	ID             uuid.UUID
 	RequestID      uuid.UUID
@@ -480,6 +496,18 @@ type Order struct {
 	DeliveryTime  sql.NullTime
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+}
+
+type PushDeviceToken struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	Platform   string
+	Token      string
+	DeviceID   sql.NullString
+	IsActive   bool
+	LastSeenAt time.Time
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 type Rating struct {
@@ -520,16 +548,17 @@ type RequestService struct {
 }
 
 type User struct {
-	ID           uuid.UUID
-	DisplayName  string
-	Email        string
-	Phone        string
-	PasswordHash string
-	Role         string
-	IsVerified   bool
-	IsActive     bool
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID              uuid.UUID
+	DisplayName     string
+	Email           string
+	Phone           string
+	PasswordHash    string
+	Role            string
+	IsVerified      bool
+	IsActive        bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	ProfileImageUrl sql.NullString
 }
 
 type VendorProfile struct {

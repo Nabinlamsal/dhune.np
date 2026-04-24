@@ -7,6 +7,7 @@ import (
 	"github.com/Nabinlamsal/dhune.np/internal/auth/service"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AuthController struct {
@@ -67,4 +68,92 @@ func (ac *AuthController) Me(c *gin.Context) {
 		"user_id": userID,
 		"role":    role,
 	})
+}
+
+func (ac *AuthController) VerifyEmail(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		utils.Error(c, http.StatusBadRequest, "token is required")
+		return
+	}
+
+	if err := ac.authService.VerifyEmail(c.Request.Context(), token); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "email verified successfully"})
+}
+
+func (ac *AuthController) ForgotPassword(c *gin.Context) {
+	var body dto.ForgotPasswordRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := ac.authService.ForgotPassword(c.Request.Context(), body); err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "if the email exists, a reset link has been sent"})
+}
+
+func (ac *AuthController) ResetPassword(c *gin.Context) {
+	var body dto.ResetPasswordRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := ac.authService.ResetPassword(c.Request.Context(), body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "password reset successful"})
+}
+
+func (ac *AuthController) ChangePassword(c *gin.Context) {
+	var body dto.ChangePasswordRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		utils.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	userID, err := uuid.Parse(userIDVal.(string))
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	if err := ac.authService.ChangePassword(c.Request.Context(), userID, body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "password changed successfully"})
+}
+
+func (ac *AuthController) GoogleLogin(c *gin.Context) {
+	var body dto.GoogleLoginRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := ac.authService.GoogleLogin(c.Request.Context(), body)
+	if err != nil {
+		utils.Error(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	utils.Success(c, resp)
 }

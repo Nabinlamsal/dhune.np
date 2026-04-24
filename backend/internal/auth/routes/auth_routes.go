@@ -17,12 +17,21 @@ func RegisterAuthRoutes(
 		// public routes
 		auth.POST("/signup", authController.Signup)
 		auth.POST("/login", authController.Login)
-		
+		auth.GET("/verify-email", authController.VerifyEmail)
+		auth.POST("/forgot-password", authController.ForgotPassword)
+		auth.POST("/reset-password", authController.ResetPassword)
+		auth.POST("/google-login", authController.GoogleLogin)
+
 		// protected routes
 		auth.GET(
 			"/me",
 			middleware.JWTAuthMiddleware(jwtSvc),
 			authController.Me,
+		)
+		auth.PUT(
+			"/change-password",
+			middleware.JWTAuthMiddleware(jwtSvc),
+			authController.ChangePassword,
 		)
 	}
 }

@@ -19,14 +19,15 @@ type UserListAdminDto struct {
 }
 
 type UserProfileDto struct {
-	ID          uuid.UUID `json:"id"`
-	DisplayName string    `json:"display_name"`
-	Email       string    `json:"email"`
-	Phone       string    `json:"phone"`
-	Role        string    `json:"role"`
-	IsActive    bool      `json:"is_active"`
-	IsVerified  bool      `json:"is_verified"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID              uuid.UUID `json:"id"`
+	DisplayName     string    `json:"display_name"`
+	Email           string    `json:"email"`
+	Phone           string    `json:"phone"`
+	ProfileImageURL string    `json:"profile_image_url,omitempty"`
+	Role            string    `json:"role"`
+	IsActive        bool      `json:"is_active"`
+	IsVerified      bool      `json:"is_verified"`
+	CreatedAt       time.Time `json:"created_at"`
 
 	BusinessProfile *BusinessProfileDto `json:"business_profile,omitempty"`
 	VendorProfile   *VendorProfileDto   `json:"vendor_profile,omitempty"`
@@ -53,4 +54,9 @@ type DocumentDto struct {
 	DocumentURL  string    `json:"document_url"`
 	Verified     bool      `json:"verified"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type UpdateProfileRequestDTO struct {
+	DisplayName *string `json:"display_name"`
+	Phone       *string `json:"phone"`
 }

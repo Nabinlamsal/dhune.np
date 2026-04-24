@@ -12,6 +12,8 @@ type AuthRepository interface {
 	FindUserByEmail(ctx context.Context, email string) (db.User, error)
 	FindUserByPhone(ctx context.Context, phone string) (db.User, error)
 	FindUserByID(ctx context.Context, id uuid.UUID) (db.User, error)
+	VerifyUserEmail(ctx context.Context, id uuid.UUID) error
+	UpdateUserPassword(ctx context.Context, id uuid.UUID, passwordHash string) error
 
 	CreateBusinessUserProfile(
 		ctx context.Context,

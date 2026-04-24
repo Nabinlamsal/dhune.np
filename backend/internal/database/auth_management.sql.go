@@ -93,7 +93,7 @@ INSERT INTO users (
 ) VALUES (
              $1, $2, $3, $4, $5
          )
-RETURNING id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at
+RETURNING id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
 `
 
 type CreateUserParams struct {
@@ -124,6 +124,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProfileImageUrl,
 	)
 	return i, err
 }
@@ -231,7 +232,7 @@ func (q *Queries) GetDocumentsByUserID(ctx context.Context, userID uuid.UUID) ([
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at
+SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
 FROM users
 WHERE email = $1
 LIMIT 1
@@ -251,12 +252,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProfileImageUrl,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at
+SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
 FROM users
 WHERE id = $1
 LIMIT 1
@@ -276,12 +278,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProfileImageUrl,
 	)
 	return i, err
 }
 
 const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at
+SELECT id, display_name, email, phone, password_hash, role, is_verified, is_active, created_at, updated_at, profile_image_url
 FROM users
 WHERE phone = $1
 LIMIT 1
@@ -301,6 +304,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone string) (User, error
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProfileImageUrl,
 	)
 	return i, err
 }
@@ -327,4 +331,34 @@ func (q *Queries) GetVendorProfileByUserID(ctx context.Context, userID uuid.UUID
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET password_hash = $2,
+    updated_at = now()
+WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID           uuid.UUID
+	PasswordHash string
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
+	return err
+}
+
+const verifyUserEmail = `-- name: VerifyUserEmail :exec
+UPDATE users
+SET is_verified = TRUE,
+    updated_at = now()
+WHERE id = $1
+  AND role = 'user'
+`
+
+func (q *Queries) VerifyUserEmail(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, verifyUserEmail, id)
+	return err
 }

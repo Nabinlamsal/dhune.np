@@ -7,14 +7,15 @@ import (
 )
 
 type UserProfile struct {
-	ID          uuid.UUID
-	DisplayName string
-	Email       string
-	Phone       string
-	Role        string
-	IsActive    bool
-	IsVerified  bool
-	CreatedAt   time.Time
+	ID              uuid.UUID
+	DisplayName     string
+	Email           string
+	Phone           string
+	ProfileImageURL string
+	Role            string
+	IsActive        bool
+	IsVerified      bool
+	CreatedAt       time.Time
 
 	BusinessProfile *BusinessProfile
 	VendorProfile   *VendorProfile

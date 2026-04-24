@@ -63,6 +63,7 @@ SELECT
     u.display_name,
     u.email,
     u.phone,
+    u.profile_image_url,
     u.role,
     u.is_active,
     u.is_verified,
@@ -175,7 +176,10 @@ SELECT
     u.display_name,
     u.email,
     u.phone,
+    u.profile_image_url,
     u.role,
+    u.is_verified,
+    u.is_active,
     u.created_at,
 
     -- vendor profile (nullable)
@@ -196,3 +200,27 @@ FROM users u
          LEFT JOIN business_profiles bp ON bp.user_id = u.id
 WHERE u.id = $1
 LIMIT 1;
+
+-- name: UpdateUserSelfProfile :one
+UPDATE users
+SET display_name = COALESCE(sqlc.narg(display_name), display_name),
+    phone = COALESCE(sqlc.narg(phone), phone),
+    profile_image_url = COALESCE(sqlc.narg(profile_image_url), profile_image_url),
+    updated_at = now()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateRestrictedSelfProfile :one
+UPDATE users
+SET phone = COALESCE(sqlc.narg(phone), phone),
+    profile_image_url = COALESCE(sqlc.narg(profile_image_url), profile_image_url),
+    updated_at = now()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateUserProfileImage :one
+UPDATE users
+SET profile_image_url = $2,
+    updated_at = now()
+WHERE id = $1
+RETURNING *;

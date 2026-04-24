@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 
+	"github.com/Nabinlamsal/dhune.np/internal/users/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/users/service"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -118,4 +120,64 @@ func (c *UserController) GetMyProfile(ctx *gin.Context) {
 	}
 
 	utils.Success(ctx, gin.H{"profile": profile})
+}
+
+func (c *UserController) UpdateMyProfile(ctx *gin.Context) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		utils.Error(ctx, 401, err.Error())
+		return
+	}
+
+	var body dto.UpdateProfileRequestDTO
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		utils.Error(ctx, 400, err.Error())
+		return
+	}
+
+	profile, err := c.userService.UpdateMyProfile(ctx, userID, body)
+	if err != nil {
+		utils.Error(ctx, 400, err.Error())
+		return
+	}
+
+	utils.Success(ctx, gin.H{"profile": profile})
+}
+
+func (c *UserController) UploadProfileImage(ctx *gin.Context) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		utils.Error(ctx, 401, err.Error())
+		return
+	}
+
+	file, err := ctx.FormFile("profile_image")
+	if err != nil {
+		utils.Error(ctx, 400, "profile_image is required")
+		return
+	}
+
+	profile, err := c.userService.UploadProfileImage(ctx, userID, file)
+	if err != nil {
+		utils.Error(ctx, 400, err.Error())
+		return
+	}
+
+	utils.Success(ctx, gin.H{"profile": profile})
+}
+
+func currentUserID(ctx *gin.Context) (uuid.UUID, error) {
+	userIdVal, exists := ctx.Get("user_id")
+	if !exists {
+		return uuid.Nil, errors.New("unauthorized")
+	}
+
+	switch v := userIdVal.(type) {
+	case uuid.UUID:
+		return v, nil
+	case string:
+		return uuid.Parse(v)
+	default:
+		return uuid.Nil, errors.New("invalid user id in context")
+	}
 }

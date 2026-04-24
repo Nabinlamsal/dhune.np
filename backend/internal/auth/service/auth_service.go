@@ -4,14 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 	"mime/multipart"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/Nabinlamsal/dhune.np/internal/auth/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/auth/repository"
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
+	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -44,6 +49,9 @@ func (s *AuthService) Signup(
 	role := strings.ToLower(strings.TrimSpace(req.Role))
 	if role != "user" && role != "business" && role != "vendor" {
 		return nil, errors.New("invalid role")
+	}
+	if !utils.IsValidPhone(req.Phone) {
+		return nil, errors.New("phone must be exactly 10 digits")
 	}
 
 	// role based validations
@@ -161,6 +169,12 @@ func (s *AuthService) Signup(
 	//commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	if role == "user" {
+		if err := s.sendVerificationEmail(ctx, user.ID, user.Email); err != nil {
+			log.Printf("send verification email failed for %s: %v", user.Email, err)
+		}
 	}
 
 	adminBody := user.DisplayName + " registered as " + role + "."
@@ -283,4 +297,193 @@ func (s *AuthService) Login(
 	resp.User.Role = user.Role
 
 	return resp, nil
+}
+
+func (s *AuthService) VerifyEmail(ctx context.Context, token string) error {
+	claims, err := s.jwtService.ValidateActionToken(token, "email_verification")
+	if err != nil {
+		return errors.New("invalid or expired verification token")
+	}
+
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return errors.New("invalid verification token")
+	}
+
+	user, err := s.authRepo.FindUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if user.Role != "user" {
+		return errors.New("email verification is only available for users")
+	}
+	if user.IsVerified {
+		return nil
+	}
+
+	return s.authRepo.VerifyUserEmail(ctx, userID)
+}
+
+func (s *AuthService) ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequestDTO) error {
+	user, err := s.authRepo.FindUserByEmail(ctx, strings.TrimSpace(req.Email))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+
+	resetToken, err := s.jwtService.GeneratePasswordResetToken(user.ID, user.Email)
+	if err != nil {
+		return err
+	}
+
+	resetURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/") + "/reset-password?token=" + resetToken
+	body := fmt.Sprintf(
+		"<p>Hello %s,</p><p>Reset your password by clicking <a href=\"%s\">here</a>.</p><p>This link expires in 1 hour.</p>",
+		user.DisplayName,
+		resetURL,
+	)
+
+	if err := utils.SendEmail(user.Email, "Reset your password", body); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequestDTO) error {
+	claims, err := s.jwtService.ValidateActionToken(req.Token, "password_reset")
+	if err != nil {
+		return errors.New("invalid or expired reset token")
+	}
+
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return errors.New("invalid reset token")
+	}
+
+	hashedPwd, err := s.pwdService.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.authRepo.UpdateUserPassword(ctx, userID, hashedPwd)
+}
+
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, req dto.ChangePasswordRequestDTO) error {
+	user, err := s.authRepo.FindUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.pwdService.ComparePasswords(user.PasswordHash, req.OldPassword); err != nil {
+		return errors.New("old password is incorrect")
+	}
+
+	hashedPwd, err := s.pwdService.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.authRepo.UpdateUserPassword(ctx, userID, hashedPwd)
+}
+
+func (s *AuthService) GoogleLogin(ctx context.Context, req dto.GoogleLoginRequestDTO) (*dto.LoginResponseDTO, error) {
+	tokenInfo, err := verifyGoogleIDToken(ctx, req.IDToken)
+	if err != nil {
+		return nil, errors.New("invalid google token")
+	}
+
+	email := strings.TrimSpace(tokenInfo.Email)
+	if email == "" {
+		return nil, errors.New("google email not found")
+	}
+
+	displayName := "Google User"
+	if strings.TrimSpace(tokenInfo.Name) != "" {
+		displayName = strings.TrimSpace(tokenInfo.Name)
+	}
+
+	user, err := s.authRepo.FindUserByEmail(ctx, email)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+
+		tempPassword, hashErr := s.pwdService.HashPassword(uuid.NewString())
+		if hashErr != nil {
+			return nil, hashErr
+		}
+
+		tx, txErr := s.db.BeginTx(ctx, nil)
+		if txErr != nil {
+			return nil, txErr
+		}
+		defer tx.Rollback()
+
+		qtx := db.New(tx)
+		txRepo := repository.NewAuthRepository(qtx)
+
+		user, err = txRepo.CreateUser(ctx, db.CreateUserParams{
+			DisplayName:  displayName,
+			Email:        email,
+			Phone:        generateGooglePhone(),
+			PasswordHash: tempPassword,
+			Role:         "user",
+		})
+		if err != nil {
+			return nil, err
+		}
+		if err := txRepo.VerifyUserEmail(ctx, user.ID); err != nil {
+			return nil, err
+		}
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
+	}
+
+	return s.buildLoginResponse(user)
+}
+
+func (s *AuthService) sendVerificationEmail(ctx context.Context, userID uuid.UUID, email string) error {
+	token, err := s.jwtService.GenerateEmailVerificationToken(userID, email)
+	if err != nil {
+		return err
+	}
+
+	verifyURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/") + "/verify-email?token=" + token
+	body := fmt.Sprintf(
+		"<p>Hello,</p><p>Verify your email by clicking <a href=\"%s\">here</a>.</p><p>This link expires in 24 hours.</p>",
+		verifyURL,
+	)
+
+	return utils.SendEmail(email, "Verify your email", body)
+}
+
+func (s *AuthService) buildLoginResponse(user db.User) (*dto.LoginResponseDTO, error) {
+	accessToken, err := s.jwtService.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.jwtService.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &dto.LoginResponseDTO{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		Message:      "login successful",
+	}
+	resp.User.ID = user.ID.String()
+	resp.User.DisplayName = user.DisplayName
+	resp.User.Role = user.Role
+
+	return resp, nil
+}
+
+func generateGooglePhone() string {
+	return fmt.Sprintf("9%09d", time.Now().UnixNano()%1000000000)
 }

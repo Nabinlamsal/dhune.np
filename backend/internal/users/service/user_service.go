@@ -4,10 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"mime/multipart"
 	"strings"
 
+	"github.com/Nabinlamsal/dhune.np/internal/users/dto"
 	"github.com/Nabinlamsal/dhune.np/internal/users/model"
 	"github.com/Nabinlamsal/dhune.np/internal/users/repository"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -127,4 +130,75 @@ func (service *UserService) GetMyProfile(ctx context.Context, userId uuid.UUID) 
 	}
 
 	return profile, nil
+}
+
+func (service *UserService) UpdateMyProfile(
+	ctx context.Context,
+	userId uuid.UUID,
+	req dto.UpdateProfileRequestDTO,
+) (*model.UserProfile, error) {
+	if userId == uuid.Nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	profile, err := service.userRepo.GetMyProfile(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var phoneNS sql.NullString
+	if req.Phone != nil {
+		phone := strings.TrimSpace(*req.Phone)
+		if !utils.IsValidPhone(phone) {
+			return nil, errors.New("phone must be exactly 10 digits")
+		}
+		phoneNS = sql.NullString{String: phone, Valid: true}
+	}
+
+	var displayNameNS sql.NullString
+	if req.DisplayName != nil {
+		displayName := strings.TrimSpace(*req.DisplayName)
+		displayNameNS = sql.NullString{String: displayName, Valid: true}
+	}
+
+	switch profile.Role {
+	case "user":
+		_, err = service.commandRepo.UpdateUserSelfProfile(ctx, userId, displayNameNS, phoneNS, sql.NullString{})
+	case "vendor", "business", "admin":
+		if req.DisplayName != nil {
+			return nil, errors.New("display name cannot be updated for this account")
+		}
+		_, err = service.commandRepo.UpdateRestrictedSelfProfile(ctx, userId, phoneNS, sql.NullString{})
+	default:
+		return nil, errors.New("invalid user role")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return service.GetMyProfile(ctx, userId)
+}
+
+func (service *UserService) UploadProfileImage(
+	ctx context.Context,
+	userId uuid.UUID,
+	file *multipart.FileHeader,
+) (*model.UserProfile, error) {
+	if userId == uuid.Nil {
+		return nil, errors.New("invalid user id")
+	}
+	if file == nil {
+		return nil, errors.New("profile image is required")
+	}
+
+	imageURL, err := utils.UploadImageToCloudinary(ctx, file, "dhune/profile-images")
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := service.commandRepo.UpdateUserProfileImage(ctx, userId, imageURL); err != nil {
+		return nil, err
+	}
+
+	return service.GetMyProfile(ctx, userId)
 }

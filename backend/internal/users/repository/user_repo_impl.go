@@ -79,15 +79,16 @@ func (repo *UserRepoImpl) GetUserDetails(ctx context.Context, userId uuid.UUID) 
 
 	//mapping profile
 	profile := &model.UserProfile{
-		ID:          userId,
-		DisplayName: row.DisplayName,
-		Email:       row.Email,
-		Phone:       row.Phone,
-		Role:        row.Role,
-		Documents:   make([]model.Document, 0, len(docs)),
-		IsActive:    row.IsActive,
-		CreatedAt:   row.CreatedAt,
-		IsVerified:  row.IsVerified,
+		ID:              userId,
+		DisplayName:     row.DisplayName,
+		Email:           row.Email,
+		Phone:           row.Phone,
+		ProfileImageURL: row.ProfileImageUrl.String,
+		Role:            row.Role,
+		Documents:       make([]model.Document, 0, len(docs)),
+		IsActive:        row.IsActive,
+		CreatedAt:       row.CreatedAt,
+		IsVerified:      row.IsVerified,
 	}
 
 	if row.BusinessProfileID.Valid {
