@@ -21,8 +21,18 @@ type ForgotPasswordRequestDTO struct {
 	Email string `json:"email" binding:"required,email"`
 }
 
+type SendVerificationOTPRequestDTO struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type VerifyEmailRequestDTO struct {
+	Email string `json:"email" binding:"required,email"`
+	OTP   string `json:"otp" binding:"required,len=6"`
+}
+
 type ResetPasswordRequestDTO struct {
-	Token       string `json:"token" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	OTP         string `json:"otp" binding:"required,len=6"`
 	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
 

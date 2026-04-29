@@ -64,10 +64,15 @@ func (r *CommandRepoImpl) UpdateRestrictedSelfProfile(
 func (r *CommandRepoImpl) UpdateUserProfileImage(
 	ctx context.Context,
 	userId uuid.UUID,
-	profileImageURL string,
+	profileImageURL *string,
 ) (db.User, error) {
+	param := sql.NullString{}
+	if profileImageURL != nil {
+		param = sql.NullString{String: *profileImageURL, Valid: true}
+	}
+
 	return r.q.UpdateUserProfileImage(ctx, db.UpdateUserProfileImageParams{
 		ID:              userId,
-		ProfileImageUrl: sql.NullString{String: profileImageURL, Valid: true},
+		ProfileImageUrl: param,
 	})
 }

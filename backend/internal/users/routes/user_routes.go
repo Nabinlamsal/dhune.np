@@ -41,5 +41,7 @@ func RegisterUserRoutes(
 	user.Use(middleware.JWTAuthMiddleware(serviceJwt))
 	user.GET("/me/profile", userController.GetMyProfile)
 	user.PUT("/me/profile", userController.UpdateMyProfile)
+	user.PUT("/me/photo", userController.UploadProfileImage)
+	user.DELETE("/me/photo", userController.DeleteProfileImage)
 	user.POST("/upload-profile-image", userController.UploadProfileImage)
 }

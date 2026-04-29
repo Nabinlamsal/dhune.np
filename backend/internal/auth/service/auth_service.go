@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"mime/multipart"
-	"os"
 	"strings"
 	"time"
 
@@ -171,10 +170,8 @@ func (s *AuthService) Signup(
 		return nil, err
 	}
 
-	if role == "user" {
-		if err := s.sendVerificationEmail(ctx, user.ID, user.Email); err != nil {
-			log.Printf("send verification email failed for %s: %v", user.Email, err)
-		}
+	if err := s.sendVerificationOTPEmail(ctx, user.ID, user.Email, user.DisplayName); err != nil {
+		log.Printf("send verification otp failed for %s: %v", user.Email, err)
 	}
 
 	adminBody := user.DisplayName + " registered as " + role + "."
@@ -203,16 +200,18 @@ func (s *AuthService) Signup(
 	})
 
 	//responce
-	msg := "Signup successful. Please login."
+	msg := "Signup successful. We sent an OTP to your email for verification."
 	if role != "user" {
-		msg = "Signup successful. Your account is pending admin approval."
+		msg = "Signup successful. Verify your email with the OTP we sent, then wait for admin approval."
 	}
 
 	return &dto.SignupResponseDTO{
-		UserId:          user.ID.String(),
-		Role:            role,
-		Status:          "success",
-		ResponseMessage: msg,
+		UserId:               user.ID.String(),
+		Role:                 role,
+		Status:               "success",
+		ResponseMessage:      msg,
+		VerificationRequired: true,
+		OtpExpiresInSeconds:  s.otpExpirySeconds(),
 	}, nil
 }
 
@@ -238,6 +237,10 @@ func (s *AuthService) Login(
 
 	if err := s.pwdService.ComparePasswords(user.PasswordHash, req.Password); err != nil {
 		return nil, errors.New("invalid credentials")
+	}
+
+	if user.Role != "admin" && !user.IsVerified {
+		return nil, errors.New("email not verified")
 	}
 
 	//Global suspension check (applies to all roles)
@@ -299,29 +302,36 @@ func (s *AuthService) Login(
 	return resp, nil
 }
 
-func (s *AuthService) VerifyEmail(ctx context.Context, token string) error {
-	claims, err := s.jwtService.ValidateActionToken(token, "email_verification")
+func (s *AuthService) SendVerificationOTP(ctx context.Context, req dto.SendVerificationOTPRequestDTO) error {
+	user, err := s.authRepo.FindUserByEmail(ctx, strings.TrimSpace(req.Email))
 	if err != nil {
-		return errors.New("invalid or expired verification token")
-	}
-
-	userID, err := uuid.Parse(claims.Subject)
-	if err != nil {
-		return errors.New("invalid verification token")
-	}
-
-	user, err := s.authRepo.FindUserByID(ctx, userID)
-	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		return err
 	}
-	if user.Role != "user" {
-		return errors.New("email verification is only available for users")
+
+	if user.IsVerified {
+		return nil
+	}
+
+	return s.sendVerificationOTPEmail(ctx, user.ID, user.Email, user.DisplayName)
+}
+
+func (s *AuthService) VerifyEmail(ctx context.Context, req dto.VerifyEmailRequestDTO) error {
+	user, err := s.authRepo.FindUserByEmail(ctx, strings.TrimSpace(req.Email))
+	if err != nil {
+		return errors.New("user not found")
 	}
 	if user.IsVerified {
 		return nil
 	}
 
-	return s.authRepo.VerifyUserEmail(ctx, userID)
+	if err := s.consumeOTP(ctx, user.ID, otpPurposeEmailVerification, req.OTP); err != nil {
+		return err
+	}
+
+	return s.authRepo.VerifyUserEmail(ctx, user.ID)
 }
 
 func (s *AuthService) ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequestDTO) error {
@@ -333,34 +343,17 @@ func (s *AuthService) ForgotPassword(ctx context.Context, req dto.ForgotPassword
 		return err
 	}
 
-	resetToken, err := s.jwtService.GeneratePasswordResetToken(user.ID, user.Email)
-	if err != nil {
-		return err
-	}
-
-	resetURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/") + "/reset-password?token=" + resetToken
-	body := fmt.Sprintf(
-		"<p>Hello %s,</p><p>Reset your password by clicking <a href=\"%s\">here</a>.</p><p>This link expires in 1 hour.</p>",
-		user.DisplayName,
-		resetURL,
-	)
-
-	if err := utils.SendEmail(user.Email, "Reset your password", body); err != nil {
-		return err
-	}
-
-	return nil
+	return s.sendPasswordResetOTPEmail(ctx, user.ID, user.Email, user.DisplayName)
 }
 
 func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequestDTO) error {
-	claims, err := s.jwtService.ValidateActionToken(req.Token, "password_reset")
+	user, err := s.authRepo.FindUserByEmail(ctx, strings.TrimSpace(req.Email))
 	if err != nil {
-		return errors.New("invalid or expired reset token")
+		return errors.New("user not found")
 	}
 
-	userID, err := uuid.Parse(claims.Subject)
-	if err != nil {
-		return errors.New("invalid reset token")
+	if err := s.consumeOTP(ctx, user.ID, otpPurposePasswordReset, req.OTP); err != nil {
+		return err
 	}
 
 	hashedPwd, err := s.pwdService.HashPassword(req.NewPassword)
@@ -368,7 +361,7 @@ func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRe
 		return err
 	}
 
-	return s.authRepo.UpdateUserPassword(ctx, userID, hashedPwd)
+	return s.authRepo.UpdateUserPassword(ctx, user.ID, hashedPwd)
 }
 
 func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, req dto.ChangePasswordRequestDTO) error {
@@ -444,21 +437,6 @@ func (s *AuthService) GoogleLogin(ctx context.Context, req dto.GoogleLoginReques
 	}
 
 	return s.buildLoginResponse(user)
-}
-
-func (s *AuthService) sendVerificationEmail(ctx context.Context, userID uuid.UUID, email string) error {
-	token, err := s.jwtService.GenerateEmailVerificationToken(userID, email)
-	if err != nil {
-		return err
-	}
-
-	verifyURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/") + "/verify-email?token=" + token
-	body := fmt.Sprintf(
-		"<p>Hello,</p><p>Verify your email by clicking <a href=\"%s\">here</a>.</p><p>This link expires in 24 hours.</p>",
-		verifyURL,
-	)
-
-	return utils.SendEmail(email, "Verify your email", body)
 }
 
 func (s *AuthService) buildLoginResponse(user db.User) (*dto.LoginResponseDTO, error) {

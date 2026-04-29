@@ -408,6 +408,18 @@ func (ns NullRequestsStatus) Value() (driver.Value, error) {
 	return string(ns.RequestsStatus), nil
 }
 
+type AuthOtpCode struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	Email      string
+	Purpose    string
+	CodeHash   string
+	ExpiresAt  time.Time
+	ConsumedAt sql.NullTime
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
 type BusinessProfile struct {
 	ID                 uuid.UUID
 	UserID             uuid.UUID

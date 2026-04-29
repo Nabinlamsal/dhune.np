@@ -355,7 +355,6 @@ UPDATE users
 SET is_verified = TRUE,
     updated_at = now()
 WHERE id = $1
-  AND role = 'user'
 `
 
 func (q *Queries) VerifyUserEmail(ctx context.Context, id uuid.UUID) error {

@@ -166,6 +166,22 @@ func (c *UserController) UploadProfileImage(ctx *gin.Context) {
 	utils.Success(ctx, gin.H{"profile": profile})
 }
 
+func (c *UserController) DeleteProfileImage(ctx *gin.Context) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		utils.Error(ctx, 401, err.Error())
+		return
+	}
+
+	profile, err := c.userService.DeleteProfileImage(ctx, userID)
+	if err != nil {
+		utils.Error(ctx, 400, err.Error())
+		return
+	}
+
+	utils.Success(ctx, gin.H{"profile": profile})
+}
+
 func currentUserID(ctx *gin.Context) (uuid.UUID, error) {
 	userIdVal, exists := ctx.Get("user_id")
 	if !exists {

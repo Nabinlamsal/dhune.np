@@ -124,7 +124,10 @@ func main() {
 	)
 	ratingsService := ratings.NewService(ratingsRepo)
 	disputeService := disputeservice.NewService(disputeRepo)
-	notificationService := notifications.NewService(notificationRepo, nil)
+	if err := notifications.InitFirebase(context.Background()); err != nil {
+		log.Fatal("Firebase initialization failed:", err)
+	}
+	notificationService := notifications.NewService(notificationRepo, notifications.NewFCMSender(notificationRepo))
 	notifications.SetDefaultService(notificationService)
 
 	//controllers

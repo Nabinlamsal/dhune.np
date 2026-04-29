@@ -196,7 +196,22 @@ func (service *UserService) UploadProfileImage(
 		return nil, err
 	}
 
-	if _, err := service.commandRepo.UpdateUserProfileImage(ctx, userId, imageURL); err != nil {
+	if _, err := service.commandRepo.UpdateUserProfileImage(ctx, userId, &imageURL); err != nil {
+		return nil, err
+	}
+
+	return service.GetMyProfile(ctx, userId)
+}
+
+func (service *UserService) DeleteProfileImage(
+	ctx context.Context,
+	userId uuid.UUID,
+) (*model.UserProfile, error) {
+	if userId == uuid.Nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	if _, err := service.commandRepo.UpdateUserProfileImage(ctx, userId, nil); err != nil {
 		return nil, err
 	}
 

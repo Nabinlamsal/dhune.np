@@ -70,14 +70,29 @@ func (ac *AuthController) Me(c *gin.Context) {
 	})
 }
 
-func (ac *AuthController) VerifyEmail(c *gin.Context) {
-	token := c.Query("token")
-	if token == "" {
-		utils.Error(c, http.StatusBadRequest, "token is required")
+func (ac *AuthController) SendVerificationOTP(c *gin.Context) {
+	var body dto.SendVerificationOTPRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := ac.authService.VerifyEmail(c.Request.Context(), token); err != nil {
+	if err := ac.authService.SendVerificationOTP(c.Request.Context(), body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "if the email exists, an otp has been sent"})
+}
+
+func (ac *AuthController) VerifyEmail(c *gin.Context) {
+	var body dto.VerifyEmailRequestDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := ac.authService.VerifyEmail(c.Request.Context(), body); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -97,7 +112,7 @@ func (ac *AuthController) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, gin.H{"message": "if the email exists, a reset link has been sent"})
+	utils.Success(c, gin.H{"message": "if the email exists, a password reset otp has been sent"})
 }
 
 func (ac *AuthController) ResetPassword(c *gin.Context) {

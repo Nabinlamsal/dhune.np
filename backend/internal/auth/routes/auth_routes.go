@@ -17,7 +17,8 @@ func RegisterAuthRoutes(
 		// public routes
 		auth.POST("/signup", authController.Signup)
 		auth.POST("/login", authController.Login)
-		auth.GET("/verify-email", authController.VerifyEmail)
+		auth.POST("/verify-email/send-otp", authController.SendVerificationOTP)
+		auth.POST("/verify-email", authController.VerifyEmail)
 		auth.POST("/forgot-password", authController.ForgotPassword)
 		auth.POST("/reset-password", authController.ResetPassword)
 		auth.POST("/google-login", authController.GoogleLogin)

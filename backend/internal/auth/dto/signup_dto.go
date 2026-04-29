@@ -19,8 +19,10 @@ type SignupDocumentDTO struct {
 }
 
 type SignupResponseDTO struct {
-	UserId          string `json:"user_id"`
-	Role            string `json:"role"`
-	Status          string `json:"status"`
-	ResponseMessage string `json:"message"`
+	UserId               string `json:"user_id"`
+	Role                 string `json:"role"`
+	Status               string `json:"status"`
+	ResponseMessage      string `json:"message"`
+	VerificationRequired bool   `json:"verification_required"`
+	OtpExpiresInSeconds  int    `json:"otp_expires_in_seconds"`
 }
