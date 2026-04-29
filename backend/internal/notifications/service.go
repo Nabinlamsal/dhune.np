@@ -3,6 +3,7 @@ package notifications
 import (
 	"context"
 	"log"
+	"strings"
 	"sync"
 )
 
@@ -70,6 +71,7 @@ func (s *Service) MarkAllRead(ctx context.Context, userID string) error {
 }
 
 func (s *Service) RegisterDeviceToken(ctx context.Context, userID string, input DeviceTokenInput) error {
+	input.Platform = strings.ToLower(strings.TrimSpace(input.Platform))
 	return s.repo.UpsertDeviceToken(ctx, userID, input)
 }
 

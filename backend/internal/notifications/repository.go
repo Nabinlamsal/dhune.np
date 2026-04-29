@@ -226,6 +226,33 @@ func (r *Repository) FindUserIDsByRoles(ctx context.Context, roles []string) ([]
 	return result, rows.Err()
 }
 
+func (r *Repository) ListActiveDeviceTokens(ctx context.Context, userID string) ([]StoredDeviceToken, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT platform, token
+		FROM push_device_tokens
+		WHERE user_id = $1::uuid
+		  AND is_active = TRUE
+	`, userID)
+	if ignoreUndefinedTable(err) {
+		return []StoredDeviceToken{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]StoredDeviceToken, 0)
+	for rows.Next() {
+		var item StoredDeviceToken
+		if err := rows.Scan(&item.Platform, &item.Token); err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+
+	return result, rows.Err()
+}
+
 func mapNotification(row notificationRow) Notification {
 	item := Notification{
 		ID:        row.ID,

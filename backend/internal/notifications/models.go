@@ -39,3 +39,8 @@ type DeviceTokenInput struct {
 type DeviceTokenDeleteInput struct {
 	Token string `json:"token" binding:"required"`
 }
+
+type StoredDeviceToken struct {
+	Platform string
+	Token    string
+}
