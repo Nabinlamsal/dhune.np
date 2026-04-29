@@ -32,8 +32,7 @@ LIMIT 1;
 UPDATE users
 SET is_verified = TRUE,
     updated_at = now()
-WHERE id = $1
-  AND role = 'user';
+WHERE id = $1;
 
 -- name: UpdateUserPassword :exec
 UPDATE users
