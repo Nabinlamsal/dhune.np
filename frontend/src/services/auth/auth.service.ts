@@ -7,6 +7,8 @@ import {
     ForgotPasswordRequest,
     GoogleLoginRequest,
     MessageResponse,
+    SendVerificationOTPRequest,
+    VerifyEmailRequest,
     ResetPasswordRequest,
 } from "../../types/auth/auth-actions";
 
@@ -42,12 +44,29 @@ export const me = (): Promise<UserIdentity> => {
     })
 }
 
-export const verifyEmail = async (token: string): Promise<MessageResponse> => {
+export const sendVerificationOTP = async (
+    payload: SendVerificationOTPRequest
+): Promise<MessageResponse> => {
     const res = await api<{
         success: boolean;
         data: MessageResponse;
-    }>(`/auth/verify-email?token=${encodeURIComponent(token)}`, {
-        method: "GET",
+    }>("/auth/verify-email/send-otp", {
+        method: "POST",
+        data: payload,
+    });
+
+    return res.data;
+};
+
+export const verifyEmail = async (
+    payload: VerifyEmailRequest
+): Promise<MessageResponse> => {
+    const res = await api<{
+        success: boolean;
+        data: MessageResponse;
+    }>("/auth/verify-email", {
+        method: "POST",
+        data: payload,
     });
 
     return res.data;

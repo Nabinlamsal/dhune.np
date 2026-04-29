@@ -25,4 +25,6 @@ export type SignupResponse = {
     message?: string;
     status?: string;
     response_message?: string;
+    verification_required?: boolean;
+    otp_expires_in_seconds?: number;
 };

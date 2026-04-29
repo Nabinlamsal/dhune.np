@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
                 },
                 onError: (error) => {
                     const axiosError = error as AxiosError<{ error?: string }>;
-                    setErrorMessage(axiosError.response?.data?.error ?? "Unable to send reset link.");
+                    setErrorMessage(axiosError.response?.data?.error ?? "Unable to send reset OTP.");
                 },
             }
         );
@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-yellow-600">Forgot Password</CardTitle>
-                    <CardDescription>Enter your email to receive a password reset link.</CardDescription>
+                    <CardDescription>Enter your email to receive a password reset OTP.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
@@ -61,7 +61,11 @@ export default function ForgotPasswordPage() {
                             {errorMessage ? <p className="rounded-md bg-red-100 p-2 text-sm text-red-700">{errorMessage}</p> : null}
 
                             <Button type="submit" className="bg-[#040947] hover:bg-[#09106a]" disabled={forgotPassword.isPending}>
-                                {forgotPassword.isPending ? "Sending..." : "Send reset link"}
+                                {forgotPassword.isPending ? "Sending..." : "Send reset OTP"}
+                            </Button>
+
+                            <Button asChild type="button" variant="outline">
+                                <Link href={`/auth/reset-password?email=${encodeURIComponent(email)}`}>Already have an OTP?</Link>
                             </Button>
 
                             <p className="text-center text-sm text-slate-500">

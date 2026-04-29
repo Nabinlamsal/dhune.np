@@ -6,6 +6,7 @@ import {
     changePassword,
     forgotPassword,
     googleLogin,
+    sendVerificationOTP,
     verifyEmail,
     resetPassword,
 } from "@/src/services/auth/auth.service";
@@ -13,6 +14,8 @@ import {
     ChangePasswordRequest,
     ForgotPasswordRequest,
     GoogleLoginRequest,
+    SendVerificationOTPRequest,
+    VerifyEmailRequest,
     ResetPasswordRequest,
 } from "@/src/types/auth/auth-actions";
 import { LoginResponse } from "@/src/types/auth/login";
@@ -50,9 +53,18 @@ export const useResetPassword = () => {
     });
 };
 
+export const useSendVerificationOTP = () => {
+    return useMutation({
+        mutationFn: (payload: SendVerificationOTPRequest) => sendVerificationOTP(payload),
+        onSuccess: (data) => {
+            toast.success(data.message);
+        },
+    });
+};
+
 export const useVerifyEmail = () => {
     return useMutation({
-        mutationFn: (token: string) => verifyEmail(token),
+        mutationFn: (payload: VerifyEmailRequest) => verifyEmail(payload),
     });
 };
 

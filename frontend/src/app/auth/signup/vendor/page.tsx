@@ -7,6 +7,9 @@ export default function VendorSignupPage() {
     const router = useRouter();
 
     return (
-        <VendorSignupForm onBack={() => router.push("/auth/login")} />
+        <VendorSignupForm
+            onBack={() => router.push("/auth/login")}
+            onSignupSuccess={(email) => router.push(`/verify-email?email=${encodeURIComponent(email)}`)}
+        />
     );
 }

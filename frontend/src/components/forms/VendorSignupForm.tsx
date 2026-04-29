@@ -22,7 +22,7 @@ import { useSignup } from "@/src/hooks/auth/useSignup";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { AxiosError } from "axios";
 
-export function VendorSignupForm({ onBack }: { onBack: () => void }) {
+export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
     const { mutate, isPending } = useSignup();
 
     const [name, setName] = useState("");
@@ -89,6 +89,7 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
 
                             mutate(formData, {
                                 onSuccess: (data) => {
+                                    const submittedEmail = email;
                                     setName("");
                                     setOwner("");
                                     setAddress("");
@@ -98,7 +99,12 @@ export function VendorSignupForm({ onBack }: { onBack: () => void }) {
                                     setPassword("");
                                     setDocumentFile(null);
 
-                                    setSuccessMessage(data.response_message ?? data.message ?? "Registration successful! Your vendor account is pending admin approval.");
+                                    setSuccessMessage(data.response_message ?? data.message ?? "Registration successful! Verify your email OTP and then wait for admin approval.");
+                                    setTimeout(() => {
+                                        if (onSignupSuccess) {
+                                            onSignupSuccess(submittedEmail);
+                                        }
+                                    }, 1500);
                                 },
                                 onError: (error) => {
                                     const axiosError = error as AxiosError<{ error?: string }>;

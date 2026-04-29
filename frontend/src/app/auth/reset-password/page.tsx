@@ -13,8 +13,8 @@ import { AxiosError } from "axios";
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
     const resetPassword = useResetPassword();
-    const token = searchParams.get("token") ?? "";
-
+    const [email, setEmail] = useState(searchParams.get("email") ?? "");
+    const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -24,11 +24,6 @@ function ResetPasswordContent() {
         event.preventDefault();
         setErrorMessage(null);
         setSuccessMessage(null);
-
-        if (!token) {
-            setErrorMessage("Reset token is missing.");
-            return;
-        }
 
         if (newPassword.length < 6) {
             setErrorMessage("Password must be at least 6 characters.");
@@ -42,12 +37,14 @@ function ResetPasswordContent() {
 
         resetPassword.mutate(
             {
-                token,
+                email,
+                otp,
                 new_password: newPassword,
             },
             {
                 onSuccess: (data) => {
                     setSuccessMessage(data.message);
+                    setOtp("");
                     setNewPassword("");
                     setConfirmPassword("");
                 },
@@ -64,11 +61,34 @@ function ResetPasswordContent() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-yellow-600">Reset Password</CardTitle>
-                    <CardDescription>Set a new password for your account.</CardDescription>
+                    <CardDescription>Enter the emailed OTP and set a new password for your account.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
                         <FieldGroup>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email</FieldLabel>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(event) => setEmail(event.target.value)}
+                                    required
+                                />
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="otp">OTP</FieldLabel>
+                                <Input
+                                    id="otp"
+                                    value={otp}
+                                    onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                                    inputMode="numeric"
+                                    placeholder="6-digit OTP"
+                                    required
+                                />
+                            </Field>
+
                             <Field>
                                 <FieldLabel htmlFor="new-password">New Password</FieldLabel>
                                 <Input

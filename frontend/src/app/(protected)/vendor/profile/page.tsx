@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/src/components/ui/field";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
-import { useMyProfile, useUpdateMyProfile, useUploadProfileImage } from "@/src/hooks/users/useMyProfile";
+import { useDeleteProfileImage, useMyProfile, useUpdateMyProfile, useUploadProfileImage } from "@/src/hooks/users/useMyProfile";
 import { useChangePassword } from "@/src/hooks/auth/useAuthActions";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { AxiosError } from "axios";
@@ -19,6 +19,7 @@ export default function VendorProfilePage() {
     const { data: profile, isLoading } = useMyProfile();
     const updateProfile = useUpdateMyProfile();
     const uploadProfileImage = useUploadProfileImage();
+    const deleteProfileImage = useDeleteProfileImage();
     const changePassword = useChangePassword();
 
     const [phone, setPhone] = useState<string | null>(null);
@@ -154,6 +155,20 @@ export default function VendorProfilePage() {
                                 />
                                 <FieldDescription>Upload a new profile image for your vendor account.</FieldDescription>
                             </Field>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={!profile.ProfileImageURL || deleteProfileImage.isPending}
+                                onClick={() =>
+                                    deleteProfileImage.mutate(undefined, {
+                                        onError: (error) => {
+                                            setImageError(getApiError(error, "Unable to delete profile image."));
+                                        },
+                                    })
+                                }
+                            >
+                                {deleteProfileImage.isPending ? "Deleting..." : "Delete profile image"}
+                            </Button>
                             {imageError ? <p className="text-sm text-red-600">{imageError}</p> : null}
                         </FieldGroup>
 

@@ -1,13 +1,24 @@
 export type MessageResponse = {
     message: string;
+    otp_expires_in_seconds?: number;
 };
 
 export type ForgotPasswordRequest = {
     email: string;
 };
 
+export type SendVerificationOTPRequest = {
+    email: string;
+};
+
+export type VerifyEmailRequest = {
+    email: string;
+    otp: string;
+};
+
 export type ResetPasswordRequest = {
-    token: string;
+    email: string;
+    otp: string;
     new_password: string;
 };
 

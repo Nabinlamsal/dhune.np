@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 export default function UserSignupPage() {
     const router = useRouter();
     return (
-        <BusinessSignupForm onBack={() => router.push("/auth/login")} />
+        <BusinessSignupForm
+            onBack={() => router.push("/auth/login")}
+            onSignupSuccess={(email) => router.push(`/verify-email?email=${encodeURIComponent(email)}`)}
+        />
     )
 }

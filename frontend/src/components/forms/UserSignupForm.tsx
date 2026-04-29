@@ -22,7 +22,7 @@ import { useSignup } from "@/src/hooks/auth/useSignup";
 import { useState } from "react";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { AxiosError } from "axios";
-export function UserSignupForm({ onBack }: { onBack: () => void }) {
+export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
     const { mutate, isPending } = useSignup()
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
@@ -66,6 +66,7 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
 
                             mutate(formData, {
                                 onSuccess: (data) => {
+                                    const submittedEmail = email;
                                     // clear form
                                     setName("");
                                     setEmail("");
@@ -74,10 +75,13 @@ export function UserSignupForm({ onBack }: { onBack: () => void }) {
 
                                     setSuccessMessage(data.response_message ?? data.message ?? "Registration successful. Please verify your email before logging in.");
 
-                                    // optional: auto switch to login after 2 sec
                                     setTimeout(() => {
+                                        if (onSignupSuccess) {
+                                            onSignupSuccess(submittedEmail);
+                                            return;
+                                        }
                                         onBack();
-                                    }, 2000);
+                                    }, 1500);
                                 },
                                 onError: (error) => {
                                     const axiosError = error as AxiosError<{ error?: string }>;

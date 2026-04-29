@@ -1,7 +1,7 @@
 import { getMyProfile } from "@/src/services/users/my_profle.service";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { updateMyProfile, uploadProfileImage } from "@/src/services/users/my_profle.service";
+import { deleteProfileImage, updateMyProfile, uploadProfileImage } from "@/src/services/users/my_profle.service";
 import { toast } from "sonner";
 
 export const useMyProfile = () => {
@@ -32,6 +32,18 @@ export const useUploadProfileImage = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
             toast.success("Profile image updated successfully");
+        },
+    });
+};
+
+export const useDeleteProfileImage = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: deleteProfileImage,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+            toast.success("Profile image deleted successfully");
         },
     });
 };

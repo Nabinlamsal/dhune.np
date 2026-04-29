@@ -79,13 +79,24 @@ export const uploadProfileImage = async (file: File): Promise<AdminUserProfile> 
     formData.append("profile_image", file);
 
     const res = await api<ApiResponse<{ profile: AdminUserProfile }>>(
-        "/user/upload-profile-image",
+        "/user/me/photo",
         {
-            method: "POST",
+            method: "PUT",
             data: formData,
             headers: {
                 "Content-Type": "multipart/form-data",
             },
+        }
+    );
+
+    return normalizeMyProfile(res.data.profile);
+};
+
+export const deleteProfileImage = async (): Promise<AdminUserProfile> => {
+    const res = await api<ApiResponse<{ profile: AdminUserProfile }>>(
+        "/user/me/photo",
+        {
+            method: "DELETE",
         }
     );
 
