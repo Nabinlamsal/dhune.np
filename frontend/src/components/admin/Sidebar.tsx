@@ -44,6 +44,7 @@ export default function Sidebar() {
             { href: "/admin/orders", label: "Orders", icon: <ShoppingBag /> },
             { href: "/admin/offers", label: "Offers", icon: <Building2 /> },
             { href: "/admin/requests", label: "Requests", icon: <Gavel /> },
+
         ],
         []
     )

@@ -1,3 +1,5 @@
+import { ApiResponse } from "../api";
+
 export interface Commission {
     id: string;
     orderId: string;
@@ -19,7 +21,7 @@ export interface VendorSettlement {
     updatedAt: string;
 }
 
-export interface AdminFinanceDashboardResponse {
+export type AdminFinanceDashboardResponse = ApiResponse<{
     stats: {
         totalCommission: string;
         pendingSettlements: string;
@@ -27,9 +29,9 @@ export interface AdminFinanceDashboardResponse {
     };
     recentCommissions: Commission[];
     recentSettlements: VendorSettlement[];
-}
+}>;
 
-export interface VendorFinanceDashboardResponse {
+export type VendorFinanceDashboardResponse = ApiResponse<{
     stats: {
         totalEarnings: string;
         pendingSettlementAmount: string;
@@ -37,7 +39,7 @@ export interface VendorFinanceDashboardResponse {
     };
     recentCommissions: Commission[];
     recentSettlements: VendorSettlement[];
-}
+}>;
 
 export interface CreateSettlementPayload {
     vendor_id: string;
@@ -46,6 +48,6 @@ export interface CreateSettlementPayload {
     reference: string;
 }
 
-export interface CreateSettlementResponse {
+export type CreateSettlementResponse = ApiResponse<{
     settlement: VendorSettlement;
-}
+}>;

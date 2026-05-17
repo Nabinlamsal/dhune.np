@@ -1,3 +1,5 @@
+import { ApiResponse } from "../api";
+
 export interface Payment {
     id: string;
     orderId: string;
@@ -26,3 +28,7 @@ export interface VerifyKhaltiPayload {
     mobile: string;
     purchase_order_id: string;
 }
+
+export type PayCashResponse = ApiResponse<{ payment: Payment }>;
+export type InitiateKhaltiResponse = ApiResponse<{ pidx: string; payment_url: string }>;
+export type VerifyKhaltiResponse = ApiResponse<{ message: string; payment: Payment }>;

@@ -48,6 +48,8 @@ export default function AdminNavbar() {
         { href: "/admin/disputes", label: "Disputes", icon: <ShieldAlert className="h-4 w-4" /> },
         { href: "/admin/ratings", label: "Ratings", icon: <Star className="h-4 w-4" /> },
         { href: "/admin/categories", label: "Categories", icon: <Layers className="h-4 w-4" /> },
+        { href: "/admin/finance", label: "Payments", icon: <Layers className="h-4 w-4" /> },
+
     ];
 
     const operationsItems = useMemo<NavItem[]>(

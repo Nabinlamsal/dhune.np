@@ -11,14 +11,20 @@ import { toast } from "react-hot-toast";
 export const useAdminFinanceDashboard = () => {
     return useQuery({
         queryKey: ["adminFinanceDashboard"],
-        queryFn: getAdminFinanceDashboard,
+        queryFn: async () => {
+            const res = await getAdminFinanceDashboard();
+            return res.data;
+        },
     });
 };
 
 export const useVendorFinanceDashboard = () => {
     return useQuery({
         queryKey: ["vendorFinanceDashboard"],
-        queryFn: getVendorFinanceDashboard,
+        queryFn: async () => {
+            const res = await getVendorFinanceDashboard();
+            return res.data;
+        },
     });
 };
 

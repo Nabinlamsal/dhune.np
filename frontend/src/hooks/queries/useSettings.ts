@@ -6,7 +6,10 @@ import { toast } from "react-hot-toast";
 export const useSettings = () => {
     return useQuery({
         queryKey: ["settings"],
-        queryFn: getSettings,
+        queryFn: async () => {
+            const res = await getSettings();
+            return res.data;
+        },
     });
 };
 

@@ -6,6 +6,7 @@ import { Layers3, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { DataTable } from "@/src/components/dashboard/table/DataTable";
 import { Input } from "@/src/components/ui/input";
+import { CommissionSettingsCard } from "@/src/components/admin/CommissionSettingsCard";
 
 import {
     useCategories,
@@ -227,6 +228,8 @@ export default function AdminCategoriesPage() {
                     </div>
                 </div>
             </div>
+
+            <CommissionSettingsCard />
 
             <div className="overflow-hidden rounded-[28px] border border-[#d8d0bf] bg-white shadow-[0_18px_40px_rgba(54,42,20,0.06)]">
                 <div className="flex items-center justify-between border-b border-[#ece5d6] px-6 py-4">

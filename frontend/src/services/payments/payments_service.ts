@@ -4,12 +4,15 @@ import {
     PayCashPayload,
     InitiateKhaltiPayload,
     VerifyKhaltiPayload,
+    PayCashResponse,
+    InitiateKhaltiResponse,
+    VerifyKhaltiResponse,
 } from "@/src/types/payments/payments";
 
 export const payCash = async (
     payload: PayCashPayload
-): Promise<{ payment: Payment }> => {
-    return api<{ payment: Payment }>("/payments/cash", {
+): Promise<PayCashResponse> => {
+    return api<PayCashResponse>("/payments/cash", {
         method: "POST",
         data: payload,
     });
@@ -17,8 +20,8 @@ export const payCash = async (
 
 export const initiateKhalti = async (
     payload: InitiateKhaltiPayload
-): Promise<{ pidx: string; payment_url: string }> => {
-    return api<{ pidx: string; payment_url: string }>("/payments/khalti/initiate", {
+): Promise<InitiateKhaltiResponse> => {
+    return api<InitiateKhaltiResponse>("/payments/khalti/initiate", {
         method: "POST",
         data: payload,
     });
@@ -26,8 +29,8 @@ export const initiateKhalti = async (
 
 export const verifyKhalti = async (
     payload: VerifyKhaltiPayload
-): Promise<{ message: string; payment: Payment }> => {
-    return api<{ message: string; payment: Payment }>("/payments/khalti/verify", {
+): Promise<VerifyKhaltiResponse> => {
+    return api<VerifyKhaltiResponse>("/payments/khalti/verify", {
         method: "POST",
         data: payload,
     });
