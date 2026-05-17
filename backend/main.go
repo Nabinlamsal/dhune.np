@@ -46,6 +46,19 @@ import (
 	disputerepo "github.com/Nabinlamsal/dhune.np/internal/disputes/repository"
 	disputeroutes "github.com/Nabinlamsal/dhune.np/internal/disputes/routes"
 	disputeservice "github.com/Nabinlamsal/dhune.np/internal/disputes/service"
+
+	// FINANCE
+	financecontroller "github.com/Nabinlamsal/dhune.np/internal/finance/controller"
+	financerepo "github.com/Nabinlamsal/dhune.np/internal/finance/repository"
+	financeroutes "github.com/Nabinlamsal/dhune.np/internal/finance/routes"
+	financeservice "github.com/Nabinlamsal/dhune.np/internal/finance/service"
+
+	// PAYMENTS
+	paymentcontroller "github.com/Nabinlamsal/dhune.np/internal/payments/controller"
+	paymentrepo "github.com/Nabinlamsal/dhune.np/internal/payments/repository"
+	paymentroutes "github.com/Nabinlamsal/dhune.np/internal/payments/routes"
+	paymentservice "github.com/Nabinlamsal/dhune.np/internal/payments/service"
+
 	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/notifications"
 	notificationroutes "github.com/Nabinlamsal/dhune.np/internal/notifications/routes"
@@ -82,6 +95,7 @@ func main() {
 	commandRepo := userrepo.NewCommandRepoImpl(queries)
 
 	categoryRepo := categoryrepo.NewCategoryRepository(queries)
+	settingsRepo := categoryrepo.NewSettingsRepository(queries)
 
 	orderRepo := orderrepo.NewOrderRepository(queries)
 	requestRepo := orderrepo.NewRequestRepositoryImpl(queries)
@@ -89,6 +103,9 @@ func main() {
 	ratingsRepo := ratings.NewRepository(queries)
 	disputeRepo := disputerepo.NewRepository(queries)
 	notificationRepo := notifications.NewRepository(conn)
+
+	financeRepo := financerepo.NewFinanceRepository(queries)
+	paymentRepo := paymentrepo.NewPaymentRepository(queries)
 
 	//services
 	passwordService := authservice.Password()
@@ -107,8 +124,12 @@ func main() {
 	)
 
 	categoryService := categoryservice.NewCategoryService(categoryRepo)
+	settingsService := categoryservice.NewSettingsService(settingsRepo)
 
-	orderService := orderservice.NewOrderService(orderRepo)
+	financeService := financeservice.NewFinanceService(financeRepo, settingsRepo, orderRepo, conn)
+	paymentService := paymentservice.NewPaymentService(paymentRepo, orderRepo, conn)
+
+	orderService := orderservice.NewOrderService(orderRepo, financeService)
 
 	requestService := orderservice.NewRequestService(
 		conn,
@@ -125,7 +146,7 @@ func main() {
 	ratingsService := ratings.NewService(ratingsRepo)
 	disputeService := disputeservice.NewService(disputeRepo)
 	if err := notifications.InitFirebase(context.Background()); err != nil {
-		log.Fatal("Firebase initialization failed:", err)
+		log.Println("Firebase initialization failed:", err) // Continuing instead of fatal for local
 	}
 	notificationService := notifications.NewService(notificationRepo, notifications.NewFCMSender(notificationRepo))
 	notifications.SetDefaultService(notificationService)
@@ -135,6 +156,10 @@ func main() {
 	userController := usercontroller.NewUserController(userService)
 
 	categoryController := categorycontroller.NewCategoryHandler(categoryService)
+	settingsController := categorycontroller.NewSettingsHandler(settingsService)
+
+	financeController := financecontroller.NewFinanceHandler(financeService)
+	paymentController := paymentcontroller.NewPaymentHandler(paymentService)
 
 	// Orders sub-controllers (from same package)
 	requestController := ordercontroller.NewRequestHandler(requestService)
@@ -165,6 +190,10 @@ func main() {
 	userroutes.RegisterUserRoutes(router, userController, jwtService)
 
 	categoryroutes.RegisterCategoryRoutes(router, categoryController, jwtService)
+	categoryroutes.RegisterSettingsRoutes(router, settingsController, jwtService)
+
+	financeroutes.RegisterFinanceRoutes(router, financeController, jwtService)
+	paymentroutes.RegisterPaymentRoutes(router, paymentController, jwtService)
 
 	orderroutes.RegisterRequestRoutes(router, requestController, jwtService)
 	orderroutes.RegisterOfferRoutes(router, offerController, jwtService)

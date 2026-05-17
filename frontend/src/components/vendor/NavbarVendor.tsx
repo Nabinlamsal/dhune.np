@@ -16,6 +16,7 @@ import {
     ChevronDown,
     Building2,
     Settings,
+    Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogout } from "@/src/hooks/auth/useLogout";
@@ -45,6 +46,7 @@ export default function NavbarVendor() {
         { href: "/vendor/my-orders", label: "My Orders", icon: <ShoppingBag className="h-4 w-4" /> },
         { href: "/vendor/disputes", label: "Disputes", icon: <ShieldAlert className="h-4 w-4" /> },
         { href: "/vendor/ratings", label: "Ratings", icon: <Star className="h-4 w-4" /> },
+        { href: "/vendor/finance", label: "Finance", icon: <Banknote className="h-4 w-4" /> },
     ];
 
     const isActive = (item: NavItem) =>

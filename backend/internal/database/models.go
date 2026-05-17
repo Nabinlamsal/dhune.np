@@ -14,6 +14,48 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
+type CommissionStatus string
+
+const (
+	CommissionStatusPENDING CommissionStatus = "PENDING"
+	CommissionStatusPAID    CommissionStatus = "PAID"
+)
+
+func (e *CommissionStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CommissionStatus(s)
+	case string:
+		*e = CommissionStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CommissionStatus: %T", src)
+	}
+	return nil
+}
+
+type NullCommissionStatus struct {
+	CommissionStatus CommissionStatus
+	Valid            bool // Valid is true if CommissionStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCommissionStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.CommissionStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CommissionStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCommissionStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CommissionStatus), nil
+}
+
 type DisputeRaisedBy string
 
 const (
@@ -277,6 +319,49 @@ func (ns NullPaymentMethod) Value() (driver.Value, error) {
 	return string(ns.PaymentMethod), nil
 }
 
+type PaymentMethodType string
+
+const (
+	PaymentMethodTypeCASH   PaymentMethodType = "CASH"
+	PaymentMethodTypeKHALTI PaymentMethodType = "KHALTI"
+	PaymentMethodTypeESEWA  PaymentMethodType = "ESEWA"
+)
+
+func (e *PaymentMethodType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethodType(s)
+	case string:
+		*e = PaymentMethodType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethodType: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethodType struct {
+	PaymentMethodType PaymentMethodType
+	Valid             bool // Valid is true if PaymentMethodType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethodType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethodType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethodType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethodType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethodType), nil
+}
+
 type PaymentStatus string
 
 const (
@@ -408,6 +493,49 @@ func (ns NullRequestsStatus) Value() (driver.Value, error) {
 	return string(ns.RequestsStatus), nil
 }
 
+type SettlementStatus string
+
+const (
+	SettlementStatusPENDING  SettlementStatus = "PENDING"
+	SettlementStatusVERIFIED SettlementStatus = "VERIFIED"
+	SettlementStatusFAILED   SettlementStatus = "FAILED"
+)
+
+func (e *SettlementStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SettlementStatus(s)
+	case string:
+		*e = SettlementStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SettlementStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSettlementStatus struct {
+	SettlementStatus SettlementStatus
+	Valid            bool // Valid is true if SettlementStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSettlementStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SettlementStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SettlementStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSettlementStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SettlementStatus), nil
+}
+
 type AuthOtpCode struct {
 	ID         uuid.UUID
 	UserID     uuid.UUID
@@ -439,6 +567,18 @@ type Category struct {
 	IsActive     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+type Commission struct {
+	ID                uuid.UUID
+	OrderID           uuid.UUID
+	VendorID          uuid.UUID
+	OrderAmount       string
+	CommissionPercent string
+	CommissionAmount  string
+	Status            CommissionStatus
+	PaidAt            sql.NullTime
+	CreatedAt         time.Time
 }
 
 type Dispute struct {
@@ -508,6 +648,26 @@ type Order struct {
 	DeliveryTime  sql.NullTime
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+}
+
+type Payment struct {
+	ID               uuid.UUID
+	OrderID          uuid.UUID
+	PayerID          uuid.UUID
+	VendorID         uuid.UUID
+	Amount           string
+	PaymentMethod    PaymentMethodType
+	PaymentStatus    PaymentStatus
+	GatewayReference sql.NullString
+	PaidAt           sql.NullTime
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+}
+
+type PlatformSetting struct {
+	ID                   int32
+	CommissionPercentage string
+	UpdatedAt            time.Time
 }
 
 type PushDeviceToken struct {
@@ -583,4 +743,16 @@ type VendorProfile struct {
 	IsActive           bool
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+}
+
+type VendorSettlement struct {
+	ID            uuid.UUID
+	VendorID      uuid.UUID
+	Amount        string
+	PaymentMethod PaymentMethodType
+	Reference     sql.NullString
+	Status        SettlementStatus
+	PaidAt        sql.NullTime
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }

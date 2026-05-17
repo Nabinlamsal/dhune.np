@@ -11,6 +11,9 @@ INSERT INTO orders (
 RETURNING *;
 
 
+-- name: GetOrder :one
+SELECT * FROM orders WHERE id = $1 LIMIT 1;
+
 -- Used by: User (My Orders)
 -- name: GetOrderDetail :one
 SELECT

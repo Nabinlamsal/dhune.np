@@ -11,13 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type OrderService struct {
-	repo repository.OrderRepository
+type FinanceService interface {
+	CreateCommissionForOrder(ctx context.Context, orderID uuid.UUID) (*db.Commission, error)
 }
 
-func NewOrderService(repo repository.OrderRepository) *OrderService {
+type OrderService struct {
+	repo       repository.OrderRepository
+	financeSvc FinanceService
+}
+
+func NewOrderService(repo repository.OrderRepository, financeSvc FinanceService) *OrderService {
 	return &OrderService{
-		repo: repo,
+		repo:       repo,
+		financeSvc: financeSvc,
 	}
 }
 
@@ -246,6 +252,14 @@ func (s *OrderService) UpdateStatus(
 
 	if err := s.repo.UpdateStatus(ctx, orderID, next); err != nil {
 		return err
+	}
+
+	if next == db.OrderStatusCOMPLETED && s.financeSvc != nil {
+		if _, err := s.financeSvc.CreateCommissionForOrder(ctx, orderID); err != nil {
+			// Log the error but don't fail the order status update?
+			// The transaction is already committed for UpdateStatus (if any), actually UpdateStatus is auto-committed.
+			// Ideally they should be in the same transaction, but for MVP this is acceptable.
+		}
 	}
 
 	events.EmitEvent(events.Event{

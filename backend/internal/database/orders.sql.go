@@ -91,6 +91,30 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	return i, err
 }
 
+const getOrder = `-- name: GetOrder :one
+SELECT id, request_id, offer_id, user_id, vendor_id, final_price, order_status, payment_status, pickup_time, delivery_time, created_at, updated_at FROM orders WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrder, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.RequestID,
+		&i.OfferID,
+		&i.UserID,
+		&i.VendorID,
+		&i.FinalPrice,
+		&i.OrderStatus,
+		&i.PaymentStatus,
+		&i.PickupTime,
+		&i.DeliveryTime,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getOrderDetail = `-- name: GetOrderDetail :one
 SELECT
     o.id,

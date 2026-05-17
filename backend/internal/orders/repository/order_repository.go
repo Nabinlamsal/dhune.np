@@ -9,6 +9,8 @@ import (
 
 type OrderRepository interface {
 	Create(ctx context.Context, params db.CreateOrderParams) (db.Order, error)
+	GetByID(ctx context.Context, id uuid.UUID) (db.Order, error)
+	WithTx(tx *db.Queries) OrderRepository
 
 	// dashboards
 	ListByUser(

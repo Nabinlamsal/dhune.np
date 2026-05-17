@@ -15,6 +15,11 @@ type EnvConfig struct {
 	JWTSecret         string
 	JwtAccessMinutes  time.Duration
 	JwtRefreshMinutes time.Duration
+	KhaltiSecretKey   string
+	KhaltiBaseURL     string
+	WebsiteURL        string
+	PublicBackendURL  string
+	MobileDeepLink    string
 }
 
 var AppConfig EnvConfig
@@ -54,5 +59,10 @@ func LoadEnv() {
 		JWTSecret:         jwtSecret,
 		JwtAccessMinutes:  time.Duration(jwtAccessMinutes) * time.Minute,
 		JwtRefreshMinutes: time.Duration(jwtRefreshMinutes) * time.Minute,
+		KhaltiSecretKey:   os.Getenv("KHALTI_SECRET_KEY"),
+		KhaltiBaseURL:     os.Getenv("KHALTI_BASE_URL"),
+		WebsiteURL:        os.Getenv("WEBSITE_URL"),
+		PublicBackendURL:  os.Getenv("PUBLIC_BACKEND_URL"),
+		MobileDeepLink:    os.Getenv("MOBILE_DEEP_LINK"),
 	}
 }

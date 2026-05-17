@@ -14,6 +14,7 @@ import {
     ShieldAlert,
     LogOut,
     Store,
+    Banknote,
 } from "lucide-react"
 import SidebarItem from "./SidebarItem"
 import { usePathname } from "next/navigation"
@@ -33,6 +34,7 @@ export default function Sidebar() {
         { href: "/admin/vendors", label: "Vendors", icon: <Store /> },
         { href: "/admin/disputes", label: "Disputes", icon: <ShieldAlert /> },
         { href: "/admin/ratings", label: "Ratings", icon: <Star /> },
+        { href: "/admin/finance", label: "Finance", icon: <Banknote /> },
         { href: "/admin/payments", label: "Payments", icon: <CreditCard /> },
         { href: "/admin/categories", label: "Categories", icon: <Layers /> },
     ]

@@ -26,6 +26,14 @@ func (r *orderRepository) Create(
 	return r.q.CreateOrder(ctx, params)
 }
 
+func (r *orderRepository) GetByID(ctx context.Context, id uuid.UUID) (db.Order, error) {
+	return r.q.GetOrder(ctx, id)
+}
+
+func (r *orderRepository) WithTx(tx *db.Queries) OrderRepository {
+	return &orderRepository{q: tx}
+}
+
 // List orders for a user dashboard
 func (r *orderRepository) ListByUser(
 	ctx context.Context,
