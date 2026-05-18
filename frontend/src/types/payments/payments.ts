@@ -1,34 +1,22 @@
 import { ApiResponse } from "../api";
 
 export interface Payment {
-    id: string;
-    orderId: string;
-    payerId: string;
-    vendorId: string;
-    amount: string;
-    paymentMethod: string;
-    paymentStatus: string;
-    gatewayReference: string | null;
-    createdAt: string;
-    updatedAt: string;
+    ID: string;
+    OrderID?: { UUID: string; Valid: boolean };
+    PayerID: string;
+    VendorID: string;
+    Amount: string;
+    PaymentMethod: string;
+    PaymentStatus: string;
+    GatewayReference?: { String: string; Valid: boolean };
+    PaymentType: "ORDER_PAYMENT" | "COMMISSION_PAYMENT";
+    CreatedAt: string;
+    UpdatedAt: string;
 }
 
 export interface PayCashPayload {
     order_id: string;
 }
 
-export interface InitiateKhaltiPayload {
-    order_id: string;
-}
-
-export interface VerifyKhaltiPayload {
-    pidx: string;
-    amount: number;
-    transaction_id: string;
-    mobile: string;
-    purchase_order_id: string;
-}
-
-export type PayCashResponse = ApiResponse<{ payment: Payment }>;
-export type InitiateKhaltiResponse = ApiResponse<{ pidx: string; payment_url: string }>;
-export type VerifyKhaltiResponse = ApiResponse<{ message: string; payment: Payment }>;
+export type PayCashResponse = ApiResponse<Payment>;
+export type PaymentURLResponse = ApiResponse<{ payment_url: string }>;

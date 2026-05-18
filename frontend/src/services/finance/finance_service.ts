@@ -14,7 +14,7 @@ export const getAdminFinanceDashboard = async (): Promise<AdminFinanceDashboardR
 };
 
 export const getVendorFinanceDashboard = async (): Promise<VendorFinanceDashboardResponse> => {
-    return api<VendorFinanceDashboardResponse>("/finance/vendor/dashboard", {
+    return api<VendorFinanceDashboardResponse>("/vendor/finance/dashboard", {
         method: "GET",
     });
 };
@@ -22,7 +22,7 @@ export const getVendorFinanceDashboard = async (): Promise<VendorFinanceDashboar
 export const createVendorSettlement = async (
     payload: CreateSettlementPayload
 ): Promise<CreateSettlementResponse> => {
-    return api<CreateSettlementResponse>("/admin/finance/settlements", {
+    return api<CreateSettlementResponse>("/vendor/finance/settlements", {
         method: "POST",
         data: payload,
     });
@@ -32,6 +32,6 @@ export const verifyVendorSettlement = async (
     id: string
 ): Promise<{ settlement: VendorSettlement }> => {
     return api<{ settlement: VendorSettlement }>(`/admin/finance/settlements/${id}/verify`, {
-        method: "PATCH",
+        method: "POST",
     });
 };

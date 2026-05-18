@@ -29,8 +29,10 @@ import { OrderListItem } from "@/src/types/orders/orders";
 import { OrderStatus } from "@/src/types/orders/orders-enums";
 import { CreateDisputePayload, DisputeType } from "@/src/types/disputes/disputes";
 import { useCreateDispute } from "@/src/hooks/disputes/useDisputes";
-import { ClipboardList, Image as ImageIcon, ShieldAlert, ShoppingBag, UserRound } from "lucide-react";
+import { ClipboardList, CreditCard, Image as ImageIcon, ShieldAlert, ShoppingBag, UserRound } from "lucide-react";
 import { formatDisplayId, formatPickupDuration } from "@/src/utils/display";
+import { useMe } from "@/src/hooks/auth/useMe";
+import { useOpenOrderPayment, usePayCash } from "@/src/hooks/queries/usePayments";
 
 function mapOrderStatusToBadge(status: string): Status {
     switch (status) {
@@ -97,16 +99,19 @@ export default function VendorOrdersPage() {
         offset: page * pageSize,
     });
     const { data: stats } = useVendorOrderStats();
+    const { data: currentUser } = useMe();
 
     const { mutate: updateStatus } = useUpdateOrderStatus();
     const { mutate: createDispute, isPending: isCreatingDispute } = useCreateDispute();
+    const openOrderPayment = useOpenOrderPayment();
+    const payCash = usePayCash();
 
     const { data: detail, isLoading: isDetailLoading } = useOrderDetail(selectedOrderId ?? undefined);
 
     const orderRows = Array.isArray(orders)
         ? orders
         : Array.isArray((orders as { data?: unknown[] } | undefined)?.data)
-            ? ((orders as { data?: OrderListItem[] }).data ?? [])
+            ? (((orders as unknown) as { data?: OrderListItem[] }).data ?? [])
             : [];
 
     const canGoNext = orderRows.length === pageSize;
@@ -316,6 +321,39 @@ export default function VendorOrdersPage() {
 
                         {(getNextButtonLabel(detail.order_status) || detail.order_status !== "COMPLETED") && (
                             <div className="border-t pt-6 flex flex-wrap gap-3">
+                                {detail.payment_status === "UNPAID" && currentUser?.id === detail.user.id && (
+                                    <>
+                                        <Button
+                                            className="bg-[#5c2d91] text-white hover:bg-[#4a2277]"
+                                            disabled={openOrderPayment.isPending}
+                                            onClick={() => openOrderPayment.mutate({ orderId: detail.id, method: "KHALTI" })}
+                                        >
+                                            <CreditCard className="size-4" />
+                                            Pay with Khalti
+                                        </Button>
+                                        <Button
+                                            className="bg-[#60bb46] text-white hover:bg-[#4fa63a]"
+                                            disabled={openOrderPayment.isPending}
+                                            onClick={() => openOrderPayment.mutate({ orderId: detail.id, method: "ESEWA" })}
+                                        >
+                                            <CreditCard className="size-4" />
+                                            Pay with eSewa
+                                        </Button>
+                                    </>
+                                )}
+
+                                {detail.payment_status === "UNPAID" && currentUser?.id === detail.vendor.id && (
+                                    <Button
+                                        variant="outline"
+                                        className="border-[#040947]/20 text-[#040947] hover:bg-[#040947]/5"
+                                        disabled={payCash.isPending}
+                                        onClick={() => payCash.mutate({ order_id: detail.id })}
+                                    >
+                                        <CreditCard className="size-4" />
+                                        Mark Cash Paid
+                                    </Button>
+                                )}
+
                                 <Button
                                     disabled={!getNextButtonLabel(detail.order_status)}
                                     className="bg-[#040947] hover:bg-[#030736]"

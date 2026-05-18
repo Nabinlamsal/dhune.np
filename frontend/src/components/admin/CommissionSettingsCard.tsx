@@ -1,84 +1,79 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Settings2, Percent } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
 import { useSettings, useUpdateSettings } from "@/src/hooks/queries/useSettings";
 
+const getCommissionPercentage = (settings: unknown) => {
+    if (!settings || typeof settings !== "object") return "";
+    const record = settings as Record<string, unknown>;
+    const value =
+        "commission_percentage" in record
+            ? record.commission_percentage
+            : "commissionPercentage" in record
+                ? record.commissionPercentage
+                : "";
+    return typeof value === "number" || typeof value === "string" ? String(value) : "";
+};
+
 export function CommissionSettingsCard() {
     const { data, isLoading } = useSettings();
-    const updateSettings = useUpdateSettings();
-    
-    const [percentage, setPercentage] = useState("");
+    const savedPercentage = getCommissionPercentage(data);
 
-    useEffect(() => {
-        if (data?.settings?.commissionPercentage) {
-            setPercentage(data.settings.commissionPercentage);
-        }
-    }, [data]);
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Commission Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <p className="text-sm text-gray-500">Loading settings...</p>
+                ) : (
+                    <CommissionSettingsForm key={savedPercentage} savedPercentage={savedPercentage} />
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function CommissionSettingsForm({ savedPercentage }: { savedPercentage: string }) {
+    const updateSettings = useUpdateSettings();
+    const [percentage, setPercentage] = useState(savedPercentage);
+
+    const percentageNumber = Number(percentage);
+    const canSave =
+        percentage.trim() !== "" &&
+        Number.isFinite(percentageNumber) &&
+        percentageNumber >= 0 &&
+        percentageNumber <= 100 &&
+        percentage !== savedPercentage;
 
     const handleSave = () => {
-        if (!percentage) return;
-        updateSettings.mutate({ commission_percentage: percentage });
+        if (!canSave) return;
+        updateSettings.mutate({ commission_percentage: percentageNumber });
     };
 
     return (
-        <div className="overflow-hidden rounded-[28px] border border-[#d8d0bf] bg-white shadow-[0_18px_40px_rgba(54,42,20,0.06)]">
-            <div className="flex items-center justify-between border-b border-[#ece5d6] px-6 py-4 bg-[#fcfaf5]">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5efe3] text-[#4e4434]">
-                        <Settings2 className="size-5" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-[#2f2618]">Platform Settings</h3>
-                        <p className="text-sm text-[#7a6f5e]">
-                            Global configurations for the marketplace
-                        </p>
-                    </div>
-                </div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="w-full max-w-xs space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                    Global Commission Percentage (%)
+                </label>
+                <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={percentage}
+                    onChange={(event) => setPercentage(event.target.value)}
+                />
             </div>
 
-            <div className="p-6">
-                {isLoading ? (
-                    <div className="animate-pulse flex gap-4">
-                        <div className="h-12 w-48 bg-slate-200 rounded-xl"></div>
-                        <div className="h-12 w-24 bg-slate-200 rounded-xl"></div>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                        <div className="space-y-2 max-w-xs w-full">
-                            <label className="text-sm font-semibold text-[#4e4434]">
-                                Global Commission Percentage (%)
-                            </label>
-                            <div className="relative">
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={percentage}
-                                    onChange={(e) => setPercentage(e.target.value)}
-                                    className="pl-9 h-12 border-[#d8d0bf] bg-[#fcfaf5] text-slate-900 focus-visible:ring-[#8a7f6c]"
-                                />
-                                <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#8a7f6c]" />
-                            </div>
-                            <p className="text-xs text-[#7a6f5e]">
-                                Deducted automatically from vendor earnings on completed orders.
-                            </p>
-                        </div>
-                        
-                        <Button 
-                            onClick={handleSave}
-                            disabled={updateSettings.isPending || percentage === data?.settings?.commissionPercentage}
-                            className="h-12 rounded-xl bg-[#2f2618] px-6 text-white hover:bg-[#211a11]"
-                        >
-                            {updateSettings.isPending ? "Saving..." : "Save Settings"}
-                        </Button>
-                    </div>
-                )}
-            </div>
+            <Button onClick={handleSave} disabled={!canSave || updateSettings.isPending}>
+                {updateSettings.isPending ? "Saving..." : "Save Settings"}
+            </Button>
         </div>
     );
 }

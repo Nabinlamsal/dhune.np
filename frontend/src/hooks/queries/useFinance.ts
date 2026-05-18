@@ -8,6 +8,24 @@ import {
 import { CreateSettlementPayload } from "@/src/types/finance/finance";
 import { toast } from "react-hot-toast";
 
+const financeErrorMessage = (error: unknown, fallback: string) => {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "error" in error.response.data &&
+        typeof error.response.data.error === "string"
+    ) {
+        return error.response.data.error;
+    }
+    return fallback;
+};
+
 export const useAdminFinanceDashboard = () => {
     return useQuery({
         queryKey: ["adminFinanceDashboard"],
@@ -38,8 +56,8 @@ export const useCreateSettlement = () => {
             queryClient.invalidateQueries({ queryKey: ["adminFinanceDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["vendorFinanceDashboard"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.error || "Failed to create settlement");
+        onError: (error: unknown) => {
+            toast.error(financeErrorMessage(error, "Failed to create settlement"));
         },
     });
 };
@@ -54,8 +72,8 @@ export const useVerifySettlement = () => {
             queryClient.invalidateQueries({ queryKey: ["adminFinanceDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["vendorFinanceDashboard"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.error || "Failed to verify settlement");
+        onError: (error: unknown) => {
+            toast.error(financeErrorMessage(error, "Failed to verify settlement"));
         },
     });
 };
