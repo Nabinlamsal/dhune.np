@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -75,6 +76,50 @@ func (q *Queries) GetCommissionByOrderID(ctx context.Context, orderID uuid.UUID)
 	return i, err
 }
 
+const listCommissionsAdmin = `-- name: ListCommissionsAdmin :many
+SELECT id, order_id, vendor_id, order_amount, commission_percent, commission_amount, status, paid_at, created_at FROM commissions
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListCommissionsAdminParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListCommissionsAdmin(ctx context.Context, arg ListCommissionsAdminParams) ([]Commission, error) {
+	rows, err := q.db.QueryContext(ctx, listCommissionsAdmin, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Commission
+	for rows.Next() {
+		var i Commission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.VendorID,
+			&i.OrderAmount,
+			&i.CommissionPercent,
+			&i.CommissionAmount,
+			&i.Status,
+			&i.PaidAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCommissionsByVendor = `-- name: ListCommissionsByVendor :many
 SELECT id, order_id, vendor_id, order_amount, commission_percent, commission_amount, status, paid_at, created_at FROM commissions
 WHERE vendor_id = $1
@@ -121,6 +166,53 @@ func (q *Queries) ListCommissionsByVendor(ctx context.Context, arg ListCommissio
 	return items, nil
 }
 
+const listVendorCommissionDues = `-- name: ListVendorCommissionDues :many
+SELECT
+    vendor_id,
+    COALESCE(SUM(commission_amount) FILTER (WHERE status = 'PENDING'), 0)::numeric AS commission_due,
+    COALESCE(SUM(commission_amount) FILTER (WHERE status = 'PAID'), 0)::numeric AS commission_paid,
+    COALESCE(SUM(order_amount), 0)::numeric AS total_order_earnings
+FROM commissions
+GROUP BY vendor_id
+HAVING COALESCE(SUM(commission_amount) FILTER (WHERE status = 'PENDING'), 0) > 0
+ORDER BY commission_due DESC
+`
+
+type ListVendorCommissionDuesRow struct {
+	VendorID           uuid.UUID
+	CommissionDue      string
+	CommissionPaid     string
+	TotalOrderEarnings string
+}
+
+func (q *Queries) ListVendorCommissionDues(ctx context.Context) ([]ListVendorCommissionDuesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listVendorCommissionDues)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListVendorCommissionDuesRow
+	for rows.Next() {
+		var i ListVendorCommissionDuesRow
+		if err := rows.Scan(
+			&i.VendorID,
+			&i.CommissionDue,
+			&i.CommissionPaid,
+			&i.TotalOrderEarnings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markCommissionsAsPaid = `-- name: MarkCommissionsAsPaid :many
 UPDATE commissions
 SET status = 'PAID',
@@ -131,6 +223,54 @@ RETURNING id, order_id, vendor_id, order_amount, commission_percent, commission_
 
 func (q *Queries) MarkCommissionsAsPaid(ctx context.Context, vendorID uuid.UUID) ([]Commission, error) {
 	rows, err := q.db.QueryContext(ctx, markCommissionsAsPaid, vendorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Commission
+	for rows.Next() {
+		var i Commission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.VendorID,
+			&i.OrderAmount,
+			&i.CommissionPercent,
+			&i.CommissionAmount,
+			&i.Status,
+			&i.PaidAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markCommissionsAsPaidThrough = `-- name: MarkCommissionsAsPaidThrough :many
+UPDATE commissions
+SET status = 'PAID',
+    paid_at = now()
+WHERE vendor_id = $1
+  AND status = 'PENDING'
+  AND created_at <= $2
+RETURNING id, order_id, vendor_id, order_amount, commission_percent, commission_amount, status, paid_at, created_at
+`
+
+type MarkCommissionsAsPaidThroughParams struct {
+	VendorID  uuid.UUID
+	CreatedAt time.Time
+}
+
+func (q *Queries) MarkCommissionsAsPaidThrough(ctx context.Context, arg MarkCommissionsAsPaidThroughParams) ([]Commission, error) {
+	rows, err := q.db.QueryContext(ctx, markCommissionsAsPaidThrough, arg.VendorID, arg.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

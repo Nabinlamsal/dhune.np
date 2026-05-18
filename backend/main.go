@@ -127,7 +127,7 @@ func main() {
 	settingsService := categoryservice.NewSettingsService(settingsRepo)
 
 	financeService := financeservice.NewFinanceService(financeRepo, settingsRepo, orderRepo, conn)
-	paymentService := paymentservice.NewPaymentService(paymentRepo, orderRepo, conn)
+	paymentService := paymentservice.NewPaymentService(paymentRepo, orderRepo, settingsRepo, conn)
 
 	orderService := orderservice.NewOrderService(orderRepo, financeService)
 
@@ -159,7 +159,7 @@ func main() {
 	settingsController := categorycontroller.NewSettingsHandler(settingsService)
 
 	financeController := financecontroller.NewFinanceHandler(financeService)
-	paymentController := paymentcontroller.NewPaymentHandler(paymentService)
+	paymentController := paymentcontroller.NewPaymentHandler(paymentService, jwtService)
 
 	// Orders sub-controllers (from same package)
 	requestController := ordercontroller.NewRequestHandler(requestService)

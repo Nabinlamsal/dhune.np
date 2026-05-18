@@ -20,6 +20,19 @@ type FinanceService struct {
 	db           *sql.DB
 }
 
+type AdminDashboard struct {
+	Stats              db.GetAdminFinanceStatsRow       `json:"stats"`
+	RecentCommissions  []db.Commission                  `json:"recentCommissions"`
+	CommissionPayments []db.Payment                     `json:"commissionPaymentHistory"`
+	VendorDues         []db.ListVendorCommissionDuesRow `json:"vendorDues"`
+}
+
+type VendorDashboard struct {
+	Stats              db.GetVendorFinanceStatsRow `json:"stats"`
+	RecentCommissions  []db.Commission             `json:"recentCommissions"`
+	CommissionPayments []db.Payment                `json:"commissionPaymentHistory"`
+}
+
 func NewFinanceService(
 	repo repository.FinanceRepository,
 	settingsRepo catalogRepo.SettingsRepository,
@@ -49,8 +62,8 @@ func (s *FinanceService) CreateCommissionForOrder(ctx context.Context, orderID u
 		return nil, fmt.Errorf("order not found: %w", err)
 	}
 
-	if order.OrderStatus != db.OrderStatusCOMPLETED {
-		return nil, fmt.Errorf("order must be completed to generate commission")
+	if order.PaymentStatus != db.PaymentStatusPAID {
+		return nil, fmt.Errorf("order must be paid to generate commission")
 	}
 
 	// Check if commission already exists
@@ -108,7 +121,7 @@ type CreateSettlementInput struct {
 
 func (s *FinanceService) CreateVendorSettlement(ctx context.Context, input CreateSettlementInput) (*db.VendorSettlement, error) {
 	amountStr := fmt.Sprintf("%.2f", input.Amount)
-	
+
 	ref := sql.NullString{}
 	if input.Reference != "" {
 		ref = sql.NullString{String: input.Reference, Valid: true}
@@ -175,12 +188,71 @@ func (s *FinanceService) GetAdminStats(ctx context.Context) (*db.GetAdminFinance
 	return &stats, nil
 }
 
+func (s *FinanceService) GetAdminDashboard(ctx context.Context) (*AdminDashboard, error) {
+	stats, err := s.repo.GetAdminFinanceStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	commissions, err := s.repo.ListCommissionsAdmin(ctx, db.ListCommissionsAdminParams{Limit: 10, Offset: 0})
+	if err != nil {
+		return nil, err
+	}
+	payments, err := db.New(s.db).ListCommissionPaymentsAdmin(ctx, db.ListCommissionPaymentsAdminParams{Limit: 10, Offset: 0})
+	if err != nil {
+		return nil, err
+	}
+	dues, err := s.repo.ListVendorCommissionDues(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &AdminDashboard{
+		Stats:              stats,
+		RecentCommissions:  commissions,
+		CommissionPayments: payments,
+		VendorDues:         dues,
+	}, nil
+}
+
 func (s *FinanceService) GetVendorStats(ctx context.Context, vendorID uuid.UUID) (*db.GetVendorFinanceStatsRow, error) {
 	stats, err := s.repo.GetVendorFinanceStats(ctx, vendorID)
 	if err != nil {
 		return nil, err
 	}
+	if stats.CommissionPercent == "0" || stats.CommissionPercent == "0.00" {
+		settings, settingsErr := s.settingsRepo.GetPlatformSettings(ctx)
+		if settingsErr == nil {
+			stats.CommissionPercent = settings.CommissionPercentage
+		}
+	}
 	return &stats, nil
+}
+
+func (s *FinanceService) GetVendorDashboard(ctx context.Context, vendorID uuid.UUID) (*VendorDashboard, error) {
+	stats, err := s.GetVendorStats(ctx, vendorID)
+	if err != nil {
+		return nil, err
+	}
+	commissions, err := s.repo.ListCommissionsByVendor(ctx, db.ListCommissionsByVendorParams{
+		VendorID: vendorID,
+		Limit:    10,
+		Offset:   0,
+	})
+	if err != nil {
+		return nil, err
+	}
+	payments, err := db.New(s.db).ListCommissionPaymentsByVendor(ctx, db.ListCommissionPaymentsByVendorParams{
+		VendorID: vendorID,
+		Limit:    10,
+		Offset:   0,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &VendorDashboard{
+		Stats:              *stats,
+		RecentCommissions:  commissions,
+		CommissionPayments: payments,
+	}, nil
 }
 
 func (s *FinanceService) ListVendorSettlements(ctx context.Context, vendorID *uuid.UUID, limit, offset int32) ([]db.VendorSettlement, error) {

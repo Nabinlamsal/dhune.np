@@ -20,12 +20,12 @@ func NewFinanceHandler(service *service.FinanceService) *FinanceHandler {
 }
 
 func (h *FinanceHandler) GetAdminDashboardStats(c *gin.Context) {
-	stats, err := h.service.GetAdminStats(c.Request.Context())
+	dashboard, err := h.service.GetAdminDashboard(c.Request.Context())
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, stats)
+	utils.Success(c, dashboard)
 }
 
 func (h *FinanceHandler) GetVendorDashboardStats(c *gin.Context) {
@@ -35,12 +35,12 @@ func (h *FinanceHandler) GetVendorDashboardStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetVendorStats(c.Request.Context(), vendorID)
+	dashboard, err := h.service.GetVendorDashboard(c.Request.Context(), vendorID)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, stats)
+	utils.Success(c, dashboard)
 }
 
 func (h *FinanceHandler) CreateVendorSettlement(c *gin.Context) {

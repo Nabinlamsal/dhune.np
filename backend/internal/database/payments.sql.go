@@ -14,6 +14,7 @@ import (
 
 const createPayment = `-- name: CreatePayment :one
 INSERT INTO payments (
+    payment_type,
     order_id,
     payer_id,
     vendor_id,
@@ -22,12 +23,13 @@ INSERT INTO payments (
     payment_status,
     gateway_reference
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type
 `
 
 type CreatePaymentParams struct {
-	OrderID          uuid.UUID
+	PaymentType      PaymentRecordType
+	OrderID          uuid.NullUUID
 	PayerID          uuid.UUID
 	VendorID         uuid.UUID
 	Amount           string
@@ -38,6 +40,7 @@ type CreatePaymentParams struct {
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
 	row := q.db.QueryRowContext(ctx, createPayment,
+		arg.PaymentType,
 		arg.OrderID,
 		arg.PayerID,
 		arg.VendorID,
@@ -59,12 +62,42 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		&i.PaidAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentType,
+	)
+	return i, err
+}
+
+const getOpenCommissionPaymentByVendor = `-- name: GetOpenCommissionPaymentByVendor :one
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments
+WHERE vendor_id = $1
+  AND payment_type = 'COMMISSION_PAYMENT'
+  AND payment_status = 'UNPAID'
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetOpenCommissionPaymentByVendor(ctx context.Context, vendorID uuid.UUID) (Payment, error) {
+	row := q.db.QueryRowContext(ctx, getOpenCommissionPaymentByVendor, vendorID)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.PayerID,
+		&i.VendorID,
+		&i.Amount,
+		&i.PaymentMethod,
+		&i.PaymentStatus,
+		&i.GatewayReference,
+		&i.PaidAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentType,
 	)
 	return i, err
 }
 
 const getPaymentByGatewayReference = `-- name: GetPaymentByGatewayReference :one
-SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at FROM payments WHERE gateway_reference = $1 LIMIT 1
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments WHERE gateway_reference = $1 LIMIT 1
 `
 
 func (q *Queries) GetPaymentByGatewayReference(ctx context.Context, gatewayReference sql.NullString) (Payment, error) {
@@ -82,12 +115,13 @@ func (q *Queries) GetPaymentByGatewayReference(ctx context.Context, gatewayRefer
 		&i.PaidAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentType,
 	)
 	return i, err
 }
 
 const getPaymentByID = `-- name: GetPaymentByID :one
-SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at FROM payments WHERE id = $1 LIMIT 1
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetPaymentByID(ctx context.Context, id uuid.UUID) (Payment, error) {
@@ -105,15 +139,16 @@ func (q *Queries) GetPaymentByID(ctx context.Context, id uuid.UUID) (Payment, er
 		&i.PaidAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentType,
 	)
 	return i, err
 }
 
 const getPaymentByOrderID = `-- name: GetPaymentByOrderID :one
-SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at FROM payments WHERE order_id = $1 LIMIT 1
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments WHERE order_id = $1 AND payment_type = 'ORDER_PAYMENT' LIMIT 1
 `
 
-func (q *Queries) GetPaymentByOrderID(ctx context.Context, orderID uuid.UUID) (Payment, error) {
+func (q *Queries) GetPaymentByOrderID(ctx context.Context, orderID uuid.NullUUID) (Payment, error) {
 	row := q.db.QueryRowContext(ctx, getPaymentByOrderID, orderID)
 	var i Payment
 	err := row.Scan(
@@ -128,12 +163,111 @@ func (q *Queries) GetPaymentByOrderID(ctx context.Context, orderID uuid.UUID) (P
 		&i.PaidAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentType,
 	)
 	return i, err
 }
 
+const listCommissionPaymentsAdmin = `-- name: ListCommissionPaymentsAdmin :many
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments
+WHERE payment_type = 'COMMISSION_PAYMENT'
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListCommissionPaymentsAdminParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListCommissionPaymentsAdmin(ctx context.Context, arg ListCommissionPaymentsAdminParams) ([]Payment, error) {
+	rows, err := q.db.QueryContext(ctx, listCommissionPaymentsAdmin, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.PayerID,
+			&i.VendorID,
+			&i.Amount,
+			&i.PaymentMethod,
+			&i.PaymentStatus,
+			&i.GatewayReference,
+			&i.PaidAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.PaymentType,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCommissionPaymentsByVendor = `-- name: ListCommissionPaymentsByVendor :many
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments
+WHERE vendor_id = $1
+  AND payment_type = 'COMMISSION_PAYMENT'
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListCommissionPaymentsByVendorParams struct {
+	VendorID uuid.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListCommissionPaymentsByVendor(ctx context.Context, arg ListCommissionPaymentsByVendorParams) ([]Payment, error) {
+	rows, err := q.db.QueryContext(ctx, listCommissionPaymentsByVendor, arg.VendorID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.PayerID,
+			&i.VendorID,
+			&i.Amount,
+			&i.PaymentMethod,
+			&i.PaymentStatus,
+			&i.GatewayReference,
+			&i.PaidAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.PaymentType,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPaymentsByUser = `-- name: ListPaymentsByUser :many
-SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at FROM payments
+SELECT id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type FROM payments
 WHERE payer_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -166,6 +300,7 @@ func (q *Queries) ListPaymentsByUser(ctx context.Context, arg ListPaymentsByUser
 			&i.PaidAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentType,
 		); err != nil {
 			return nil, err
 		}
@@ -178,6 +313,50 @@ func (q *Queries) ListPaymentsByUser(ctx context.Context, arg ListPaymentsByUser
 		return nil, err
 	}
 	return items, nil
+}
+
+const prepareGatewayPayment = `-- name: PrepareGatewayPayment :one
+UPDATE payments
+SET amount = $2,
+    payment_method = $3,
+    payment_status = 'UNPAID'::payment_status,
+    gateway_reference = $4,
+    paid_at = NULL,
+    updated_at = now()
+WHERE id = $1
+RETURNING id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type
+`
+
+type PrepareGatewayPaymentParams struct {
+	ID               uuid.UUID
+	Amount           string
+	PaymentMethod    PaymentMethodType
+	GatewayReference sql.NullString
+}
+
+func (q *Queries) PrepareGatewayPayment(ctx context.Context, arg PrepareGatewayPaymentParams) (Payment, error) {
+	row := q.db.QueryRowContext(ctx, prepareGatewayPayment,
+		arg.ID,
+		arg.Amount,
+		arg.PaymentMethod,
+		arg.GatewayReference,
+	)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.PayerID,
+		&i.VendorID,
+		&i.Amount,
+		&i.PaymentMethod,
+		&i.PaymentStatus,
+		&i.GatewayReference,
+		&i.PaidAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentType,
+	)
+	return i, err
 }
 
 const updateOrderPaymentStatus = `-- name: UpdateOrderPaymentStatus :one
@@ -220,7 +399,7 @@ SET payment_status = $2,
     paid_at = CASE WHEN $2 = 'PAID'::payment_status AND paid_at IS NULL THEN now() ELSE paid_at END,
     updated_at = now()
 WHERE id = $1
-RETURNING id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at
+RETURNING id, order_id, payer_id, vendor_id, amount, payment_method, payment_status, gateway_reference, paid_at, created_at, updated_at, payment_type
 `
 
 type UpdatePaymentStatusParams struct {
@@ -244,6 +423,7 @@ func (q *Queries) UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStat
 		&i.PaidAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentType,
 	)
 	return i, err
 }

@@ -15,16 +15,18 @@ const getAdminFinanceStats = `-- name: GetAdminFinanceStats :one
 SELECT 
     COALESCE(SUM(c.order_amount), 0)::numeric AS total_completed_order_value,
     COUNT(c.id)::int AS total_completed_orders,
-    COALESCE(SUM(c.commission_amount) FILTER (WHERE c.status = 'PAID'), 0)::numeric AS total_platform_earnings,
+    COALESCE(SUM(c.commission_amount), 0)::numeric AS total_platform_commission_earned,
+    COALESCE(SUM(c.commission_amount) FILTER (WHERE c.status = 'PAID'), 0)::numeric AS total_commission_received,
     COALESCE(SUM(c.commission_amount) FILTER (WHERE c.status = 'PENDING'), 0)::numeric AS total_pending_dues
 FROM commissions c
 `
 
 type GetAdminFinanceStatsRow struct {
-	TotalCompletedOrderValue string
-	TotalCompletedOrders     int32
-	TotalPlatformEarnings    string
-	TotalPendingDues         string
+	TotalCompletedOrderValue      string
+	TotalCompletedOrders          int32
+	TotalPlatformCommissionEarned string
+	TotalCommissionReceived       string
+	TotalPendingDues              string
 }
 
 func (q *Queries) GetAdminFinanceStats(ctx context.Context) (GetAdminFinanceStatsRow, error) {
@@ -33,7 +35,8 @@ func (q *Queries) GetAdminFinanceStats(ctx context.Context) (GetAdminFinanceStat
 	err := row.Scan(
 		&i.TotalCompletedOrderValue,
 		&i.TotalCompletedOrders,
-		&i.TotalPlatformEarnings,
+		&i.TotalPlatformCommissionEarned,
+		&i.TotalCommissionReceived,
 		&i.TotalPendingDues,
 	)
 	return i, err
@@ -43,6 +46,7 @@ const getVendorFinanceStats = `-- name: GetVendorFinanceStats :one
 SELECT 
     COALESCE(SUM(c.order_amount), 0)::numeric AS total_order_value,
     COUNT(c.id)::int AS total_completed_orders,
+    COALESCE(MAX(c.commission_percent), 0)::numeric AS commission_percent,
     COALESCE(SUM(c.commission_amount), 0)::numeric AS total_commission,
     COALESCE(SUM(c.commission_amount) FILTER (WHERE c.status = 'PAID'), 0)::numeric AS total_paid_to_platform,
     COALESCE(SUM(c.commission_amount) FILTER (WHERE c.status = 'PENDING'), 0)::numeric AS total_pending_due
@@ -53,6 +57,7 @@ WHERE c.vendor_id = $1
 type GetVendorFinanceStatsRow struct {
 	TotalOrderValue      string
 	TotalCompletedOrders int32
+	CommissionPercent    string
 	TotalCommission      string
 	TotalPaidToPlatform  string
 	TotalPendingDue      string
@@ -64,6 +69,7 @@ func (q *Queries) GetVendorFinanceStats(ctx context.Context, vendorID uuid.UUID)
 	err := row.Scan(
 		&i.TotalOrderValue,
 		&i.TotalCompletedOrders,
+		&i.CommissionPercent,
 		&i.TotalCommission,
 		&i.TotalPaidToPlatform,
 		&i.TotalPendingDue,

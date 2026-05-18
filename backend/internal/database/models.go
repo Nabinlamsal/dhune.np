@@ -362,6 +362,48 @@ func (ns NullPaymentMethodType) Value() (driver.Value, error) {
 	return string(ns.PaymentMethodType), nil
 }
 
+type PaymentRecordType string
+
+const (
+	PaymentRecordTypeORDERPAYMENT      PaymentRecordType = "ORDER_PAYMENT"
+	PaymentRecordTypeCOMMISSIONPAYMENT PaymentRecordType = "COMMISSION_PAYMENT"
+)
+
+func (e *PaymentRecordType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentRecordType(s)
+	case string:
+		*e = PaymentRecordType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentRecordType: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentRecordType struct {
+	PaymentRecordType PaymentRecordType
+	Valid             bool // Valid is true if PaymentRecordType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentRecordType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentRecordType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentRecordType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentRecordType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentRecordType), nil
+}
+
 type PaymentStatus string
 
 const (
@@ -652,7 +694,7 @@ type Order struct {
 
 type Payment struct {
 	ID               uuid.UUID
-	OrderID          uuid.UUID
+	OrderID          uuid.NullUUID
 	PayerID          uuid.UUID
 	VendorID         uuid.UUID
 	Amount           string
@@ -662,6 +704,7 @@ type Payment struct {
 	PaidAt           sql.NullTime
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+	PaymentType      PaymentRecordType
 }
 
 type PlatformSetting struct {

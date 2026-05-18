@@ -12,6 +12,8 @@ type FinanceRepository interface {
 	GetCommissionByOrderID(ctx context.Context, orderID uuid.UUID) (db.Commission, error)
 	ListCommissionsByVendor(ctx context.Context, params db.ListCommissionsByVendorParams) ([]db.Commission, error)
 	MarkCommissionsAsPaid(ctx context.Context, vendorID uuid.UUID) ([]db.Commission, error)
+	ListCommissionsAdmin(ctx context.Context, params db.ListCommissionsAdminParams) ([]db.Commission, error)
+	ListVendorCommissionDues(ctx context.Context) ([]db.ListVendorCommissionDuesRow, error)
 
 	CreateVendorSettlement(ctx context.Context, params db.CreateVendorSettlementParams) (db.VendorSettlement, error)
 	GetVendorSettlementByID(ctx context.Context, id uuid.UUID) (db.VendorSettlement, error)
@@ -47,6 +49,14 @@ func (r *financeRepo) ListCommissionsByVendor(ctx context.Context, params db.Lis
 
 func (r *financeRepo) MarkCommissionsAsPaid(ctx context.Context, vendorID uuid.UUID) ([]db.Commission, error) {
 	return r.q.MarkCommissionsAsPaid(ctx, vendorID)
+}
+
+func (r *financeRepo) ListCommissionsAdmin(ctx context.Context, params db.ListCommissionsAdminParams) ([]db.Commission, error) {
+	return r.q.ListCommissionsAdmin(ctx, params)
+}
+
+func (r *financeRepo) ListVendorCommissionDues(ctx context.Context) ([]db.ListVendorCommissionDuesRow, error) {
+	return r.q.ListVendorCommissionDues(ctx)
 }
 
 func (r *financeRepo) CreateVendorSettlement(ctx context.Context, params db.CreateVendorSettlementParams) (db.VendorSettlement, error) {

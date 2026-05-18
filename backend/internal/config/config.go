@@ -10,16 +10,21 @@ import (
 )
 
 type EnvConfig struct {
-	DatabaseURL       string
-	ServerPort        string
-	JWTSecret         string
-	JwtAccessMinutes  time.Duration
-	JwtRefreshMinutes time.Duration
-	KhaltiSecretKey   string
-	KhaltiBaseURL     string
-	WebsiteURL        string
-	PublicBackendURL  string
-	MobileDeepLink    string
+	DatabaseURL           string
+	ServerPort            string
+	JWTSecret             string
+	JwtAccessMinutes      time.Duration
+	JwtRefreshMinutes     time.Duration
+	KhaltiSecretKey       string
+	KhaltiPaymentURL      string
+	KhaltiVerificationURL string
+	EsewaProductCode      string
+	EsewaSecretKey        string
+	EsewaGatewayURL       string
+	BackendURL            string
+	WebsiteURL            string
+	PublicBackendURL      string
+	AppScheme             string
 }
 
 var AppConfig EnvConfig
@@ -54,15 +59,20 @@ func LoadEnv() {
 	}
 
 	AppConfig = EnvConfig{
-		DatabaseURL:       dbURL,
-		ServerPort:        port,
-		JWTSecret:         jwtSecret,
-		JwtAccessMinutes:  time.Duration(jwtAccessMinutes) * time.Minute,
-		JwtRefreshMinutes: time.Duration(jwtRefreshMinutes) * time.Minute,
-		KhaltiSecretKey:   os.Getenv("KHALTI_SECRET_KEY"),
-		KhaltiBaseURL:     os.Getenv("KHALTI_BASE_URL"),
-		WebsiteURL:        os.Getenv("WEBSITE_URL"),
-		PublicBackendURL:  os.Getenv("PUBLIC_BACKEND_URL"),
-		MobileDeepLink:    os.Getenv("MOBILE_DEEP_LINK"),
+		DatabaseURL:           dbURL,
+		ServerPort:            port,
+		JWTSecret:             jwtSecret,
+		JwtAccessMinutes:      time.Duration(jwtAccessMinutes) * time.Minute,
+		JwtRefreshMinutes:     time.Duration(jwtRefreshMinutes) * time.Minute,
+		KhaltiSecretKey:       os.Getenv("KHALTI_SECRET_KEY"),
+		KhaltiPaymentURL:      os.Getenv("KHALTI_PAYMENT_URL"),
+		KhaltiVerificationURL: os.Getenv("KHALTI_VERIFICATION_URL"),
+		EsewaProductCode:      os.Getenv("ESEWA_PRODUCT_CODE"),
+		EsewaSecretKey:        os.Getenv("ESEWA_SECRET_KEY"),
+		EsewaGatewayURL:       os.Getenv("ESEWA_GATEWAY_URL"),
+		BackendURL:            os.Getenv("BACKEND_URL"),
+		WebsiteURL:            os.Getenv("WEBSITE_URL"),
+		PublicBackendURL:      os.Getenv("PUBLIC_BACKEND_URL"),
+		AppScheme:             os.Getenv("APP_SCHEME"),
 	}
 }
