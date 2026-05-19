@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/src/hooks/auth/useMe";
 import { Role } from "@/src/types/auth/identity";
@@ -15,16 +15,7 @@ export function AuthGuard({
     const router = useRouter();
     const { data, isLoading, isError } = useMe();
 
-    const [mounted, setMounted] = useState(false);
-
-    // Wait for client
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (!mounted) return;
-
         const token = localStorage.getItem("token");
 
         // Not logged in
@@ -52,16 +43,13 @@ export function AuthGuard({
                     break;
                 case "user":
                 case "business":
-                    router.replace("/mobile-app");
+                    router.replace("/user/dashboard");
                     break;
                 default:
                     router.replace("/auth/login");
             }
         }
-    }, [mounted, data, isLoading, isError]);
-
-    //render nothing on server
-    if (!mounted) return null;
+    }, [allow, data, isLoading, isError, router]);
 
     if (isLoading) {
         return (

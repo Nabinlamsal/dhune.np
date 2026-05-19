@@ -32,7 +32,7 @@ const redirectByRole = (role: string, router: ReturnType<typeof useRouter>) => {
         return;
     }
 
-    router.replace("/mobile-app");
+    router.replace("/user/dashboard");
 };
 
 export const useForgotPassword = () => {

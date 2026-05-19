@@ -16,6 +16,7 @@ const pick = <T = unknown>(obj: Record<string, unknown>, keys: string[]): T | un
 const normalizeMyProfile = (raw: unknown): AdminUserProfile => {
     const src = (raw ?? {}) as Record<string, unknown>;
     const vendorRaw = (pick<Record<string, unknown>>(src, ["VendorProfile", "vendor_profile", "vendorProfile"]) ?? {}) as Record<string, unknown>;
+    const businessRaw = (pick<Record<string, unknown>>(src, ["BusinessProfile", "business_profile", "businessProfile"]) ?? {}) as Record<string, unknown>;
     const documentsRaw = pick<unknown[]>(src, ["Documents", "documents"]) ?? [];
 
     return {
@@ -24,12 +25,18 @@ const normalizeMyProfile = (raw: unknown): AdminUserProfile => {
         Email: pick<string>(src, ["Email", "email"]) ?? "",
         Phone: pick<string>(src, ["Phone", "phone"]) ?? "",
         ProfileImageURL: pick<string>(src, ["ProfileImageURL", "profile_image_url", "profileImageURL"]) ?? "",
-        Role: (pick<string>(src, ["Role", "role"]) as AdminUserProfile["Role"]) ?? "vendor",
+        Role: (pick<string>(src, ["Role", "role"]) as AdminUserProfile["Role"]) ?? "user",
         IsActive: Boolean(pick<boolean>(src, ["IsActive", "is_active", "isActive"])),
         IsVerified: Boolean(pick<boolean>(src, ["IsVerified", "is_verified", "isVerified"])),
         CreatedAt: pick<string>(src, ["CreatedAt", "created_at", "createdAt"]) ?? "",
         VendorApprovalStatus: pick<AdminUserProfile["VendorApprovalStatus"]>(src, ["VendorApprovalStatus", "vendor_approval_status", "vendorApprovalStatus"]),
         BusinessApprovalStatus: pick<AdminUserProfile["BusinessApprovalStatus"]>(src, ["BusinessApprovalStatus", "business_approval_status", "businessApprovalStatus"]),
+        BusinessProfile: {
+            OwnerName: pick<string>(businessRaw, ["OwnerName", "owner_name", "ownerName"]) ?? "",
+            BusinessType: pick<string>(businessRaw, ["BusinessType", "business_type", "businessType"]) ?? "",
+            RegistrationNumber: pick<string>(businessRaw, ["RegistrationNumber", "registration_number", "registrationNumber"]) ?? "",
+            ApprovalStatus: (pick(businessRaw, ["ApprovalStatus", "approval_status", "approvalStatus"]) as ApprovalStatus) ?? "pending",
+        },
         VendorProfile: {
             OwnerName: pick<string>(vendorRaw, ["OwnerName", "owner_name", "ownerName"]) ?? "",
             Address: pick<string>(vendorRaw, ["Address", "address"]) ?? "",

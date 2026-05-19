@@ -29,7 +29,7 @@ export const useLogin = () => {
                 router.replace("/vendor");
                 return;
             }
-            router.replace("/mobile-app");
+            router.replace("/user/dashboard");
         },
         onError: (error) => {
             toast.error(getAuthErrorMessage(error));
