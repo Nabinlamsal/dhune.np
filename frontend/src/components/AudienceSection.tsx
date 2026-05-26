@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Group {
     name: string;
@@ -9,48 +9,48 @@ interface Group {
 
 const group: Group[] = [
     {
-        name: "Businesses & Organization",
-        desc: "Designed for hospitals, hotels, and growing businesses that handle large volumes of laundry daily. Dhune.np connects you with professional vendors offering bulk cleaning, and corporate invoicing.",
+        name: "Users & Businesses",
+        desc: "Normal users and business users share the same request, offer, order tracking, payment, profile, and support features. Business users only complete a more detailed registration process.",
     },
     {
         name: "Normal Users",
-        desc: "Whether it’s your everyday wear, student uniforms, or household linens, Dhune.np makes laundry simple — schedule pickups, compare providers, and enjoy next-day delivery.",
+        desc: "Whether it is everyday wear, student uniforms, or household linens, Dhune.np makes laundry simple: create requests, compare providers, and track orders.",
     },
     {
         name: "Laundry Vendors",
-        desc: "A platform for laundry operators to expand their reach, manage customer orders, and grow their business digitally. Join Dhune.np and focus on cleaning while we handle the rest.",
+        desc: "Laundry operators can receive requests, send offers, manage accepted orders, and grow their customer reach through a structured digital workflow.",
     },
-]
+];
 
 export default function AudienceSection() {
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % group.length)
+            setIndex((prev) => (prev + 1) % group.length);
         }, 4000);
-        return () => clearInterval(interval)
+        return () => clearInterval(interval);
     }, []);
 
     return (
         <div className="mt-12 flex flex-col items-start gap-4">
-            <div className="bg-gradient-to-r from-[#fdf6e3] to-[#fff9f0] p-6 rounded-2xl shadow-lg w-full sm:max-w-xl transition-all duration-700">
-                <p className="text-lg sm:text-2xl font-semibold text-[#9c7d01] mb-2">
+            <div className="w-full rounded-2xl bg-gradient-to-r from-[#fdf6e3] to-[#fff9f0] p-6 shadow-lg transition-all duration-700 dark:from-[#252318] dark:to-[#1d1d1a] sm:max-w-xl">
+                <p className="mb-2 text-lg font-semibold text-[#9c7d01] sm:text-2xl">
                     Dhune.np is for{" "}
-                    <span className="text-[#040947] text-2xl sm:text-3xl font-bold">
+                    <span className="text-2xl font-bold text-[#040947] dark:text-[#ebbc01] sm:text-3xl">
                         {group[index].name}
                     </span>
                 </p>
-                <p className="text-neutral-700 italic text-sm sm:text-base leading-relaxed">
+                <p className="text-sm italic leading-relaxed text-neutral-700 dark:text-[#F7F5EE]/70 sm:text-base">
                     {group[index].desc}
                 </p>
             </div>
 
-            <div className="flex gap-2 mt-2">
+            <div className="mt-2 flex gap-2">
                 {group.map((_, i) => (
                     <span
                         key={i}
-                        className={`w-4 h-4 rounded-full transition-all duration-500 self-center ${i === index ? "bg-[#040947]" : "bg-gray-300"
+                        className={`h-4 w-4 self-center rounded-full transition-all duration-500 ${i === index ? "bg-[#040947] dark:bg-[#ebbc01]" : "bg-gray-300 dark:bg-white/20"
                             }`}
                     />
                 ))}
@@ -58,4 +58,3 @@ export default function AudienceSection() {
         </div>
     );
 }
-

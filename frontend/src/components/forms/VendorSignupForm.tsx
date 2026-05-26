@@ -39,18 +39,18 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
     return (
         <div
             className={cn(
-                "bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto"
+                "w-full max-w-5xl max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl"
             )}
         >
-            <Card>
+            <Card className="border-border bg-card text-card-foreground shadow-none">
                 <CardHeader>
-                    <CardTitle className="text-yellow-600">
+                    <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">
                         Vendor Signup - Dhune.np
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-muted-foreground">
                         Provide your business details to register as a vendor.
                         <br />
-                        <span className="text-red-600 font-semibold">
+                        <span className="text-red-600 font-semibold dark:text-red-300">
                             All details must match your official registration document.
                         </span>
                     </CardDescription>
@@ -250,20 +250,20 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                             {/* Submit Button */}
                             <Field className="col-span-full">
                                 {successMessage && (
-                                    <div className="bg-yellow-100 text-yellow-800 p-2 rounded text-sm">
+                                    <div className="bg-yellow-100 text-yellow-800 p-2 rounded text-sm dark:bg-[#ebbc01]/15 dark:text-[#ebbc01]">
                                         {successMessage}
                                     </div>
                                 )}
 
                                 {errorMessage && (
-                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm dark:bg-red-500/15 dark:text-red-200">
                                         {errorMessage}
                                     </div>
                                 )}
                                 <Button
                                     type="submit"
                                     disabled={isPending}
-                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
+                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full dark:hover:text-[#ebbc01]"
                                 >
                                     {isPending
                                         ? "Registering..."
@@ -273,11 +273,11 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
 
                             {/* Already Have Account */}
                             <Field className="col-span-full">
-                                <FieldDescription className="text-center text-md font-semibold mx-0">
+                                <FieldDescription className="text-center text-md font-semibold mx-0 text-muted-foreground">
                                     Already have an account?{" "}
                                     <button
                                         type="button"
-                                        className="text-blue-800 underline"
+                                        className="text-[#040947] underline dark:text-[#ebbc01]"
                                         onClick={onBack}
                                     >
                                         Sign In

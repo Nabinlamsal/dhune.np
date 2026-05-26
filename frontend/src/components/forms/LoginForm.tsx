@@ -76,16 +76,16 @@ export function LoginForm({
     }, [googleClientId, googleLogin, googleReady]);
 
     return (
-        <div className={cn("w-1/3 gap-6")}>
+        <div className={cn("w-full max-w-md gap-6")}>
             <Script
                 src="https://accounts.google.com/gsi/client"
                 strategy="afterInteractive"
                 onLoad={() => setGoogleReady(true)}
             />
-            <Card>
+            <Card className="border-border bg-card text-card-foreground shadow-xl">
                 <CardHeader>
-                    <CardTitle className="text-yellow-600">Dhune.np</CardTitle>
-                    <CardDescription className="font-light text-[#040947]">
+                    <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">Dhune.np</CardTitle>
+                    <CardDescription className="font-light text-[#040947] dark:text-muted-foreground">
                         Login to your account
                     </CardDescription>
                 </CardHeader>
@@ -128,6 +128,7 @@ export function LoginForm({
                                     id="email"
                                     type="text"
                                     placeholder="example@gmail.com or 98XXXXXXXX"
+                                    className="bg-background text-foreground placeholder:text-muted-foreground"
                                     value={emailOrPhone}
                                     onChange={(e) => setEmailOrPhone(e.target.value)}
                                     required
@@ -140,7 +141,7 @@ export function LoginForm({
                                     <FieldLabel htmlFor="password">Password</FieldLabel>
                                     <Link
                                         href="/auth/forgot-password"
-                                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline hover:text-[#040947]"
+                                        className="ml-auto inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                     >
                                         Forgot your password?
                                     </Link>
@@ -148,6 +149,7 @@ export function LoginForm({
                                 <Input
                                     id="password"
                                     type="password"
+                                    className="bg-background text-foreground placeholder:text-muted-foreground"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required />
@@ -156,16 +158,16 @@ export function LoginForm({
                             {/* Login Buttons */}
                             <Field>
                                 {authError && (
-                                    <div className="bg-red-100 text-red-600 text-sm p-2 rounded-md">
+                                    <div className="bg-red-100 text-red-600 text-sm p-2 rounded-md dark:bg-red-500/15 dark:text-red-200">
                                         {authError}
                                     </div>
                                 )}
-                                <Button className="bg-[#040947] hover:bg-[#121008ea]" type="submit" disabled={isPending}>
+                                <Button className="bg-[#040947] text-white hover:bg-[#121008ea] dark:bg-[#ebbc01] dark:text-[#111827] dark:hover:bg-[#ffd84d]" type="submit" disabled={isPending}>
                                     {isPending ? "Logging In>>" : "Login"}
                                 </Button>
 
                                 <Button
-                                    className="bg-[#6187c2] hover:bg-[#357ae8] mt-2"
+                                    className="mt-2 border-border bg-[#6187c2] text-white hover:bg-[#357ae8] dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-accent"
                                     variant="outline"
                                     type="button"
                                     disabled={googleLogin.isPending}
@@ -190,18 +192,18 @@ export function LoginForm({
                                 </Button>
 
                                 {/* SIGNUP DROPDOWN (FINAL) */}
-                                <FieldDescription className="text-center mt-4">
+                                <FieldDescription className="text-center mt-4 text-muted-foreground">
                                     Don&apos;t have an account?
                                     <Select
                                         onValueChange={(value) =>
                                             onSignupSelect(value as "user_signup" | "business_signup" | "vendor_signup")
                                         }
                                     >
-                                        <SelectTrigger className="inline-flex w-[200px] ml-2 bg-white border border-gray-300 rounded-md">
+                                        <SelectTrigger className="inline-flex w-[200px] ml-2 rounded-md border border-border bg-background text-foreground">
                                             <SelectValue placeholder="Sign up as..." />
                                         </SelectTrigger>
 
-                                        <SelectContent className="bg-white shadow-md rounded-md">
+                                        <SelectContent className="rounded-md border-border bg-popover text-popover-foreground shadow-md">
                                             <SelectItem value="user_signup">Normal User</SelectItem>
                                             <SelectItem value="business_signup">Business User</SelectItem>
                                             <SelectItem value="vendor_signup">Laundry Vendor</SelectItem>

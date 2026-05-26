@@ -32,12 +32,12 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
-        <div className={cn("bg-white rounded-xl p-6 w-full max-w-5xl max-h-[80vh] overflow-y-auto")}>
-            <Card>
+        <div className={cn("w-full max-w-5xl max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl")}>
+            <Card className="border-border bg-card text-card-foreground shadow-none">
                 <CardHeader className="flex md:grid-cols-2 gap-10">
                     <div>
-                        <CardTitle className="text-yellow-600">User Signup - Dhune.np</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">User Signup - Dhune.np</CardTitle>
+                        <CardDescription className="text-muted-foreground">
                             Provide your personal details to register as a User<br />
                         </CardDescription>
                     </div>
@@ -147,19 +147,19 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
                             {/* Submit Button */}
                             <Field className="col-span-full">
                                 {successMessage && (
-                                    <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
+                                    <div className="bg-green-100 text-green-700 p-2 rounded text-sm dark:bg-green-500/15 dark:text-green-200">
                                         {successMessage}
                                     </div>
                                 )}
 
                                 {errorMessage && (
-                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                                    <div className="bg-red-100 text-red-700 p-2 rounded text-sm dark:bg-red-500/15 dark:text-red-200">
                                         {errorMessage}
                                     </div>
                                 )}
                                 <Button
                                     type="submit"
-                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full"
+                                    className="bg-[#ebbc01] hover:bg-[#040947] hover:text-yellow-500 text-black font-bold py-2 px-4 rounded w-full dark:hover:text-[#ebbc01]"
                                     disabled={isPending}
                                 >
                                     {isPending ? "Registering..." : "Register as User"}
@@ -168,11 +168,11 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
 
                             {/* Already Have Account */}
                             <Field className="col-span-full">
-                                <FieldDescription className="text-center text-md font-semibold mx-0">
+                                <FieldDescription className="text-center text-md font-semibold mx-0 text-muted-foreground">
                                     Already have an account?{" "}
                                     <button
                                         type="button"
-                                        className="text-blue-800 underline"
+                                        className="text-[#040947] underline dark:text-[#ebbc01]"
                                         onClick={onBack}
                                     >
                                         Sign In
