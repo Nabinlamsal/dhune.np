@@ -4,6 +4,7 @@ import AudienceSection from "../../components/AudienceSection";
 import DownloadAppSection from "@/src/components/DownloadAppSection";
 import FaqSection from "@/src/components/FaqSection";
 import FeaturesSection from "@/src/components/FeaturesSection";
+import HelpChatbot from "@/src/components/HelpChatbot";
 import HowItWorksSection from "@/src/components/HowItWorksSection";
 import LandingFooter from "@/src/components/LandingFooter";
 import Image from "next/image";
@@ -99,6 +100,7 @@ export default function Home() {
       <DownloadAppSection />
       <FaqSection />
       <LandingFooter />
+      <HelpChatbot />
     </div>
   );
 }
