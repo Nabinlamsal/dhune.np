@@ -25,6 +25,8 @@ type EnvConfig struct {
 	WebsiteURL            string
 	PublicBackendURL      string
 	AppScheme             string
+	GroqAPIKey            string
+	GroqModel             string
 }
 
 var AppConfig EnvConfig
@@ -74,5 +76,11 @@ func LoadEnv() {
 		WebsiteURL:            os.Getenv("WEBSITE_URL"),
 		PublicBackendURL:      os.Getenv("PUBLIC_BACKEND_URL"),
 		AppScheme:             os.Getenv("APP_SCHEME"),
+		GroqAPIKey:            os.Getenv("GROQ_API_KEY"),
+		GroqModel:             os.Getenv("GROQ_MODEL"),
+	}
+
+	if AppConfig.GroqModel == "" {
+		AppConfig.GroqModel = "llama-3.1-8b-instant"
 	}
 }

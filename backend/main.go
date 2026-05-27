@@ -35,6 +35,12 @@ import (
 	categoryroutes "github.com/Nabinlamsal/dhune.np/internal/catalog/routes"
 	categoryservice "github.com/Nabinlamsal/dhune.np/internal/catalog/service"
 
+	// CHATBOT
+	chatbotcontroller "github.com/Nabinlamsal/dhune.np/internal/chatbot/controller"
+	chatbotrepo "github.com/Nabinlamsal/dhune.np/internal/chatbot/repository"
+	chatbotroutes "github.com/Nabinlamsal/dhune.np/internal/chatbot/routes"
+	chatbotservice "github.com/Nabinlamsal/dhune.np/internal/chatbot/service"
+
 	// ORDERS MODULE (import once)
 	ordercontroller "github.com/Nabinlamsal/dhune.np/internal/orders/controller"
 	orderrepo "github.com/Nabinlamsal/dhune.np/internal/orders/repository"
@@ -96,6 +102,7 @@ func main() {
 
 	categoryRepo := categoryrepo.NewCategoryRepository(queries)
 	settingsRepo := categoryrepo.NewSettingsRepository(queries)
+	chatbotRepo := chatbotrepo.NewRepository(conn)
 
 	orderRepo := orderrepo.NewOrderRepository(queries)
 	requestRepo := orderrepo.NewRequestRepositoryImpl(queries)
@@ -125,6 +132,7 @@ func main() {
 
 	categoryService := categoryservice.NewCategoryService(categoryRepo)
 	settingsService := categoryservice.NewSettingsService(settingsRepo)
+	chatbotService := chatbotservice.NewChatbotService(chatbotRepo, config.AppConfig)
 
 	financeService := financeservice.NewFinanceService(financeRepo, settingsRepo, orderRepo, conn)
 	paymentService := paymentservice.NewPaymentService(paymentRepo, orderRepo, settingsRepo, conn)
@@ -157,6 +165,7 @@ func main() {
 
 	categoryController := categorycontroller.NewCategoryHandler(categoryService)
 	settingsController := categorycontroller.NewSettingsHandler(settingsService)
+	chatbotController := chatbotcontroller.NewChatbotHandler(chatbotService)
 
 	financeController := financecontroller.NewFinanceHandler(financeService)
 	paymentController := paymentcontroller.NewPaymentHandler(paymentService, jwtService)
@@ -191,6 +200,7 @@ func main() {
 
 	categoryroutes.RegisterCategoryRoutes(router, categoryController, jwtService)
 	categoryroutes.RegisterSettingsRoutes(router, settingsController, jwtService)
+	chatbotroutes.RegisterChatbotRoutes(router, chatbotController)
 
 	financeroutes.RegisterFinanceRoutes(router, financeController, jwtService)
 	paymentroutes.RegisterPaymentRoutes(router, paymentController, jwtService)
