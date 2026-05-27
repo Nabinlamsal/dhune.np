@@ -61,10 +61,10 @@ export type VendorFinanceDashboardResponse = ApiResponse<{
 }>;
 
 export interface CreateSettlementPayload {
-    vendor_id: string;
     amount: number;
     payment_method: string;
     reference: string;
 }
 
 export type CreateSettlementResponse = ApiResponse<VendorSettlement>;
+export type VendorSettlementsResponse = ApiResponse<VendorSettlement[]>;

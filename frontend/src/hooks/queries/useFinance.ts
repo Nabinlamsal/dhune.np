@@ -3,6 +3,8 @@ import {
     getAdminFinanceDashboard,
     getVendorFinanceDashboard,
     createVendorSettlement,
+    listAdminSettlements,
+    listVendorSettlements,
     verifyVendorSettlement,
 } from "@/src/services/finance/finance_service";
 import { CreateSettlementPayload } from "@/src/types/finance/finance";
@@ -46,6 +48,26 @@ export const useVendorFinanceDashboard = () => {
     });
 };
 
+export const useVendorSettlements = () => {
+    return useQuery({
+        queryKey: ["vendorSettlements"],
+        queryFn: async () => {
+            const res = await listVendorSettlements();
+            return res.data;
+        },
+    });
+};
+
+export const useAdminSettlements = () => {
+    return useQuery({
+        queryKey: ["adminSettlements"],
+        queryFn: async () => {
+            const res = await listAdminSettlements();
+            return res.data;
+        },
+    });
+};
+
 export const useCreateSettlement = () => {
     const queryClient = useQueryClient();
 
@@ -55,6 +77,8 @@ export const useCreateSettlement = () => {
             toast.success("Settlement created successfully");
             queryClient.invalidateQueries({ queryKey: ["adminFinanceDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["vendorFinanceDashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["vendorSettlements"] });
+            queryClient.invalidateQueries({ queryKey: ["adminSettlements"] });
         },
         onError: (error: unknown) => {
             toast.error(financeErrorMessage(error, "Failed to create settlement"));
@@ -71,6 +95,8 @@ export const useVerifySettlement = () => {
             toast.success("Settlement verified successfully");
             queryClient.invalidateQueries({ queryKey: ["adminFinanceDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["vendorFinanceDashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["vendorSettlements"] });
+            queryClient.invalidateQueries({ queryKey: ["adminSettlements"] });
         },
         onError: (error: unknown) => {
             toast.error(financeErrorMessage(error, "Failed to verify settlement"));

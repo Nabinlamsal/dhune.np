@@ -1,12 +1,14 @@
 "use client";
 
 import { BadgeDollarSign, CreditCard, Wallet } from "lucide-react";
-import { useVendorFinanceDashboard } from "@/src/hooks/queries/useFinance";
+import { useState } from "react";
+import { useCreateSettlement, useVendorFinanceDashboard, useVendorSettlements } from "@/src/hooks/queries/useFinance";
 import { useOpenCommissionPayment } from "@/src/hooks/queries/usePayments";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
 import { DataTable } from "@/src/components/dashboard/table/DataTable";
-import { Commission } from "@/src/types/finance/finance";
+import { Commission, VendorSettlement } from "@/src/types/finance/finance";
 import { Payment } from "@/src/types/payments/payments";
 import { formatDisplayId } from "@/src/utils/display";
 import { SectionCard } from "@/src/components/vendor/dashboard/SectionCard";
@@ -15,9 +17,13 @@ const rs = (value?: string) => `Rs. ${Number(value ?? 0).toLocaleString(undefine
 
 export default function VendorFinancePage() {
     const { data, isLoading, refetch } = useVendorFinanceDashboard();
+    const { data: rawSettlements } = useVendorSettlements();
     const openCommissionPayment = useOpenCommissionPayment();
+    const createSettlement = useCreateSettlement();
+    const [settlementReference, setSettlementReference] = useState("");
 
     const stats = data?.stats;
+    const settlements = rawSettlements ?? [];
     const commissions = data?.recentCommissions ?? [];
     const payments = data?.commissionPaymentHistory ?? [];
 
@@ -72,6 +78,39 @@ export default function VendorFinancePage() {
         },
     ];
 
+    const settlementColumns = [
+        {
+            key: "amount",
+            header: "Amount",
+            render: (s: VendorSettlement) => <div className="text-sm font-bold text-slate-800">{rs(s.Amount)}</div>,
+        },
+        {
+            key: "reference",
+            header: "Reference",
+            render: (s: VendorSettlement) => <div className="text-sm text-slate-600">{s.Reference?.Valid ? s.Reference.String : "-"}</div>,
+        },
+        {
+            key: "status",
+            header: "Status",
+            render: (s: VendorSettlement) => <span className="text-xs font-semibold text-slate-700">{s.Status === "VERIFIED" ? "Verified Settlement" : "Pending Settlement"}</span>,
+        },
+    ];
+
+    const submitSettlement = () => {
+        const amount = Number(stats?.TotalPendingDue ?? 0);
+        if (amount <= 0 || !settlementReference.trim()) return;
+        createSettlement.mutate(
+            {
+                amount,
+                payment_method: "ESEWA",
+                reference: settlementReference.trim(),
+            },
+            {
+                onSuccess: () => setSettlementReference(""),
+            }
+        );
+    };
+
     if (isLoading) {
         return <p className="text-sm text-slate-500">Loading your finances...</p>;
     }
@@ -125,6 +164,26 @@ export default function VendorFinancePage() {
 
                 <SectionCard title="Commission Records" subtitle="Commission generated from paid orders">
                     {commissions.length === 0 ? <p className="text-sm text-slate-500">No commission records found.</p> : <DataTable columns={commissionColumns} data={commissions} />}
+                </SectionCard>
+
+                <SectionCard title="Manual Settlement" subtitle="Submit a transfer reference for admin verification">
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Input
+                            value={settlementReference}
+                            onChange={(event) => setSettlementReference(event.target.value)}
+                            placeholder="Bank/eSewa reference"
+                        />
+                        <Button
+                            variant="outline"
+                            disabled={createSettlement.isPending || Number(stats?.TotalPendingDue ?? 0) <= 0 || !settlementReference.trim()}
+                            onClick={submitSettlement}
+                        >
+                            Submit Settlement
+                        </Button>
+                    </div>
+                    <div className="mt-4">
+                        {settlements.length === 0 ? <p className="text-sm text-slate-500">No settlement requests yet.</p> : <DataTable columns={settlementColumns} data={settlements} />}
+                    </div>
                 </SectionCard>
             </section>
         </div>

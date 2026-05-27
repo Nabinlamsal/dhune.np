@@ -2,9 +2,10 @@
 
 import { CreditCard, TrendingUp, Wallet } from "lucide-react";
 import { Card } from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
 import { DataTable } from "@/src/components/dashboard/table/DataTable";
-import { useAdminFinanceDashboard } from "@/src/hooks/queries/useFinance";
-import { Commission, VendorDue } from "@/src/types/finance/finance";
+import { useAdminFinanceDashboard, useAdminSettlements, useVerifySettlement } from "@/src/hooks/queries/useFinance";
+import { Commission, VendorDue, VendorSettlement } from "@/src/types/finance/finance";
 import { Payment } from "@/src/types/payments/payments";
 import { formatDisplayId } from "@/src/utils/display";
 
@@ -12,8 +13,11 @@ const rs = (value?: string) => `Rs. ${Number(value ?? 0).toLocaleString(undefine
 
 export default function AdminFinancePage() {
     const { data, isLoading } = useAdminFinanceDashboard();
+    const { data: rawSettlements } = useAdminSettlements();
+    const verifySettlement = useVerifySettlement();
 
     const stats = data?.stats;
+    const settlements = rawSettlements ?? [];
     const commissions = data?.recentCommissions ?? [];
     const payments = data?.commissionPaymentHistory ?? [];
     const vendorDues = data?.vendorDues ?? [];
@@ -97,6 +101,39 @@ export default function AdminFinancePage() {
         },
     ];
 
+    const settlementColumns = [
+        {
+            key: "vendor",
+            header: "Vendor",
+            render: (s: VendorSettlement) => <div className="text-sm text-slate-600">{formatDisplayId(s.VendorID, "VND")}</div>,
+        },
+        {
+            key: "amount",
+            header: "Amount",
+            render: (s: VendorSettlement) => <div className="text-sm font-bold text-slate-800">{rs(s.Amount)}</div>,
+        },
+        {
+            key: "reference",
+            header: "Reference",
+            render: (s: VendorSettlement) => <div className="text-sm text-slate-600">{s.Reference?.Valid ? s.Reference.String : "-"}</div>,
+        },
+        {
+            key: "status",
+            header: "Status",
+            render: (s: VendorSettlement) => <span className="text-xs font-semibold text-slate-700">{s.Status === "VERIFIED" ? "Verified Settlement" : "Pending Settlement"}</span>,
+        },
+        {
+            key: "action",
+            header: "",
+            render: (s: VendorSettlement) =>
+                s.Status === "PENDING" ? (
+                    <Button variant="outline" disabled={verifySettlement.isPending} onClick={() => verifySettlement.mutate(s.ID)}>
+                        Verify
+                    </Button>
+                ) : null,
+        },
+    ];
+
     if (isLoading) {
         return <p className="text-gray-500">Loading finance dashboard...</p>;
     }
@@ -132,6 +169,11 @@ export default function AdminFinancePage() {
                 <section className="rounded-lg border bg-white p-5">
                     <h3 className="text-lg font-semibold text-slate-900">Commission Payment History</h3>
                     <div className="mt-4">{payments.length === 0 ? <p className="text-sm text-slate-500">No commission payments.</p> : <DataTable columns={paymentColumns} data={payments} />}</div>
+                </section>
+
+                <section className="rounded-lg border bg-white p-5 xl:col-span-2">
+                    <h3 className="text-lg font-semibold text-slate-900">Manual Settlements</h3>
+                    <div className="mt-4">{settlements.length === 0 ? <p className="text-sm text-slate-500">No settlement requests.</p> : <DataTable columns={settlementColumns} data={settlements} />}</div>
                 </section>
 
                 <section className="rounded-lg border bg-white p-5 xl:col-span-2">

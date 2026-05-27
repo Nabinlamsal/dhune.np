@@ -4,7 +4,7 @@ import {
     VendorFinanceDashboardResponse,
     CreateSettlementPayload,
     CreateSettlementResponse,
-    VendorSettlement,
+    VendorSettlementsResponse,
 } from "@/src/types/finance/finance";
 
 export const getAdminFinanceDashboard = async (): Promise<AdminFinanceDashboardResponse> => {
@@ -30,8 +30,20 @@ export const createVendorSettlement = async (
 
 export const verifyVendorSettlement = async (
     id: string
-): Promise<{ settlement: VendorSettlement }> => {
-    return api<{ settlement: VendorSettlement }>(`/admin/finance/settlements/${id}/verify`, {
+): Promise<CreateSettlementResponse> => {
+    return api<CreateSettlementResponse>(`/admin/finance/settlements/${id}/verify`, {
         method: "POST",
+    });
+};
+
+export const listVendorSettlements = async (): Promise<VendorSettlementsResponse> => {
+    return api<VendorSettlementsResponse>("/vendor/finance/settlements", {
+        method: "GET",
+    });
+};
+
+export const listAdminSettlements = async (): Promise<VendorSettlementsResponse> => {
+    return api<VendorSettlementsResponse>("/admin/finance/settlements", {
+        method: "GET",
     });
 };
