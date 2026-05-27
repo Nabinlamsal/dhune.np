@@ -120,6 +120,24 @@ type CreateSettlementInput struct {
 }
 
 func (s *FinanceService) CreateVendorSettlement(ctx context.Context, input CreateSettlementInput) (*db.VendorSettlement, error) {
+	if input.Amount <= 0 {
+		return nil, fmt.Errorf("settlement amount must be greater than zero")
+	}
+	stats, err := s.repo.GetVendorFinanceStats(ctx, input.VendorID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch commission due: %w", err)
+	}
+	pendingDue, err := strconv.ParseFloat(stats.TotalPendingDue, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid pending commission due")
+	}
+	if pendingDue <= 0 {
+		return nil, fmt.Errorf("no pending commission due")
+	}
+	if input.Amount+0.009 < pendingDue {
+		return nil, fmt.Errorf("settlement amount must cover pending commission due %.2f", pendingDue)
+	}
+
 	amountStr := fmt.Sprintf("%.2f", input.Amount)
 
 	ref := sql.NullString{}
@@ -167,8 +185,15 @@ func (s *FinanceService) VerifyVendorSettlement(ctx context.Context, settlementI
 		return nil, fmt.Errorf("failed to update settlement status: %w", err)
 	}
 
-	// Mark all pending commissions for this vendor as PAID
-	_, err = repoTx.MarkCommissionsAsPaid(ctx, settlement.VendorID)
+	if _, amountErr := strconv.ParseFloat(settlement.Amount, 64); amountErr != nil {
+		return nil, fmt.Errorf("invalid settlement amount")
+	}
+
+	// Mark pending commissions that existed when this settlement was submitted.
+	_, err = qtx.MarkCommissionsAsPaidThrough(ctx, db.MarkCommissionsAsPaidThroughParams{
+		VendorID:  settlement.VendorID,
+		CreatedAt: settlement.CreatedAt,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to mark commissions as paid: %w", err)
 	}

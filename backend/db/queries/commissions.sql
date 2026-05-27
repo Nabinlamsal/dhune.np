@@ -18,6 +18,12 @@ WHERE vendor_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
+-- name: ListPendingCommissionsByVendor :many
+SELECT * FROM commissions
+WHERE vendor_id = $1
+  AND status = 'PENDING'
+ORDER BY created_at ASC;
+
 -- name: MarkCommissionsAsPaid :many
 UPDATE commissions
 SET status = 'PAID',

@@ -166,6 +166,46 @@ func (q *Queries) ListCommissionsByVendor(ctx context.Context, arg ListCommissio
 	return items, nil
 }
 
+const listPendingCommissionsByVendor = `-- name: ListPendingCommissionsByVendor :many
+SELECT id, order_id, vendor_id, order_amount, commission_percent, commission_amount, status, paid_at, created_at FROM commissions
+WHERE vendor_id = $1
+  AND status = 'PENDING'
+ORDER BY created_at ASC
+`
+
+func (q *Queries) ListPendingCommissionsByVendor(ctx context.Context, vendorID uuid.UUID) ([]Commission, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingCommissionsByVendor, vendorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Commission
+	for rows.Next() {
+		var i Commission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.VendorID,
+			&i.OrderAmount,
+			&i.CommissionPercent,
+			&i.CommissionAmount,
+			&i.Status,
+			&i.PaidAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listVendorCommissionDues = `-- name: ListVendorCommissionDues :many
 SELECT
     vendor_id,

@@ -21,6 +21,7 @@ type EnvConfig struct {
 	EsewaProductCode      string
 	EsewaSecretKey        string
 	EsewaGatewayURL       string
+	EsewaStatusURL        string
 	BackendURL            string
 	WebsiteURL            string
 	PublicBackendURL      string
@@ -71,7 +72,8 @@ func LoadEnv() {
 		KhaltiVerificationURL: os.Getenv("KHALTI_VERIFICATION_URL"),
 		EsewaProductCode:      os.Getenv("ESEWA_PRODUCT_CODE"),
 		EsewaSecretKey:        os.Getenv("ESEWA_SECRET_KEY"),
-		EsewaGatewayURL:       os.Getenv("ESEWA_GATEWAY_URL"),
+		EsewaGatewayURL:       firstNonEmpty(os.Getenv("ESEWA_FORM_URL"), os.Getenv("ESEWA_GATEWAY_URL")),
+		EsewaStatusURL:        os.Getenv("ESEWA_STATUS_URL"),
 		BackendURL:            os.Getenv("BACKEND_URL"),
 		WebsiteURL:            os.Getenv("WEBSITE_URL"),
 		PublicBackendURL:      os.Getenv("PUBLIC_BACKEND_URL"),
@@ -83,4 +85,13 @@ func LoadEnv() {
 	if AppConfig.GroqModel == "" {
 		AppConfig.GroqModel = "llama-3.1-8b-instant"
 	}
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if value != "" {
+			return value
+		}
+	}
+	return ""
 }

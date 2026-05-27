@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +33,8 @@ type PayCashDTO struct {
 }
 
 type InitiatePaymentDTO struct {
-	Method string `json:"method" binding:"required"`
+	Method    string `json:"method" binding:"required"`
+	ReturnURL string `json:"return_url"`
 }
 
 func (h *PaymentHandler) PayCash(c *gin.Context) {
@@ -69,7 +72,7 @@ func (h *PaymentHandler) InitiateOrderPayment(c *gin.Context) {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := h.service.InitiateOrderPaymentURL(c.Request.Context(), userID, orderID, db.PaymentMethodType(strings.ToUpper(req.Method)))
+	resp, err := h.service.InitiateOrderPaymentURL(c.Request.Context(), userID, orderID, db.PaymentMethodType(strings.ToUpper(req.Method)), req.ReturnURL)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
@@ -88,7 +91,7 @@ func (h *PaymentHandler) InitiateCommissionPayment(c *gin.Context) {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := h.service.InitiateCommissionPaymentURL(c.Request.Context(), vendorID, db.PaymentMethodType(strings.ToUpper(req.Method)))
+	resp, err := h.service.InitiateCommissionPaymentURL(c.Request.Context(), vendorID, db.PaymentMethodType(strings.ToUpper(req.Method)), req.ReturnURL)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())
 		return
@@ -106,16 +109,18 @@ func (h *PaymentHandler) CommissionKhaltiCallback(c *gin.Context) {
 
 func (h *PaymentHandler) khaltiCallback(c *gin.Context, paymentType db.PaymentRecordType) {
 	pidx := c.Query("pidx")
-	status := c.Query("status")
-	if pidx == "" || !strings.EqualFold(status, "Completed") {
-		renderPaymentResult(c, http.StatusOK, "Payment failed", "Payment failed. Please return to Dhune and retry.")
+	log.Printf("khalti callback query received: expected_type=%s raw_query=%s", paymentType, c.Request.URL.RawQuery)
+	if pidx == "" {
+		redirectPaymentResult(c, db.Payment{}, "failed", "Payment failed", "Payment failed. Please return to Dhune and retry.")
 		return
 	}
-	if _, err := h.service.VerifyKhaltiCallback(c.Request.Context(), pidx, paymentType); err != nil {
-		renderPaymentResult(c, http.StatusOK, "Payment verification failed", "Payment could not be verified. Please return to Dhune and retry.")
+	payment, err := h.service.VerifyKhaltiCallback(c.Request.Context(), pidx, paymentType)
+	if err != nil {
+		log.Printf("khalti payment verification failed: expected_type=%s pidx=%s err=%v", paymentType, pidx, err)
+		redirectPaymentResult(c, db.Payment{}, "failed", "Payment verification failed", "Payment could not be verified. Please return to Dhune and retry.")
 		return
 	}
-	renderPaymentResult(c, http.StatusOK, "Payment successful", "Payment verified. You can return to Dhune.")
+	redirectPaymentResult(c, *payment, "success", "Payment successful", "Payment verification completed. Refreshing order status.")
 }
 
 func (h *PaymentHandler) OrderEsewaPayPage(c *gin.Context) {
@@ -129,7 +134,7 @@ func (h *PaymentHandler) OrderEsewaPayPage(c *gin.Context) {
 		renderPaymentResult(c, http.StatusUnauthorized, "Unauthorized", "Please sign in again and retry eSewa payment.")
 		return
 	}
-	action, fields, err := h.service.RenderOrderEsewa(c.Request.Context(), userID, orderID)
+	action, fields, err := h.service.RenderOrderEsewa(c.Request.Context(), userID, orderID, c.Query("redirect"))
 	if err != nil {
 		renderPaymentResult(c, http.StatusBadRequest, "Payment unavailable", err.Error())
 		return
@@ -143,7 +148,7 @@ func (h *PaymentHandler) CommissionEsewaPayPage(c *gin.Context) {
 		renderPaymentResult(c, http.StatusUnauthorized, "Unauthorized", "Please sign in again and retry eSewa payment.")
 		return
 	}
-	action, fields, err := h.service.RenderCommissionEsewa(c.Request.Context(), vendorID)
+	action, fields, err := h.service.RenderCommissionEsewa(c.Request.Context(), vendorID, c.Query("redirect"))
 	if err != nil {
 		renderPaymentResult(c, http.StatusBadRequest, "Payment unavailable", err.Error())
 		return
@@ -160,20 +165,25 @@ func (h *PaymentHandler) CommissionEsewaCallback(c *gin.Context) {
 }
 
 func (h *PaymentHandler) esewaCallback(c *gin.Context, paymentType db.PaymentRecordType) {
+	log.Printf("esewa callback query received: expected_type=%s raw_query=%s", paymentType, c.Request.URL.RawQuery)
 	data, err := parseEsewaSuccessData(c)
 	if err != nil {
-		renderPaymentResult(c, http.StatusBadRequest, "Payment verification failed", "Payment failed. Please return to Dhune and retry.")
+		log.Printf("esewa payment callback parse failed: expected_type=%s err=%v", paymentType, err)
+		redirectPaymentResult(c, db.Payment{}, "failed", "Payment verification failed", "Payment failed. Please return to Dhune and retry.")
 		return
 	}
-	if _, err := h.service.VerifyEsewa(c.Request.Context(), data, paymentType); err != nil {
-		renderPaymentResult(c, http.StatusBadRequest, "Payment verification failed", "Payment failed. Please return to Dhune and retry.")
+	payment, err := h.service.VerifyEsewa(c.Request.Context(), data, paymentType)
+	if err != nil {
+		log.Printf("esewa payment verification failed: expected_type=%s transaction_uuid=%s status=%s amount=%s product_code=%s err=%v", paymentType, data.TransactionUUID, data.Status, data.TotalAmount, data.ProductCode, err)
+		redirectPaymentResult(c, db.Payment{}, "failed", "Payment verification failed", "Payment failed. Please return to Dhune and retry.")
 		return
 	}
-	renderPaymentResult(c, http.StatusOK, "Payment successful", "Payment verified. You can return to Dhune.")
+	redirectPaymentResult(c, *payment, "success", "Payment successful", "Payment verification completed. Refreshing order status.")
 }
 
 func (h *PaymentHandler) EsewaFailure(c *gin.Context) {
-	renderPaymentResult(c, http.StatusOK, "Payment failed", "Payment failed. Please return to Dhune and retry.")
+	log.Printf("esewa failure callback query received: raw_query=%s", c.Request.URL.RawQuery)
+	redirectPaymentResult(c, db.Payment{}, "failed", "Payment failed", "Payment failed. Please return to Dhune and retry.")
 }
 
 func (h *PaymentHandler) userIDFromPayRequest(c *gin.Context) (uuid.UUID, error) {
@@ -257,4 +267,24 @@ func renderPaymentResult(c *gin.Context, statusCode int, title, message string) 
 <body><main><h1>%s</h1><p>%s</p></main></body>
 </html>`, html.EscapeString(title), html.EscapeString(title), html.EscapeString(message))
 	c.Data(statusCode, "text/html; charset=utf-8", []byte(page))
+}
+
+func redirectPaymentResult(c *gin.Context, payment db.Payment, result, title, message string) {
+	redirectURL := strings.TrimSpace(c.Query("redirect"))
+	if redirectURL != "" {
+		target, err := url.Parse(redirectURL)
+		if err == nil && target.Scheme != "" {
+			query := target.Query()
+			query.Set("payment", result)
+			if payment.OrderID.Valid {
+				query.Set("order_id", payment.OrderID.UUID.String())
+			}
+			target.RawQuery = query.Encode()
+			log.Printf("payment redirect after finalization: result=%s target=%s payment_id=%s", result, target.String(), payment.ID)
+			c.Redirect(http.StatusFound, target.String())
+			return
+		}
+	}
+	log.Printf("payment result rendered without redirect: result=%s title=%s payment_id=%s", result, title, payment.ID)
+	renderPaymentResult(c, http.StatusOK, title, message)
 }
