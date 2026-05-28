@@ -83,10 +83,10 @@ export function LoginForm({
                 strategy="afterInteractive"
                 onLoad={() => setGoogleReady(true)}
             />
-            <Card className="border-border bg-card text-card-foreground shadow-xl">
+            <Card className="border-white/70 bg-white/82 text-slate-950 shadow-2xl shadow-[#040947]/10 backdrop-blur dark:border-white/10 dark:bg-white/[0.08] dark:text-white dark:shadow-cyan-300/10">
                 <CardHeader>
                     <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">Dhune.np</CardTitle>
-                    <CardDescription className="font-light text-[#040947] dark:text-muted-foreground">
+                    <CardDescription className="font-light text-[#040947] dark:text-slate-300">
                         Login to your account
                     </CardDescription>
                 </CardHeader>

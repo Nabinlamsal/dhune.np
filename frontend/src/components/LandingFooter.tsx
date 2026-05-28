@@ -8,7 +8,6 @@ const quickLinks = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "User App", href: "#user-app" },
   { label: "Features", href: "#features" },
-  { label: "Tech Stack", href: "#tech-stack" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -18,7 +17,7 @@ export default function LandingFooter() {
       <div className="mx-auto grid max-w-7xl gap-8 text-center lg:grid-cols-[1.1fr_1.4fr_0.8fr] lg:items-start lg:text-left">
         <Link href="/" className="mx-auto flex items-center gap-3 lg:mx-0" aria-label="Dhune home">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10">
-            <Image src="/logo.png" alt="Dhune logo" width={32} height={32} className="h-8 w-8 object-contain" />
+            <Image src="/image.png" alt="Dhune logo" width={32} height={32} className="h-8 w-8 object-contain" />
           </span>
           <span>
             <span className="block text-xl font-black text-slate-950 dark:text-white">Dhune.np</span>

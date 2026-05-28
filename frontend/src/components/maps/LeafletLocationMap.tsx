@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 const LeafletLocationMapInner = dynamic(() => import("./LeafletLocationMapInner"), {
     ssr: false,
     loading: () => (
-        <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm text-slate-500">
+        <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-[#07111f] dark:text-slate-300">
             Loading map...
         </div>
     ),
@@ -42,7 +42,7 @@ export default function LeafletLocationMap({
 
     return (
         <div
-            className="relative z-0 overflow-hidden rounded-xl border border-[#040947]/15 bg-slate-100 [&_.leaflet-bottom]:z-[1] [&_.leaflet-control]:z-[1] [&_.leaflet-control-container]:z-[1] [&_.leaflet-marker-icon]:z-[2] [&_.leaflet-pane]:z-0 [&_.leaflet-popup-pane]:z-[3] [&_.leaflet-top]:z-[1]"
+            className="relative z-0 overflow-hidden rounded-xl border border-[#040947]/15 bg-slate-100 dark:border-white/10 dark:bg-[#07111f] [&_.leaflet-bottom]:z-[1] [&_.leaflet-control]:z-[1] [&_.leaflet-control-container]:z-[1] [&_.leaflet-marker-icon]:z-[2] [&_.leaflet-pane]:z-0 [&_.leaflet-popup-pane]:z-[3] [&_.leaflet-tile]:transition-[filter] [&_.leaflet-top]:z-[1] dark:[&_.leaflet-control-attribution]:bg-[#07111f]/85 dark:[&_.leaflet-control-attribution]:text-slate-300 dark:[&_.leaflet-control-attribution_a]:text-cyan-200 dark:[&_.leaflet-tile]:brightness-[0.62] dark:[&_.leaflet-tile]:contrast-[1.18] dark:[&_.leaflet-tile]:grayscale-[0.25] dark:[&_.leaflet-tile]:hue-rotate-[180deg] dark:[&_.leaflet-tile]:invert"
             style={{ height }}
         >
             <LeafletLocationMapInner

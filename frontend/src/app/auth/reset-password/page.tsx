@@ -64,10 +64,10 @@ function ResetPasswordContent() {
 
     return (
         <div className="w-full max-w-md">
-            <Card>
+            <Card className="border-white/70 bg-white/82 text-slate-950 shadow-2xl shadow-[#040947]/10 backdrop-blur dark:border-white/10 dark:bg-white/[0.08] dark:text-white dark:shadow-cyan-300/10">
                 <CardHeader>
                     <CardTitle className="text-yellow-600">Reset Password</CardTitle>
-                    <CardDescription>Enter the emailed OTP and set a new password for your account.</CardDescription>
+                    <CardDescription className="dark:text-slate-300">Enter the emailed OTP and set a new password for your account.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
@@ -118,15 +118,15 @@ function ResetPasswordContent() {
                                 <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                             </Field>
 
-                            {successMessage ? <p className="rounded-md bg-green-100 p-2 text-sm text-green-700">{successMessage}</p> : null}
-                            {errorMessage ? <p className="rounded-md bg-red-100 p-2 text-sm text-red-700">{errorMessage}</p> : null}
+                            {successMessage ? <p className="rounded-md bg-green-100 p-2 text-sm text-green-700 dark:bg-green-500/15 dark:text-green-200">{successMessage}</p> : null}
+                            {errorMessage ? <p className="rounded-md bg-red-100 p-2 text-sm text-red-700 dark:bg-red-500/15 dark:text-red-200">{errorMessage}</p> : null}
 
                             <Button type="submit" className="bg-[#040947] hover:bg-[#09106a]" disabled={resetPassword.isPending}>
                                 {resetPassword.isPending ? "Resetting..." : "Reset password"}
                             </Button>
 
-                            <p className="text-center text-sm text-slate-500">
-                                <Link href="/auth/login" className="font-medium text-[#040947] underline">
+                            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+                                <Link href="/auth/login" className="font-medium text-[#040947] underline dark:text-cyan-200">
                                     Return to login
                                 </Link>
                             </p>

@@ -34,7 +34,7 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
 
     return (
         <div className={cn("w-full")}>
-            <Card className="border-border bg-card text-card-foreground shadow-none">
+            <Card className="border-transparent bg-transparent text-slate-950 shadow-none dark:text-white">
                 <CardHeader className="flex md:grid-cols-2 gap-10">
                     <div>
                         <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">User Signup - Dhune.np</CardTitle>

@@ -39,7 +39,7 @@ export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => 
 
     return (
         <div className={cn("w-full")}>
-            <Card className="border-border bg-card text-card-foreground shadow-none">
+            <Card className="border-transparent bg-transparent text-slate-950 shadow-none dark:text-white">
                 <CardHeader>
                     <CardTitle className="text-blue-700 dark:text-[#ebbc01]">Business User Signup - Dhune.np</CardTitle>
                     <CardDescription className="text-muted-foreground">

@@ -6,28 +6,33 @@ import FeaturesSection from "@/src/components/FeaturesSection";
 import HelpChatbot from "@/src/components/HelpChatbot";
 import HowItWorksSection from "@/src/components/HowItWorksSection";
 import LandingFooter from "@/src/components/LandingFooter";
-import TechStackSection from "@/src/components/TechStackSection";
-import { Building2, Sparkles, Store, UsersRound } from "lucide-react";
+import { motion } from "framer-motion";
+import { Building2, Store, UsersRound } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const audienceCards = [
   {
     title: "Customers",
-    description: "Create pickup requests, compare vendor offers, and track every laundry order.",
+    description: "Create laundry pickup requests, compare vendor offers, choose the best fit, and track every order in one place.",
     Icon: UsersRound,
   },
   {
     title: "Laundry Vendors",
-    description: "Receive nearby requests, send offers, manage orders, and grow repeat demand.",
+    description: "Receive customer requests, send competitive offers, manage accepted work, and grow service reach across local areas.",
     Icon: Store,
   },
   {
     title: "Business Users / Organizations",
-    description: "Use organized laundry support for uniforms, linens, teams, and organizations.",
+    description: "Coordinate uniforms, linens, and recurring laundry needs with a more organized request-offer-order workflow.",
     Icon: Building2,
   },
 ];
+
+const reveal = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function Home() {
   const router = useRouter();
@@ -42,12 +47,17 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(4,9,71,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(4,9,71,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70 dark:bg-[linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] dark:opacity-45" />
 
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="mx-auto max-w-3xl text-center lg:mx-0 lg:text-left">
+          <motion.div
+            className="mx-auto max-w-3xl text-center lg:mx-0 lg:text-left"
+            initial="hidden"
+            animate="visible"
+            variants={reveal}
+            transition={{ duration: 0.55, ease: "easeOut" }}
+          >
             <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#040947]/10 bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#040947] shadow-sm dark:border-cyan-300/20 dark:bg-white/[0.08] dark:text-cyan-200 lg:mx-0">
-              <Sparkles className="h-4 w-4" />
               Smart laundry marketplace
             </div>
-            <h1 className="mt-6 text-balance text-4xl font-black leading-[1.04] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl dark:text-white">
+            <h1 className="mt-6 text-balance text-3xl font-black leading-[1.08] tracking-tight text-slate-950 sm:text-4xl lg:text-5xl dark:text-white">
               Dhune.np connects customers with trusted laundry vendors.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg dark:text-slate-300 lg:mx-0">
@@ -55,42 +65,65 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <button
-                onClick={() => router.push("/auth/login")}
+                onClick={() => {
+                  document.getElementById("user-app")?.scrollIntoView({ behavior: "smooth" });
+                }}
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#040947] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#040947]/15 transition hover:-translate-y-0.5 hover:bg-[#0b146b] sm:w-auto dark:bg-cyan-300 dark:text-[#07111f] dark:shadow-cyan-300/15 dark:hover:bg-white"
                 type="button"
               >
-                Download App / Get Started
+                Get Started
               </button>
               <button
                 onClick={() => router.push("/auth/signup/vendor")}
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-7 text-sm font-extrabold text-[#040947] shadow-sm transition hover:-translate-y-0.5 hover:border-[#040947]/25 sm:w-auto dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
                 type="button"
               >
-                Become a Vendor / Explore Services
+                Become a Vendor
               </button>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative mx-auto w-full max-w-xl pt-4 lg:max-w-none lg:pt-0">
+          <motion.div
+            className="relative mx-auto w-full max-w-xl pt-4 lg:max-w-none lg:pt-0"
+            initial={{ opacity: 0, y: 28, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.65, delay: 0.08, ease: "easeOut" }}
+          >
             <div className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ebbc01]/20 blur-3xl dark:bg-cyan-300/12" />
             <div className="absolute inset-x-8 bottom-2 h-20 rounded-full bg-[#040947]/10 blur-2xl dark:bg-cyan-300/10" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 p-3 shadow-2xl shadow-[#040947]/12 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-cyan-300/10 sm:p-4">
               <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-[#040947]/5 dark:from-cyan-300/10 dark:via-transparent dark:to-[#020617]/40" />
               <Image
-                src="/hero.png"
+                src="/hero-light.png"
                 alt="Dhune.np laundry marketplace app illustration"
                 width={900}
                 height={720}
                 priority
-                className="relative z-10 h-auto w-full object-contain drop-shadow-2xl dark:brightness-90 dark:contrast-105"
+                className="relative z-10 h-auto w-full object-contain drop-shadow-2xl dark:hidden"
+              />
+              <Image
+                src="/hero-dark.png"
+                alt="Dhune.np laundry marketplace app illustration in dark mode"
+                width={900}
+                height={720}
+                priority
+                className="relative z-10 hidden h-auto w-full object-contain drop-shadow-2xl dark:block dark:brightness-95 dark:contrast-105"
               />
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       <main>
-        <section id="about" className="px-4 py-16 sm:px-6 lg:px-8">
+        <motion.section
+          id="about"
+          className="px-4 py-16 sm:px-6 lg:px-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
+          variants={reveal}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
@@ -100,35 +133,39 @@ export default function Home() {
                 Who Dhune.np is for
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
-                A focused laundry marketplace for customers, vendors, and organizations in Nepal.
+                Dhune.np connects customers, vendors, and business users through a clear request, offer, and order workflow built for local laundry needs.
               </p>
             </div>
 
             <div className="mx-auto mt-9 grid max-w-5xl gap-4 md:grid-cols-3">
-              {audienceCards.map((card) => {
+              {audienceCards.map((card, index) => {
                 const Icon = card.Icon;
 
                 return (
-                  <article
+                  <motion.article
                     key={card.title}
                     className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-cyan-300/30"
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.4, delay: index * 0.07, ease: "easeOut" }}
+                    whileHover={{ y: -5, scale: 1.01 }}
                   >
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947] text-white dark:bg-cyan-300 dark:text-[#07111f]">
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-4 text-lg font-extrabold text-slate-950 dark:text-white">{card.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{card.description}</p>
-                  </article>
+                  </motion.article>
                 );
               })}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         <HowItWorksSection />
         <DownloadAppSection />
         <FeaturesSection />
-        <TechStackSection />
         <FaqSection />
       </main>
 

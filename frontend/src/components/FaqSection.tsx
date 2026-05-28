@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 const faqs = [
   {
     question: "What is Dhune.np?",
@@ -27,7 +31,14 @@ const faqs = [
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="px-4 py-16 sm:px-6 lg:px-8">
+    <motion.section
+      id="faq"
+      className="px-4 py-16 sm:px-6 lg:px-8"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="mx-auto max-w-4xl">
         <div className="text-center">
           <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
@@ -39,10 +50,15 @@ export default function FaqSection() {
         </div>
 
         <div className="mt-9 space-y-3">
-          {faqs.map((faq) => (
-            <details
+          {faqs.map((faq, index) => (
+            <motion.details
               key={faq.question}
               className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition open:border-[#040947]/25 dark:border-white/10 dark:bg-white/[0.08] dark:open:border-cyan-300/30"
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.35, delay: index * 0.04, ease: "easeOut" }}
+              whileHover={{ y: -3 }}
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-extrabold text-slate-950 dark:text-white">
                 <span>{faq.question}</span>
@@ -53,10 +69,10 @@ export default function FaqSection() {
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
                 {faq.answer}
               </p>
-            </details>
+            </motion.details>
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }

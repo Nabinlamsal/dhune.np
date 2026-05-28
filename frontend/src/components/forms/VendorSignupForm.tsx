@@ -131,7 +131,7 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                 "w-full"
             )}
         >
-            <Card className="border-border bg-card text-card-foreground shadow-none">
+            <Card className="border-transparent bg-transparent text-slate-950 shadow-none dark:text-white">
                 <CardHeader>
                     <CardTitle className="text-yellow-600 dark:text-[#ebbc01]">
                         Vendor Signup - Dhune.np
