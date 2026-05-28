@@ -15,6 +15,7 @@ import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
 import { Detail } from "@/src/components/common/DetailItem";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
 import { FilePreviewModal } from "@/src/components/common/FilePreviewModal";
+import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
 
 function normalizeApprovalStatus(value?: string | null): AdminUserFilterStatus | null {
     if (!value) return null;
@@ -75,6 +76,13 @@ export default function VendorDetailsPage() {
             ? statusOverride.status
             : deriveVendorStatus(vendor);
     const documents = vendor.Documents ?? [];
+    const businessLatitude = vendor.VendorProfile?.BusinessLatitude;
+    const businessLongitude = vendor.VendorProfile?.BusinessLongitude;
+    const hasBusinessLocation =
+        typeof businessLatitude === "number" &&
+        typeof businessLongitude === "number" &&
+        Number.isFinite(businessLatitude) &&
+        Number.isFinite(businessLongitude);
 
     return (
         <div className="space-y-8">
@@ -92,8 +100,21 @@ export default function VendorDetailsPage() {
                 <Detail label="Phone" value={vendor.Phone} />
                 <Detail label="Address" value={vendor.VendorProfile?.Address} />
                 <Detail label="Registration Number" value={vendor.VendorProfile?.RegistrationNumber} />
+                <Detail label="Service Radius" value={vendor.VendorProfile?.ServiceRadiusKm ? `${vendor.VendorProfile.ServiceRadiusKm} km` : undefined} />
                 <Detail label="Joined" value={new Date(vendor.CreatedAt).toLocaleDateString()} />
             </div>
+
+            {hasBusinessLocation ? (
+                <div className="rounded-xl border bg-white p-6">
+                    <h3 className="mb-3 text-lg font-semibold">Business Location</h3>
+                    <LeafletLocationMap
+                        latitude={businessLatitude}
+                        longitude={businessLongitude}
+                        height={260}
+                        zoom={15}
+                    />
+                </div>
+            ) : null}
 
             <div className="bg-white rounded-xl border p-6 space-y-4">
                 <h3 className="text-lg font-semibold">Uploaded Documents</h3>

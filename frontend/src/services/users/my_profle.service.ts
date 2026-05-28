@@ -13,6 +13,16 @@ const pick = <T = unknown>(obj: Record<string, unknown>, keys: string[]): T | un
     return undefined;
 };
 
+const pickNumber = (obj: Record<string, unknown>, keys: string[]): number | null => {
+    const value = pick<unknown>(obj, keys);
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "") {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) return parsed;
+    }
+    return null;
+};
+
 const normalizeMyProfile = (raw: unknown): AdminUserProfile => {
     const src = (raw ?? {}) as Record<string, unknown>;
     const vendorRaw = (pick<Record<string, unknown>>(src, ["VendorProfile", "vendor_profile", "vendorProfile"]) ?? {}) as Record<string, unknown>;
@@ -40,6 +50,9 @@ const normalizeMyProfile = (raw: unknown): AdminUserProfile => {
         VendorProfile: {
             OwnerName: pick<string>(vendorRaw, ["OwnerName", "owner_name", "ownerName"]) ?? "",
             Address: pick<string>(vendorRaw, ["Address", "address"]) ?? "",
+            BusinessLatitude: pickNumber(vendorRaw, ["BusinessLatitude", "business_latitude", "businessLatitude"]),
+            BusinessLongitude: pickNumber(vendorRaw, ["BusinessLongitude", "business_longitude", "businessLongitude"]),
+            ServiceRadiusKm: pickNumber(vendorRaw, ["ServiceRadiusKm", "service_radius_km", "serviceRadiusKm"]),
             RegistrationNumber: pick<string>(vendorRaw, ["RegistrationNumber", "registration_number", "registrationNumber"]) ?? "",
             ApprovalStatus: (pick(vendorRaw, ["ApprovalStatus", "approval_status", "approvalStatus"]) as ApprovalStatus) ?? "pending",
         },

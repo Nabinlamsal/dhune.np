@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito } from "next/font/google";
 import "./globals.css";;
+import "leaflet/dist/leaflet.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner"
 

@@ -17,6 +17,8 @@ import VendorSendOfferModal from "@/src/components/vendor/VendorSendOfferModal"
 import { Detail } from "@/src/components/common/DetailItem"
 import { ClipboardList, MapPinned, ShoppingBag } from "lucide-react"
 import { formatPickupDuration } from "@/src/utils/display"
+import { useMyProfile } from "@/src/hooks/users/useMyProfile"
+import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap"
 
 const NEARBY_RADIUS_KM = 10
 
@@ -29,17 +31,29 @@ export default function VendorMarketplacePage() {
     const [vendorCoords, setVendorCoords] = useState<{ lat: number; lng: number } | null>(null)
     const [locationError, setLocationError] = useState<string | null>(null)
     const [isResolvingLocation, setIsResolvingLocation] = useState(false)
+    const { data: myProfile } = useMyProfile()
 
     const limit = 9
     const offset = page * limit
     const browserSupportsGeolocation =
         typeof window !== "undefined" && typeof navigator !== "undefined" && "geolocation" in navigator
+    const profileLatitude = myProfile?.VendorProfile?.BusinessLatitude
+    const profileLongitude = myProfile?.VendorProfile?.BusinessLongitude
+    const hasProfileLocation =
+        typeof profileLatitude === "number" &&
+        typeof profileLongitude === "number" &&
+        Number.isFinite(profileLatitude) &&
+        Number.isFinite(profileLongitude)
+    const effectiveVendorCoords = hasProfileLocation
+        ? { lat: profileLatitude, lng: profileLongitude }
+        : vendorCoords
+    const effectiveRadiusKm = myProfile?.VendorProfile?.ServiceRadiusKm ?? NEARBY_RADIUS_KM
 
     const { data, isLoading } = useMarketplaceRequests({
         sort: sortOption,
-        vendorLat: vendorCoords?.lat,
-        vendorLng: vendorCoords?.lng,
-        maxDistanceKm: sortOption === "nearest" && vendorCoords ? NEARBY_RADIUS_KM : undefined,
+        vendorLat: effectiveVendorCoords?.lat,
+        vendorLng: effectiveVendorCoords?.lng,
+        maxDistanceKm: sortOption === "nearest" && effectiveVendorCoords ? effectiveRadiusKm : undefined,
         limit,
         offset,
     })
@@ -55,7 +69,7 @@ export default function VendorMarketplacePage() {
     )
 
     const requestVendorLocation = () => {
-        if (!browserSupportsGeolocation || vendorCoords || isResolvingLocation) {
+        if (hasProfileLocation || !browserSupportsGeolocation || vendorCoords || isResolvingLocation) {
             return
         }
 
@@ -131,11 +145,11 @@ export default function VendorMarketplacePage() {
                     <div className="flex items-center gap-2">
                         <MapPinned className="size-4 text-[#040947]" />
                         <span>
-                            Showing requests within {NEARBY_RADIUS_KM} km, sorted by nearest pickup location.
+                            Showing requests within {effectiveRadiusKm} km, sorted by nearest pickup location.
                         </span>
                     </div>
                     <span className="text-xs text-slate-500">
-                        {vendorCoords ? "Live location ready" : isResolvingLocation ? "Fetching location..." : "Location required"}
+                        {hasProfileLocation ? "Business location ready" : vendorCoords ? "Live location ready" : isResolvingLocation ? "Fetching location..." : "Location required"}
                     </span>
                 </div>
             )}
@@ -227,6 +241,14 @@ export default function VendorMarketplacePage() {
                                     <ClipboardList className="size-4 text-[#040947]" />
                                     Pickup Details
                                 </h4>
+                                {Number.isFinite(selectedRequest.pickup_lat) && Number.isFinite(selectedRequest.pickup_lng) ? (
+                                    <LeafletLocationMap
+                                        latitude={selectedRequest.pickup_lat}
+                                        longitude={selectedRequest.pickup_lng}
+                                        height={180}
+                                        zoom={15}
+                                    />
+                                ) : null}
                                 <Detail label="Pickup Address" value={selectedRequest.pickup_address} />
                                 <Detail label="Pickup Latitude" value={String(selectedRequest.pickup_lat)} />
                                 <Detail label="Pickup Longitude" value={String(selectedRequest.pickup_lng)} />

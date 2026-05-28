@@ -9,6 +9,7 @@ import { useDeleteProfileImage, useMyProfile, useUpdateMyProfile, useUploadProfi
 import { useChangePassword } from "@/src/hooks/auth/useAuthActions";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { AxiosError } from "axios";
+import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
 
 const getApiError = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ error?: string }>;
@@ -105,6 +106,14 @@ export default function VendorProfilePage() {
             },
         });
     };
+
+    const businessLatitude = profile.VendorProfile?.BusinessLatitude;
+    const businessLongitude = profile.VendorProfile?.BusinessLongitude;
+    const hasBusinessLocation =
+        typeof businessLatitude === "number" &&
+        typeof businessLongitude === "number" &&
+        Number.isFinite(businessLatitude) &&
+        Number.isFinite(businessLongitude);
 
     return (
         <div className="space-y-6">
@@ -218,6 +227,26 @@ export default function VendorProfilePage() {
                                         <FieldLabel htmlFor="email">Email</FieldLabel>
                                         <Input id="email" type="email" value={profile.Email} disabled />
                                     </Field>
+
+                                    <Field className="md:col-span-2">
+                                        <FieldLabel>Business Address</FieldLabel>
+                                        <Input value={profile.VendorProfile?.Address ?? ""} disabled />
+                                    </Field>
+
+                                    {hasBusinessLocation ? (
+                                        <Field className="md:col-span-2">
+                                            <FieldLabel>Business Location</FieldLabel>
+                                            <LeafletLocationMap
+                                                latitude={businessLatitude}
+                                                longitude={businessLongitude}
+                                                height={220}
+                                                zoom={15}
+                                            />
+                                            <FieldDescription>
+                                                Service radius: {profile.VendorProfile?.ServiceRadiusKm ?? 5} km
+                                            </FieldDescription>
+                                        </Field>
+                                    ) : null}
 
                                     <Field className="md:col-span-2">
                                         {profileError ? <p className="mb-2 text-sm text-red-600">{profileError}</p> : null}

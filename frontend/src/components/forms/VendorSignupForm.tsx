@@ -21,6 +21,12 @@ import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { AxiosError } from "axios";
+import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
+
+const DEFAULT_VENDOR_LOCATION = {
+    latitude: 27.7172,
+    longitude: 85.324,
+};
 
 export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
     const { mutate, isPending } = useSignup();
@@ -28,6 +34,9 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
     const [name, setName] = useState("");
     const [owner, setOwner] = useState("");
     const [address, setAddress] = useState("");
+    const [businessLatitude, setBusinessLatitude] = useState<number | null>(null);
+    const [businessLongitude, setBusinessLongitude] = useState<number | null>(null);
+    const [serviceRadiusKm, setServiceRadiusKm] = useState("5");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [email, setEmail] = useState("");
     const [registrationNumber, setRegistrationNumber] = useState("");
@@ -82,6 +91,13 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                 "registration_number",
                                 registrationNumber
                             );
+                            if (businessLatitude !== null && businessLongitude !== null) {
+                                formData.append("business_latitude", String(businessLatitude));
+                                formData.append("business_longitude", String(businessLongitude));
+                            }
+                            if (serviceRadiusKm.trim()) {
+                                formData.append("service_radius_km", serviceRadiusKm.trim());
+                            }
 
                             if (documentFile) {
                                 formData.append("document", documentFile);
@@ -93,6 +109,9 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     setName("");
                                     setOwner("");
                                     setAddress("");
+                                    setBusinessLatitude(null);
+                                    setBusinessLongitude(null);
+                                    setServiceRadiusKm("5");
                                     setPhoneNumber("");
                                     setEmail("");
                                     setRegistrationNumber("");
@@ -142,6 +161,45 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     placeholder="Business location"
                                     required
                                 />
+                            </Field>
+
+                            <Field className="md:col-span-2">
+                                <FieldLabel>Business Location</FieldLabel>
+                                <LeafletLocationMap
+                                    latitude={businessLatitude ?? DEFAULT_VENDOR_LOCATION.latitude}
+                                    longitude={businessLongitude ?? DEFAULT_VENDOR_LOCATION.longitude}
+                                    editable
+                                    height={260}
+                                    onLocationChange={({ latitude, longitude }) => {
+                                        setBusinessLatitude(latitude);
+                                        setBusinessLongitude(longitude);
+                                    }}
+                                />
+                                <FieldDescription>
+                                    Tap or drag the marker to select your shop location. The address above remains the official text address.
+                                </FieldDescription>
+                                <div className="mt-2 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                                    <span>Lat: {businessLatitude !== null ? businessLatitude.toFixed(6) : "Not selected"}</span>
+                                    <span>Lng: {businessLongitude !== null ? businessLongitude.toFixed(6) : "Not selected"}</span>
+                                </div>
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="serviceRadius">
+                                    Service Radius (km)
+                                </FieldLabel>
+                                <Input
+                                    id="serviceRadius"
+                                    type="number"
+                                    min="0.1"
+                                    step="0.1"
+                                    value={serviceRadiusKm}
+                                    onChange={(e) => setServiceRadiusKm(e.target.value)}
+                                    placeholder="5"
+                                />
+                                <FieldDescription>
+                                    Used later to prioritize nearby pickup requests.
+                                </FieldDescription>
                             </Field>
 
                             {/* Business Contact Number */}
