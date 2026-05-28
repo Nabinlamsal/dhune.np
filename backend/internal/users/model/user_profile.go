@@ -30,6 +30,9 @@ type BusinessProfile struct {
 type VendorProfile struct {
 	OwnerName          string
 	Address            string
+	BusinessLatitude   *float64
+	BusinessLongitude  *float64
+	ServiceRadiusKm    *float64
 	RegistrationNumber string
 	ApprovalStatus     string
 }

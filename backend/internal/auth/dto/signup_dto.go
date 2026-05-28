@@ -7,10 +7,13 @@ type SignupRequestDTO struct {
 	Phone       string `form:"phone" binding:"required"`
 	Password    string `form:"password" binding:"required,min=6"`
 
-	OwnerName          *string `form:"owner_name"`
-	BusinessType       *string `form:"business_type"`
-	Address            *string `form:"address"`
-	RegistrationNumber *string `form:"registration_number"`
+	OwnerName          *string  `form:"owner_name"`
+	BusinessType       *string  `form:"business_type"`
+	Address            *string  `form:"address"`
+	RegistrationNumber *string  `form:"registration_number"`
+	BusinessLatitude   *float64 `form:"business_latitude"`
+	BusinessLongitude  *float64 `form:"business_longitude"`
+	ServiceRadiusKm    *float64 `form:"service_radius_km"`
 }
 
 type SignupDocumentDTO struct {

@@ -62,9 +62,15 @@ INSERT INTO vendor_profiles (
     user_id,
     owner_name,
     address,
-    registration_number
+    registration_number,
+    business_latitude,
+    business_longitude,
+    service_radius_km
 ) VALUES (
-             $1, $2, $3, $4
+             $1, $2, $3, $4,
+             sqlc.narg(business_latitude),
+             sqlc.narg(business_longitude),
+             COALESCE(sqlc.narg(service_radius_km), 5.00)
          )
 RETURNING *;
 

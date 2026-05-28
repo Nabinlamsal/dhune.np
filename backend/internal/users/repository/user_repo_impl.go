@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/users/model"
@@ -103,6 +104,9 @@ func (repo *UserRepoImpl) GetUserDetails(ctx context.Context, userId uuid.UUID) 
 		profile.VendorProfile = &model.VendorProfile{
 			OwnerName:          row.VendorOwnerName.String,
 			Address:            row.VendorAddress.String,
+			BusinessLatitude:   nullDecimalToFloat(row.VendorBusinessLatitude),
+			BusinessLongitude:  nullDecimalToFloat(row.VendorBusinessLongitude),
+			ServiceRadiusKm:    nullDecimalToFloat(row.VendorServiceRadiusKm),
 			RegistrationNumber: row.VendorRegistrationNumber.String,
 			ApprovalStatus:     row.VendorApprovalStatus.String,
 		}
@@ -118,6 +122,17 @@ func (repo *UserRepoImpl) GetUserDetails(ctx context.Context, userId uuid.UUID) 
 		})
 	}
 	return profile, nil
+}
+
+func nullDecimalToFloat(value sql.NullString) *float64 {
+	if !value.Valid || value.String == "" {
+		return nil
+	}
+	parsed, err := strconv.ParseFloat(value.String, 64)
+	if err != nil {
+		return nil
+	}
+	return &parsed
 }
 func (repo *UserRepoImpl) GetMyProfile(ctx context.Context, userId uuid.UUID) (*model.UserProfile, error) {
 	return repo.GetUserDetails(ctx, userId)

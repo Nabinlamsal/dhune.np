@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"mime/multipart"
+	"strconv"
 	"strings"
 
 	"github.com/Nabinlamsal/dhune.np/internal/users/dto"
@@ -163,12 +164,32 @@ func (service *UserService) UpdateMyProfile(
 
 	switch profile.Role {
 	case "user":
+		if hasVendorLocationPatch(req) {
+			return nil, errors.New("vendor location fields cannot be updated for this account")
+		}
 		_, err = service.commandRepo.UpdateUserSelfProfile(ctx, userId, displayNameNS, phoneNS, sql.NullString{})
 	case "vendor", "business", "admin":
 		if req.DisplayName != nil {
 			return nil, errors.New("display name cannot be updated for this account")
 		}
+		if profile.Role != "vendor" && hasVendorLocationPatch(req) {
+			return nil, errors.New("vendor location fields cannot be updated for this account")
+		}
+		if profile.Role == "vendor" {
+			if err := validateVendorLocationPatch(req.BusinessLatitude, req.BusinessLongitude, req.ServiceRadiusKm); err != nil {
+				return nil, err
+			}
+		}
 		_, err = service.commandRepo.UpdateRestrictedSelfProfile(ctx, userId, phoneNS, sql.NullString{})
+		if err == nil && profile.Role == "vendor" && hasVendorLocationPatch(req) {
+			err = service.commandRepo.UpdateVendorLocation(
+				ctx,
+				userId,
+				nullableDecimal(req.BusinessLatitude),
+				nullableDecimal(req.BusinessLongitude),
+				nullableDecimal(req.ServiceRadiusKm),
+			)
+		}
 	default:
 		return nil, errors.New("invalid user role")
 	}
@@ -216,4 +237,34 @@ func (service *UserService) DeleteProfileImage(
 	}
 
 	return service.GetMyProfile(ctx, userId)
+}
+
+func hasVendorLocationPatch(req dto.UpdateProfileRequestDTO) bool {
+	return req.BusinessLatitude != nil || req.BusinessLongitude != nil || req.ServiceRadiusKm != nil
+}
+
+func validateVendorLocationPatch(latitude *float64, longitude *float64, serviceRadiusKm *float64) error {
+	if (latitude == nil) != (longitude == nil) {
+		return errors.New("business latitude and longitude must be provided together")
+	}
+	if latitude != nil && (*latitude < -90 || *latitude > 90) {
+		return errors.New("business latitude must be between -90 and 90")
+	}
+	if longitude != nil && (*longitude < -180 || *longitude > 180) {
+		return errors.New("business longitude must be between -180 and 180")
+	}
+	if serviceRadiusKm != nil && *serviceRadiusKm <= 0 {
+		return errors.New("service radius must be positive")
+	}
+	return nil
+}
+
+func nullableDecimal(value *float64) sql.NullString {
+	if value == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: strconv.FormatFloat(*value, 'f', -1, 64),
+		Valid:  true,
+	}
 }

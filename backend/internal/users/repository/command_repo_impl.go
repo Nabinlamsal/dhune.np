@@ -61,6 +61,19 @@ func (r *CommandRepoImpl) UpdateRestrictedSelfProfile(
 	})
 }
 
+func (r *CommandRepoImpl) UpdateVendorLocation(
+	ctx context.Context,
+	userId uuid.UUID,
+	businessLatitude, businessLongitude, serviceRadiusKm sql.NullString,
+) error {
+	return r.q.UpdateVendorLocation(ctx, db.UpdateVendorLocationParams{
+		UserID:            userId,
+		BusinessLatitude:  businessLatitude,
+		BusinessLongitude: businessLongitude,
+		ServiceRadiusKm:   serviceRadiusKm,
+	})
+}
+
 func (r *CommandRepoImpl) UpdateUserProfileImage(
 	ctx context.Context,
 	userId uuid.UUID,

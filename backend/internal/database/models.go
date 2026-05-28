@@ -611,6 +611,17 @@ type Category struct {
 	UpdatedAt    time.Time
 }
 
+type ChatbotMessage struct {
+	ID        uuid.UUID
+	SessionID sql.NullString
+	UserID    uuid.NullUUID
+	Question  string
+	Answer    string
+	Source    sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type Commission struct {
 	ID                uuid.UUID
 	OrderID           uuid.UUID
@@ -786,6 +797,9 @@ type VendorProfile struct {
 	IsActive           bool
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+	BusinessLatitude   sql.NullString
+	BusinessLongitude  sql.NullString
+	ServiceRadiusKm    sql.NullString
 }
 
 type VendorSettlement struct {

@@ -17,5 +17,6 @@ type CommandRepository interface {
 	ReactivateUser(ctx context.Context, userId uuid.UUID) error
 	UpdateUserSelfProfile(ctx context.Context, userId uuid.UUID, displayName, phone, profileImageURL sql.NullString) (db.User, error)
 	UpdateRestrictedSelfProfile(ctx context.Context, userId uuid.UUID, phone, profileImageURL sql.NullString) (db.User, error)
+	UpdateVendorLocation(ctx context.Context, userId uuid.UUID, businessLatitude, businessLongitude, serviceRadiusKm sql.NullString) error
 	UpdateUserProfileImage(ctx context.Context, userId uuid.UUID, profileImageURL *string) (db.User, error)
 }

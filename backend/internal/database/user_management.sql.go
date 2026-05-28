@@ -76,6 +76,9 @@ SELECT
     vp.id AS vendor_profile_id,
     vp.owner_name AS vendor_owner_name,
     vp.address AS vendor_address,
+    vp.business_latitude AS vendor_business_latitude,
+    vp.business_longitude AS vendor_business_longitude,
+    vp.service_radius_km AS vendor_service_radius_km,
     vp.approval_status AS vendor_approval_status,
     vp.is_active AS vendor_is_active,
 
@@ -93,24 +96,27 @@ LIMIT 1
 `
 
 type GetMyProfileRow struct {
-	ID                     uuid.UUID
-	DisplayName            string
-	Email                  string
-	Phone                  string
-	ProfileImageUrl        sql.NullString
-	Role                   string
-	IsVerified             bool
-	IsActive               bool
-	CreatedAt              time.Time
-	VendorProfileID        uuid.NullUUID
-	VendorOwnerName        sql.NullString
-	VendorAddress          sql.NullString
-	VendorApprovalStatus   sql.NullString
-	VendorIsActive         sql.NullBool
-	BusinessProfileID      uuid.NullUUID
-	BusinessOwnerName      sql.NullString
-	BusinessType           sql.NullString
-	BusinessApprovalStatus sql.NullString
+	ID                      uuid.UUID
+	DisplayName             string
+	Email                   string
+	Phone                   string
+	ProfileImageUrl         sql.NullString
+	Role                    string
+	IsVerified              bool
+	IsActive                bool
+	CreatedAt               time.Time
+	VendorProfileID         uuid.NullUUID
+	VendorOwnerName         sql.NullString
+	VendorAddress           sql.NullString
+	VendorBusinessLatitude  sql.NullString
+	VendorBusinessLongitude sql.NullString
+	VendorServiceRadiusKm   sql.NullString
+	VendorApprovalStatus    sql.NullString
+	VendorIsActive          sql.NullBool
+	BusinessProfileID       uuid.NullUUID
+	BusinessOwnerName       sql.NullString
+	BusinessType            sql.NullString
+	BusinessApprovalStatus  sql.NullString
 }
 
 func (q *Queries) GetMyProfile(ctx context.Context, id uuid.UUID) (GetMyProfileRow, error) {
@@ -129,6 +135,9 @@ func (q *Queries) GetMyProfile(ctx context.Context, id uuid.UUID) (GetMyProfileR
 		&i.VendorProfileID,
 		&i.VendorOwnerName,
 		&i.VendorAddress,
+		&i.VendorBusinessLatitude,
+		&i.VendorBusinessLongitude,
+		&i.VendorServiceRadiusKm,
 		&i.VendorApprovalStatus,
 		&i.VendorIsActive,
 		&i.BusinessProfileID,
@@ -163,6 +172,9 @@ SELECT
     vp.id AS vendor_profile_id,
     vp.owner_name AS vendor_owner_name,
     vp.address AS vendor_address,
+    vp.business_latitude AS vendor_business_latitude,
+    vp.business_longitude AS vendor_business_longitude,
+    vp.service_radius_km AS vendor_service_radius_km,
     vp.registration_number AS vendor_registration_number,
     vp.approval_status AS vendor_approval_status,
     vp.is_active AS vendor_is_active
@@ -196,6 +208,9 @@ type GetUserDetailRow struct {
 	VendorProfileID            uuid.NullUUID
 	VendorOwnerName            sql.NullString
 	VendorAddress              sql.NullString
+	VendorBusinessLatitude     sql.NullString
+	VendorBusinessLongitude    sql.NullString
+	VendorServiceRadiusKm      sql.NullString
 	VendorRegistrationNumber   sql.NullString
 	VendorApprovalStatus       sql.NullString
 	VendorIsActive             sql.NullBool
@@ -223,6 +238,9 @@ func (q *Queries) GetUserDetail(ctx context.Context, id uuid.UUID) (GetUserDetai
 		&i.VendorProfileID,
 		&i.VendorOwnerName,
 		&i.VendorAddress,
+		&i.VendorBusinessLatitude,
+		&i.VendorBusinessLongitude,
+		&i.VendorServiceRadiusKm,
 		&i.VendorRegistrationNumber,
 		&i.VendorApprovalStatus,
 		&i.VendorIsActive,
@@ -567,4 +585,30 @@ func (q *Queries) UpdateUserSelfProfile(ctx context.Context, arg UpdateUserSelfP
 		&i.ProfileImageUrl,
 	)
 	return i, err
+}
+
+const updateVendorLocation = `-- name: UpdateVendorLocation :exec
+UPDATE vendor_profiles
+SET business_latitude = COALESCE($2, business_latitude),
+    business_longitude = COALESCE($3, business_longitude),
+    service_radius_km = COALESCE($4, service_radius_km),
+    updated_at = now()
+WHERE user_id = $1
+`
+
+type UpdateVendorLocationParams struct {
+	UserID            uuid.UUID
+	BusinessLatitude  sql.NullString
+	BusinessLongitude sql.NullString
+	ServiceRadiusKm   sql.NullString
+}
+
+func (q *Queries) UpdateVendorLocation(ctx context.Context, arg UpdateVendorLocationParams) error {
+	_, err := q.db.ExecContext(ctx, updateVendorLocation,
+		arg.UserID,
+		arg.BusinessLatitude,
+		arg.BusinessLongitude,
+		arg.ServiceRadiusKm,
+	)
+	return err
 }

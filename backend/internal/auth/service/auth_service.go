@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"mime/multipart"
+	"strconv"
 	"strings"
 	"time"
 
@@ -70,6 +71,9 @@ func (s *AuthService) Signup(
 			req.Address == nil ||
 			req.RegistrationNumber == nil {
 			return nil, errors.New("missing required vendor fields")
+		}
+		if err := validateVendorLocation(req.BusinessLatitude, req.BusinessLongitude, req.ServiceRadiusKm); err != nil {
+			return nil, err
 		}
 		if file == nil {
 			return nil, errors.New("vendor document is required")
@@ -144,6 +148,9 @@ func (s *AuthService) Signup(
 				OwnerName:          *req.OwnerName,
 				Address:            *req.Address,
 				RegistrationNumber: *req.RegistrationNumber,
+				BusinessLatitude:   nullableDecimal(req.BusinessLatitude),
+				BusinessLongitude:  nullableDecimal(req.BusinessLongitude),
+				ServiceRadiusKm:    nullableDecimalValue(req.ServiceRadiusKm),
 			})
 		if err != nil {
 			return nil, err
@@ -464,4 +471,37 @@ func (s *AuthService) buildLoginResponse(user db.User) (*dto.LoginResponseDTO, e
 
 func generateGooglePhone() string {
 	return fmt.Sprintf("9%09d", time.Now().UnixNano()%1000000000)
+}
+
+func validateVendorLocation(latitude *float64, longitude *float64, serviceRadiusKm *float64) error {
+	if (latitude == nil) != (longitude == nil) {
+		return errors.New("business latitude and longitude must be provided together")
+	}
+	if latitude != nil && (*latitude < -90 || *latitude > 90) {
+		return errors.New("business latitude must be between -90 and 90")
+	}
+	if longitude != nil && (*longitude < -180 || *longitude > 180) {
+		return errors.New("business longitude must be between -180 and 180")
+	}
+	if serviceRadiusKm != nil && *serviceRadiusKm <= 0 {
+		return errors.New("service radius must be positive")
+	}
+	return nil
+}
+
+func nullableDecimal(value *float64) sql.NullString {
+	if value == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: strconv.FormatFloat(*value, 'f', -1, 64),
+		Valid:  true,
+	}
+}
+
+func nullableDecimalValue(value *float64) interface{} {
+	if value == nil {
+		return nil
+	}
+	return strconv.FormatFloat(*value, 'f', -1, 64)
 }

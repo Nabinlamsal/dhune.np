@@ -80,6 +80,9 @@ SELECT
     vp.id AS vendor_profile_id,
     vp.owner_name AS vendor_owner_name,
     vp.address AS vendor_address,
+    vp.business_latitude AS vendor_business_latitude,
+    vp.business_longitude AS vendor_business_longitude,
+    vp.service_radius_km AS vendor_service_radius_km,
     vp.registration_number AS vendor_registration_number,
     vp.approval_status AS vendor_approval_status,
     vp.is_active AS vendor_is_active
@@ -186,6 +189,9 @@ SELECT
     vp.id AS vendor_profile_id,
     vp.owner_name AS vendor_owner_name,
     vp.address AS vendor_address,
+    vp.business_latitude AS vendor_business_latitude,
+    vp.business_longitude AS vendor_business_longitude,
+    vp.service_radius_km AS vendor_service_radius_km,
     vp.approval_status AS vendor_approval_status,
     vp.is_active AS vendor_is_active,
 
@@ -217,6 +223,14 @@ SET phone = COALESCE(sqlc.narg(phone), phone),
     updated_at = now()
 WHERE id = $1
 RETURNING *;
+
+-- name: UpdateVendorLocation :exec
+UPDATE vendor_profiles
+SET business_latitude = COALESCE(sqlc.narg(business_latitude), business_latitude),
+    business_longitude = COALESCE(sqlc.narg(business_longitude), business_longitude),
+    service_radius_km = COALESCE(sqlc.narg(service_radius_km), service_radius_km),
+    updated_at = now()
+WHERE user_id = $1;
 
 -- name: UpdateUserProfileImage :one
 UPDATE users

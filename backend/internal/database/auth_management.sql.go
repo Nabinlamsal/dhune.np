@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -134,11 +135,17 @@ INSERT INTO vendor_profiles (
     user_id,
     owner_name,
     address,
-    registration_number
+    registration_number,
+    business_latitude,
+    business_longitude,
+    service_radius_km
 ) VALUES (
-             $1, $2, $3, $4
+             $1, $2, $3, $4,
+             $5,
+             $6,
+             COALESCE($7, 5.00)
          )
-RETURNING id, user_id, owner_name, address, registration_number, approval_status, is_active, created_at, updated_at
+RETURNING id, user_id, owner_name, address, registration_number, approval_status, is_active, created_at, updated_at, business_latitude, business_longitude, service_radius_km
 `
 
 type CreateVendorProfileParams struct {
@@ -146,6 +153,9 @@ type CreateVendorProfileParams struct {
 	OwnerName          string
 	Address            string
 	RegistrationNumber string
+	BusinessLatitude   sql.NullString
+	BusinessLongitude  sql.NullString
+	ServiceRadiusKm    interface{}
 }
 
 func (q *Queries) CreateVendorProfile(ctx context.Context, arg CreateVendorProfileParams) (VendorProfile, error) {
@@ -154,6 +164,9 @@ func (q *Queries) CreateVendorProfile(ctx context.Context, arg CreateVendorProfi
 		arg.OwnerName,
 		arg.Address,
 		arg.RegistrationNumber,
+		arg.BusinessLatitude,
+		arg.BusinessLongitude,
+		arg.ServiceRadiusKm,
 	)
 	var i VendorProfile
 	err := row.Scan(
@@ -166,6 +179,9 @@ func (q *Queries) CreateVendorProfile(ctx context.Context, arg CreateVendorProfi
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.BusinessLatitude,
+		&i.BusinessLongitude,
+		&i.ServiceRadiusKm,
 	)
 	return i, err
 }
@@ -310,7 +326,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone string) (User, error
 }
 
 const getVendorProfileByUserID = `-- name: GetVendorProfileByUserID :one
-SELECT id, user_id, owner_name, address, registration_number, approval_status, is_active, created_at, updated_at
+SELECT id, user_id, owner_name, address, registration_number, approval_status, is_active, created_at, updated_at, business_latitude, business_longitude, service_radius_km
 FROM vendor_profiles
 WHERE user_id = $1
 LIMIT 1
@@ -329,6 +345,9 @@ func (q *Queries) GetVendorProfileByUserID(ctx context.Context, userID uuid.UUID
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.BusinessLatitude,
+		&i.BusinessLongitude,
+		&i.ServiceRadiusKm,
 	)
 	return i, err
 }

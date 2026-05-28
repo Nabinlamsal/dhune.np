@@ -42,10 +42,13 @@ type BusinessProfileDto struct {
 }
 
 type VendorProfileDto struct {
-	OwnerName          string `json:"owner_name"`
-	Address            string `json:"address"`
-	RegistrationNumber string `json:"registration_number"`
-	ApprovalStatus     string `json:"approval_status"`
+	OwnerName          string   `json:"owner_name"`
+	Address            string   `json:"address"`
+	BusinessLatitude   *float64 `json:"business_latitude,omitempty"`
+	BusinessLongitude  *float64 `json:"business_longitude,omitempty"`
+	ServiceRadiusKm    *float64 `json:"service_radius_km,omitempty"`
+	RegistrationNumber string   `json:"registration_number"`
+	ApprovalStatus     string   `json:"approval_status"`
 }
 
 type DocumentDto struct {
@@ -57,6 +60,9 @@ type DocumentDto struct {
 }
 
 type UpdateProfileRequestDTO struct {
-	DisplayName *string `json:"display_name"`
-	Phone       *string `json:"phone"`
+	DisplayName       *string  `json:"display_name"`
+	Phone             *string  `json:"phone"`
+	BusinessLatitude  *float64 `json:"business_latitude"`
+	BusinessLongitude *float64 `json:"business_longitude"`
+	ServiceRadiusKm   *float64 `json:"service_radius_km"`
 }
