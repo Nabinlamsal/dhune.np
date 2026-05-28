@@ -1,69 +1,56 @@
-import { HelpCircle } from "lucide-react";
-
 const faqs = [
   {
-    question: "How does Dhune work?",
-    answer:
-      "Users create a laundry request in the mobile app, vendors send offers, users compare and accept one, and the accepted offer becomes a trackable order.",
+    question: "What is Dhune.np?",
+    answer: "Dhune.np is a smart laundry marketplace connecting customers with trusted laundry vendors in Nepal.",
   },
   {
-    question: "Can users compare vendor offers?",
-    answer:
-      "Users receive offers from multiple verified vendors, then compare price, turnaround date, and service notes before confirming the best fit.",
+    question: "How does the request and offer system work?",
+    answer: "Customers create requests, vendors send offers, and customers accept the option that fits their price and timing.",
   },
   {
-    question: "Can businesses use Dhune?",
-    answer:
-      "Yes. Business users use the same core laundry features as normal users. The difference is only in registration, where business details and documents may be required.",
+    question: "Can vendors register on Dhune.np?",
+    answer: "Yes. Vendors can register, complete approval, receive requests, and send offers from the vendor portal.",
   },
   {
-    question: "How do payments work?",
-    answer:
-      "Dhune supports cash and online payment records for orders. Khalti and cash support are part of the flow, and eSewa can be added as a coming payment option when enabled.",
+    question: "Which payment methods are supported?",
+    answer: "The platform supports cash visibility and online payment flows including Khalti and eSewa where enabled.",
   },
   {
-    question: "What happens after a user accepts an offer?",
-    answer:
-      "The accepted offer becomes an active order. From there, pickup, cleaning progress, and delivery can be tracked in a structured workflow.",
+    question: "Is pickup and delivery included?",
+    answer: "Vendors include pickup and delivery cost in the final offer price shown to customers.",
   },
   {
-    question: "How can users get support?",
-    answer:
-      "Users can use help and support flows in the app. Admins can manage disputes and support cases when an order needs review.",
+    question: "Is the mobile app available?",
+    answer: "The Android app download section is prepared and the public download link will be available soon.",
   },
 ];
 
 export default function FaqSection() {
   return (
-    <section id="help-faq" className="section-reveal mx-4 my-10 rounded-[2rem] border border-slate-200 bg-white/80 px-6 py-10 shadow-sm dark:border-white/10 dark:bg-[#1d1d1a]/85 sm:mx-5 sm:px-8">
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-xl">
-          <p className="text-sm font-bold tracking-wide text-[#040947] dark:text-[#ebbc01]">/ Help Section</p>
-          <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
-            FAQ and quick help for first-time users
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-[#F7F5EE]/70 sm:text-base">
-            Practical answers for users, vendors, and businesses before they start using Dhune.
+    <section id="faq" className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="text-center">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+            FAQ
           </p>
-          <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-[#fff7d6] px-4 py-3 text-sm font-semibold text-slate-700 dark:bg-[#ebbc01]/15 dark:text-[#ebbc01]">
-            <HelpCircle className="h-5 w-5 text-[#8a6d00]" />
-            Support: support@dhune.np
-          </div>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+            Quick answers before getting started
+          </h2>
         </div>
 
-        <div className="w-full max-w-3xl space-y-4">
+        <div className="mt-9 space-y-3">
           {faqs.map((faq) => (
             <details
               key={faq.question}
-              className="group rounded-2xl border border-slate-200 bg-white p-5 transition open:border-[#040947]/20 open:shadow-md dark:border-white/10 dark:bg-[#242420] dark:open:border-[#ebbc01]/40"
+              className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition open:border-[#040947]/25 dark:border-white/10 dark:bg-white/[0.08] dark:open:border-cyan-300/30"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-lg font-semibold text-slate-900 dark:text-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-extrabold text-slate-950 dark:text-white">
                 <span>{faq.question}</span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#040947] text-xl text-white transition group-open:rotate-45">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg text-[#040947] transition group-open:rotate-45 dark:bg-white/10 dark:text-cyan-200">
                   +
                 </span>
               </summary>
-              <p className="mt-4 pr-0 text-sm leading-7 text-slate-600 dark:text-[#F7F5EE]/65 sm:pr-12">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
                 {faq.answer}
               </p>
             </details>

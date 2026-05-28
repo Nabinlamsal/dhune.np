@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/src/components/ui/field";
 import { Input } from "@/src/components/ui/input";
@@ -12,6 +12,7 @@ import { AxiosError } from "axios";
 
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const verifyEmail = useVerifyEmail();
     const resendOTP = useSendVerificationOTP();
     const [email, setEmail] = useState(searchParams.get("email") ?? "");
@@ -31,6 +32,9 @@ function VerifyEmailContent() {
                     setIsError(false);
                     setMessage(data.message);
                     setOtp("");
+                    setTimeout(() => {
+                        router.replace("/auth/login");
+                    }, 900);
                 },
                 onError: (error) => {
                     const axiosError = error as AxiosError<{ error?: string }>;

@@ -68,6 +68,7 @@ export default function AdminRequestsPage() {
 
     const requests: RequestSummary[] =
         listResponse?.data ?? [];
+    const showPagination = page > 0 || requests.length === pageSize;
 
     // Detail
     const {
@@ -247,7 +248,7 @@ export default function AdminRequestsPage() {
 
             {/* ---------- Pagination ---------- */}
 
-            <div className="flex justify-end gap-2 mt-4">
+            {showPagination ? <div className="flex justify-end gap-2 mt-4">
 
                 <Button
                     size="sm"
@@ -271,7 +272,7 @@ export default function AdminRequestsPage() {
                     Next
                 </Button>
 
-            </div>
+            </div> : null}
 
             {/* ---------- Details Drawer ---------- */}
 

@@ -1,4 +1,5 @@
 import { ApiResponse } from "../api";
+import { AdminUserSummary } from "../users/admin-user-summary";
 import { OfferStatus } from "./orders-enums";
 
 export interface Offer {
@@ -13,6 +14,8 @@ export interface Offer {
     status: OfferStatus;
     description?: string;
     created_at?: string;
+    vendor?: AdminUserSummary;
+    user?: AdminUserSummary;
 }
 
 export interface CreateOfferPayload {

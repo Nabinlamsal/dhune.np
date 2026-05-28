@@ -5,8 +5,20 @@ import (
 	"errors"
 
 	"github.com/Nabinlamsal/dhune.np/internal/events"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/google/uuid"
 )
+
+func sendAccountStatusEmail(email, name, title, message, status string) {
+	utils.SendEmailAsync(email, title, utils.BuildDhuneEmail(utils.DhuneEmailInput{
+		Title:   title,
+		Message: message,
+		Details: []utils.EmailDetailRow{
+			{Label: "Account", Value: name},
+			{Label: "Status", Value: status},
+		},
+	}))
+}
 
 func (s *UserService) ApproveVendor(ctx context.Context, userId uuid.UUID) error {
 	user, err := s.userRepo.GetUserDetails(ctx, userId)
@@ -39,6 +51,7 @@ func (s *UserService) ApproveVendor(ctx context.Context, userId uuid.UUID) error
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Vendor account approved", "Your Dhune.np vendor account has been approved. You can now access your vendor workspace.", "Approved")
 
 	return nil
 }
@@ -73,6 +86,7 @@ func (s *UserService) RejectVendor(ctx context.Context, userId uuid.UUID) error 
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Vendor account rejected", "Your Dhune.np vendor account registration was rejected. Please contact support if you need help.", "Rejected")
 
 	return nil
 }
@@ -108,6 +122,7 @@ func (s *UserService) ApproveBusinessUser(ctx context.Context, userId uuid.UUID)
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Business account approved", "Your Dhune.np business account has been approved.", "Approved")
 
 	return nil
 }
@@ -145,6 +160,7 @@ func (s *UserService) RejectBusinessUser(ctx context.Context, userId uuid.UUID) 
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Business account rejected", "Your Dhune.np business account registration was rejected. Please contact support if you need help.", "Rejected")
 
 	return nil
 }
@@ -180,6 +196,7 @@ func (s *UserService) SuspendUser(ctx context.Context, userId uuid.UUID) error {
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Dhune.np account suspended", "Your Dhune.np account has been suspended by an administrator.", "Suspended")
 
 	return nil
 }
@@ -211,6 +228,7 @@ func (s *UserService) ReactivateUser(ctx context.Context, userId uuid.UUID) erro
 			EntityID:   userId.String(),
 		},
 	})
+	sendAccountStatusEmail(user.Email, user.DisplayName, "Dhune.np account reactivated", "Your Dhune.np account has been reactivated.", "Active")
 
 	return nil
 }

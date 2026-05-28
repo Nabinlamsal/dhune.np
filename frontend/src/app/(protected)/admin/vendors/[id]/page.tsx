@@ -15,6 +15,7 @@ import { AdminUserFilterStatus } from "@/src/types/users/user.enums";
 import { Detail } from "@/src/components/common/DetailItem";
 import { AdminUserProfile } from "@/src/types/users/admin-user-profile";
 import { FilePreviewModal } from "@/src/components/common/FilePreviewModal";
+import { ConfirmActionDialog } from "@/src/components/common/ConfirmActionDialog";
 import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
 
 function normalizeApprovalStatus(value?: string | null): AdminUserFilterStatus | null {
@@ -57,6 +58,7 @@ export default function VendorDetailsPage() {
         title: string;
         url: string;
     } | null>(null);
+    const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | "suspend" | "reactivate" | null>(null);
 
     const approveVendor = useVendorApprove();
     const rejectVendor = useVendorReject();
@@ -83,6 +85,59 @@ export default function VendorDetailsPage() {
         typeof businessLongitude === "number" &&
         Number.isFinite(businessLatitude) &&
         Number.isFinite(businessLongitude);
+
+    const handleConfirmedAction = () => {
+        if (!confirmAction) return;
+
+        if (confirmAction === "approve") {
+            approveVendor.mutate(
+                { userId: vendor.ID },
+                {
+                    onSuccess: () => {
+                        setStatusOverride({ vendorId: vendor.ID, status: "approved" });
+                        setConfirmAction(null);
+                    },
+                }
+            );
+            return;
+        }
+
+        if (confirmAction === "reject") {
+            rejectVendor.mutate(
+                { userId: vendor.ID },
+                {
+                    onSuccess: () => {
+                        setStatusOverride({ vendorId: vendor.ID, status: "rejected" });
+                        setConfirmAction(null);
+                    },
+                }
+            );
+            return;
+        }
+
+        if (confirmAction === "suspend") {
+            suspend.mutate(
+                { userId: vendor.ID },
+                {
+                    onSuccess: () => {
+                        setStatusOverride({ vendorId: vendor.ID, status: "suspended" });
+                        setConfirmAction(null);
+                    },
+                }
+            );
+            return;
+        }
+
+        reactivate.mutate(
+            { userId: vendor.ID },
+            {
+                onSuccess: () => {
+                    setStatusOverride({ vendorId: vendor.ID, status: "approved" });
+                    setConfirmAction(null);
+                },
+            }
+        );
+    };
 
     return (
         <div className="space-y-8">
@@ -150,18 +205,7 @@ export default function VendorDetailsPage() {
                 {status === "pending" && (
                     <>
                         <Button
-                            onClick={() =>
-                                approveVendor.mutate(
-                                    { userId: vendor.ID },
-                                    {
-                                        onSuccess: () =>
-                                            setStatusOverride({
-                                                vendorId: vendor.ID,
-                                                status: "approved",
-                                            }),
-                                    }
-                                )
-                            }
+                            onClick={() => setConfirmAction("approve")}
                             disabled={approveVendor.isPending}
                         >
                             {approveVendor.isPending ? "Approving..." : "Approve Vendor"}
@@ -169,18 +213,7 @@ export default function VendorDetailsPage() {
 
                         <Button
                             variant="destructive"
-                            onClick={() =>
-                                rejectVendor.mutate(
-                                    { userId: vendor.ID },
-                                    {
-                                        onSuccess: () =>
-                                            setStatusOverride({
-                                                vendorId: vendor.ID,
-                                                status: "rejected",
-                                            }),
-                                    }
-                                )
-                            }
+                            onClick={() => setConfirmAction("reject")}
                             disabled={rejectVendor.isPending}
                         >
                             {rejectVendor.isPending ? "Rejecting..." : "Reject Vendor"}
@@ -191,18 +224,7 @@ export default function VendorDetailsPage() {
                 {status === "approved" && (
                     <Button
                         variant="destructive"
-                        onClick={() =>
-                            suspend.mutate(
-                                { userId: vendor.ID },
-                                {
-                                    onSuccess: () =>
-                                        setStatusOverride({
-                                            vendorId: vendor.ID,
-                                            status: "suspended",
-                                        }),
-                                }
-                            )
-                        }
+                        onClick={() => setConfirmAction("suspend")}
                         disabled={suspend.isPending}
                     >
                         {suspend.isPending ? "Suspending..." : "Suspend Vendor"}
@@ -211,18 +233,7 @@ export default function VendorDetailsPage() {
 
                 {status === "suspended" && (
                     <Button
-                        onClick={() =>
-                            reactivate.mutate(
-                                { userId: vendor.ID },
-                                {
-                                    onSuccess: () =>
-                                        setStatusOverride({
-                                            vendorId: vendor.ID,
-                                            status: "approved",
-                                        }),
-                                }
-                            )
-                        }
+                        onClick={() => setConfirmAction("reactivate")}
                         disabled={reactivate.isPending}
                     >
                         {reactivate.isPending ? "Reactivating..." : "Reactivate Vendor"}
@@ -235,6 +246,32 @@ export default function VendorDetailsPage() {
                 onClose={() => setPreviewDoc(null)}
                 title={previewDoc?.title}
                 url={previewDoc?.url}
+            />
+            <ConfirmActionDialog
+                open={!!confirmAction}
+                title={
+                    confirmAction === "approve"
+                        ? "Approve vendor?"
+                        : confirmAction === "reject"
+                            ? "Reject vendor?"
+                            : confirmAction === "suspend"
+                                ? "Suspend vendor?"
+                                : "Reactivate vendor?"
+                }
+                message={`Confirm this action for ${vendor.DisplayName}.`}
+                confirmLabel={
+                    confirmAction === "approve"
+                        ? "Approve"
+                        : confirmAction === "reject"
+                            ? "Reject"
+                            : confirmAction === "suspend"
+                                ? "Suspend"
+                                : "Reactivate"
+                }
+                tone={confirmAction === "approve" || confirmAction === "reactivate" ? "success" : "danger"}
+                isLoading={approveVendor.isPending || rejectVendor.isPending || suspend.isPending || reactivate.isPending}
+                onCancel={() => setConfirmAction(null)}
+                onConfirm={handleConfirmedAction}
             />
         </div>
     );

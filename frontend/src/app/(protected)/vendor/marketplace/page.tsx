@@ -62,6 +62,7 @@ export default function VendorMarketplacePage() {
         () => (Array.isArray(data) ? data : []),
         [data]
     )
+    const showPagination = page > 0 || requests.length === limit
 
     const selectedRequest = useMemo(
         () => requests.find(r => r.id === selectedId),
@@ -193,7 +194,7 @@ export default function VendorMarketplacePage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center mt-10 gap-2">
+            {showPagination ? <div className="flex justify-center mt-10 gap-2">
                 <button
                     disabled={page === 0}
                     onClick={() => setPage((p) => Math.max(p - 1, 0))}
@@ -213,7 +214,7 @@ export default function VendorMarketplacePage() {
                 >
                     Next
                 </button>
-            </div>
+            </div> : null}
 
             {/* Details Drawer */}
             <DetailsDrawer

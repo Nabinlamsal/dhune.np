@@ -50,11 +50,12 @@ export default function VendorOffersPage() {
     const offerRows = Array.isArray(offers)
         ? offers
         : Array.isArray((offers as { data?: unknown[] } | undefined)?.data)
-            ? ((offers as { data?: Offer[] }).data ?? [])
+            ? (((offers as unknown) as { data?: Offer[] }).data ?? [])
             : [];
 
     const selectedOffer = offerRows.find((offer) => offer.id === selectedOfferId);
     const canGoNext = offerRows.length === pageSize;
+    const showPagination = page > 0 || canGoNext;
 
     const columns = [
         {
@@ -139,7 +140,7 @@ export default function VendorOffersPage() {
                 )}
             </div>
 
-            <div className="mt-4 flex items-center justify-end gap-2">
+            {showPagination ? <div className="mt-4 flex items-center justify-end gap-2">
                 <Button
                     size="sm"
                     variant="outline"
@@ -158,7 +159,7 @@ export default function VendorOffersPage() {
                 >
                     Next
                 </Button>
-            </div>
+            </div> : null}
 
             <DetailsDrawer open={!!selectedOfferId} onClose={() => setSelectedOfferId(null)} title="Offer Details">
                 {selectedOffer && (

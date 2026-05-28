@@ -15,6 +15,7 @@ import { FilterTabs } from "@/src/components/common/FilterTabs";
 import { DetailsDrawer } from "@/src/components/common/DetailsDrawer";
 import { SearchInput } from "@/src/components/ui/search-input";
 import { FilePreviewModal } from "@/src/components/common/FilePreviewModal";
+import { ConfirmActionDialog } from "@/src/components/common/ConfirmActionDialog";
 
 //helper
 function deriveUserStatus(
@@ -48,6 +49,11 @@ export default function AdminUsersPage() {
         title: string;
         url: string;
     } | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{
+        type: "approve-business" | "reject-business" | "suspend" | "reactivate";
+        userId: string;
+        userName: string;
+    } | null>(null);
     const [search, setSearch] = useState("")
     //backend filter 
     const roles =
@@ -77,6 +83,28 @@ export default function AdminUsersPage() {
     const rejectBusiness = useBusinessReject();
     const suspend = useSuspendUser();
     const reactivate = useReactivateUser();
+
+    const showPagination = page > 0 || users.length === pageSize;
+
+    const handleConfirmedAction = () => {
+        if (!confirmAction) return;
+        const payload = { userId: confirmAction.userId };
+        const options = { onSuccess: () => setConfirmAction(null) };
+
+        if (confirmAction.type === "approve-business") {
+            approveBusiness.mutate(payload, options);
+            return;
+        }
+        if (confirmAction.type === "reject-business") {
+            rejectBusiness.mutate(payload, options);
+            return;
+        }
+        if (confirmAction.type === "suspend") {
+            suspend.mutate(payload, options);
+            return;
+        }
+        reactivate.mutate(payload, options);
+    };
 
     //return
     return (
@@ -208,7 +236,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-end gap-2 mt-4">
+            {showPagination ? <div className="flex justify-end gap-2 mt-4">
                 <Button
                     size="sm"
                     variant="outline"
@@ -230,7 +258,7 @@ export default function AdminUsersPage() {
                 >
                     Next
                 </Button>
-            </div>
+            </div> : null}
 
             {/* Details Drawer */}
             <DetailsDrawer
@@ -326,11 +354,7 @@ export default function AdminUsersPage() {
                                         <>
                                             <Button
                                                 size="sm"
-                                                onClick={() =>
-                                                    approveBusiness.mutate({
-                                                        userId: userDetail.ID,
-                                                    })
-                                                }
+                                                onClick={() => setConfirmAction({ type: "approve-business", userId: userDetail.ID, userName: userDetail.DisplayName })}
                                                 disabled={approveBusiness.isPending}
                                             >
                                                 {approveBusiness.isPending
@@ -341,11 +365,7 @@ export default function AdminUsersPage() {
                                             <Button
                                                 size="sm"
                                                 variant="destructive"
-                                                onClick={() =>
-                                                    rejectBusiness.mutate({
-                                                        userId: userDetail.ID,
-                                                    })
-                                                }
+                                                onClick={() => setConfirmAction({ type: "reject-business", userId: userDetail.ID, userName: userDetail.DisplayName })}
                                                 disabled={rejectBusiness.isPending}
                                             >
                                                 {rejectBusiness.isPending
@@ -359,11 +379,7 @@ export default function AdminUsersPage() {
                                     <Button
                                         size="sm"
                                         variant="destructive"
-                                        onClick={() =>
-                                            suspend.mutate({
-                                                userId: userDetail.ID,
-                                            })
-                                        }
+                                        onClick={() => setConfirmAction({ type: "suspend", userId: userDetail.ID, userName: userDetail.DisplayName })}
                                         disabled={suspend.isPending}
                                     >
                                         {suspend.isPending
@@ -375,11 +391,7 @@ export default function AdminUsersPage() {
                                 {status === "suspended" && (
                                     <Button
                                         size="sm"
-                                        onClick={() =>
-                                            reactivate.mutate({
-                                                userId: userDetail.ID,
-                                            })
-                                        }
+                                        onClick={() => setConfirmAction({ type: "reactivate", userId: userDetail.ID, userName: userDetail.DisplayName })}
                                         disabled={reactivate.isPending}
                                     >
                                         {reactivate.isPending
@@ -398,6 +410,32 @@ export default function AdminUsersPage() {
                 onClose={() => setPreviewDoc(null)}
                 title={previewDoc?.title}
                 url={previewDoc?.url}
+            />
+            <ConfirmActionDialog
+                open={!!confirmAction}
+                title={
+                    confirmAction?.type === "approve-business"
+                        ? "Approve business?"
+                        : confirmAction?.type === "reject-business"
+                            ? "Reject business?"
+                            : confirmAction?.type === "suspend"
+                                ? "Suspend user?"
+                                : "Reactivate user?"
+                }
+                message={confirmAction ? `Confirm this action for ${confirmAction.userName}.` : ""}
+                confirmLabel={
+                    confirmAction?.type === "approve-business"
+                        ? "Approve"
+                        : confirmAction?.type === "reject-business"
+                            ? "Reject"
+                            : confirmAction?.type === "suspend"
+                                ? "Suspend"
+                                : "Reactivate"
+                }
+                tone={confirmAction?.type === "approve-business" || confirmAction?.type === "reactivate" ? "success" : "danger"}
+                isLoading={approveBusiness.isPending || rejectBusiness.isPending || suspend.isPending || reactivate.isPending}
+                onCancel={() => setConfirmAction(null)}
+                onConfirm={handleConfirmedAction}
             />
         </>
     );

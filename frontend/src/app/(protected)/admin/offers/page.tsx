@@ -48,6 +48,7 @@ export default function AdminOffersPage() {
     const { data: stats } = useAdminOfferStats()
 
     const offers: Offer[] = data ?? []
+    const showPagination = page > 0 || offers.length === pageSize
     console.log("Offers:", offers)
     const columns = [
         {
@@ -160,7 +161,7 @@ export default function AdminOffersPage() {
             )}
 
             {/* Pagination */}
-            <div className="flex justify-end gap-2 mt-4">
+            {showPagination ? <div className="flex justify-end gap-2 mt-4">
                 <button
                     disabled={page === 0}
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -176,7 +177,7 @@ export default function AdminOffersPage() {
                 >
                     Next
                 </button>
-            </div>
+            </div> : null}
 
             {/* Details Drawer */}
             <DetailsDrawer

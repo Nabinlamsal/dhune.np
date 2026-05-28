@@ -9,6 +9,7 @@ import (
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
@@ -287,6 +288,27 @@ func (s *OfferService) Accept(
 			ActorUserID: userID,
 		},
 	})
+
+	if detail, detailErr := s.orderRepo.GetDetail(ctx, order.ID); detailErr == nil {
+		utils.SendEmailAsync(detail.VendorEmail, "Your Dhune.np offer was accepted", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+			Title:   "Offer accepted",
+			Message: "A customer accepted your offer. The order is now available in your vendor workspace.",
+			Details: []utils.EmailDetailRow{
+				{Label: "Order", Value: order.ID.String()},
+				{Label: "Customer", Value: detail.UserName},
+				{Label: "Final price", Value: "Rs. " + order.FinalPrice},
+			},
+		}))
+		utils.SendEmailAsync(detail.UserEmail, "Your Dhune.np order was created", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+			Title:   "Order created",
+			Message: "Your accepted offer has been converted into an order.",
+			Details: []utils.EmailDetailRow{
+				{Label: "Order", Value: order.ID.String()},
+				{Label: "Vendor", Value: detail.VendorName},
+				{Label: "Final price", Value: "Rs. " + order.FinalPrice},
+			},
+		}))
+	}
 
 	return &AcceptOfferResult{
 		OrderID: order.ID,

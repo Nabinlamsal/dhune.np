@@ -23,12 +23,15 @@ func (s *AuthService) sendVerificationOTPEmail(
 		return err
 	}
 
-	body := fmt.Sprintf(
-		"<p>Hello %s,</p><p>Your Dhune email verification OTP is <strong>%s</strong>.</p><p>This OTP expires in %d seconds.</p>",
-		strings.TrimSpace(displayName),
-		code,
-		s.otpExpirySeconds(),
-	)
+	body := utils.BuildDhuneEmail(utils.DhuneEmailInput{
+		Title:   "Verify your Dhune.np email",
+		Message: fmt.Sprintf("Hello %s, use this OTP to verify your Dhune.np account.", strings.TrimSpace(displayName)),
+		Details: []utils.EmailDetailRow{
+			{Label: "Verification OTP", Value: code},
+			{Label: "Expires in", Value: fmt.Sprintf("%d seconds", s.otpExpirySeconds())},
+		},
+		Footer: "If you did not create a Dhune.np account, you can ignore this email.",
+	})
 
 	return utils.SendEmail(email, "Verify your email", body)
 }
@@ -47,12 +50,15 @@ func (s *AuthService) sendPasswordResetOTPEmail(
 		return err
 	}
 
-	body := fmt.Sprintf(
-		"<p>Hello %s,</p><p>Your Dhune password reset OTP is <strong>%s</strong>.</p><p>This OTP expires in %d seconds.</p>",
-		strings.TrimSpace(displayName),
-		code,
-		s.otpExpirySeconds(),
-	)
+	body := utils.BuildDhuneEmail(utils.DhuneEmailInput{
+		Title:   "Reset your Dhune.np password",
+		Message: fmt.Sprintf("Hello %s, use this OTP to reset your password.", strings.TrimSpace(displayName)),
+		Details: []utils.EmailDetailRow{
+			{Label: "Password reset OTP", Value: code},
+			{Label: "Expires in", Value: fmt.Sprintf("%d seconds", s.otpExpirySeconds())},
+		},
+		Footer: "If you did not request a password reset, you can ignore this email.",
+	})
 
 	return utils.SendEmail(email, "Reset your password", body)
 }

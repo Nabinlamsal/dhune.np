@@ -25,6 +25,8 @@ const formatNotificationTime = (value: string) => {
 };
 
 const getNotificationHref = (role: PortalRole, item: NotificationItem) => {
+    const fallback = role === "admin" ? "/admin" : "/vendor";
+
     switch (item.entity_type) {
         case "request":
             return role === "admin" ? "/admin/requests" : "/vendor/marketplace";
@@ -33,10 +35,21 @@ const getNotificationHref = (role: PortalRole, item: NotificationItem) => {
         case "order":
             return role === "admin" ? "/admin/orders" : "/vendor/my-orders";
         case "user":
-            return "/admin/users";
+            return role === "admin" ? "/admin/users" : "/vendor/profile";
         default:
-            return role === "admin" ? "/admin" : "/vendor";
+            return fallback;
     }
+};
+
+const getRoleSafeHref = (role: PortalRole, item: NotificationItem) => {
+    const href = getNotificationHref(role, item);
+    if (role === "vendor" && href.startsWith("/admin")) {
+        return "/vendor";
+    }
+    if (role === "admin" && href.startsWith("/vendor")) {
+        return "/admin";
+    }
+    return href;
 };
 
 export default function NotificationBell({
@@ -58,7 +71,7 @@ export default function NotificationBell({
         markAsRead,
         markAllAsRead,
         isMarkingAllRead,
-    } = useNotifications(role);
+    } = useNotifications(role, { limit: 10 });
 
     const hasUnread = unreadCount > 0;
     const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
@@ -94,7 +107,7 @@ export default function NotificationBell({
             await markAsRead(item.id);
         }
         setOpen(false);
-        router.push(getNotificationHref(role, item));
+        router.push(getRoleSafeHref(role, item));
     };
 
     return (
@@ -170,7 +183,7 @@ export default function NotificationBell({
                             </div>
                         )}
 
-                        {notifications.map((item) => (
+                        {notifications.slice(0, 10).map((item) => (
                             <button
                                 key={item.id}
                                 type="button"

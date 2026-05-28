@@ -61,7 +61,7 @@ export interface OrderDetailResponse {
 }
 
 export interface OrderStats {
-    recent_orders: any;
+    recent_orders: OrderListItem[];
     total_orders: number;
     accepted_orders: number;
     picked_up_orders: number;

@@ -1,98 +1,76 @@
-import {
-    BellRing,
-    CheckCircle2,
-    CreditCard,
-    Languages,
-    Moon,
-    Settings,
-} from "lucide-react";
-import Image from "next/image";
+import { BellRing, CheckCircle2, Languages, Settings } from "lucide-react";
 
-const appFeatures = [
-    { label: "Create laundry requests", Icon: CheckCircle2 },
-    { label: "Compare and accept offers", Icon: CheckCircle2 },
-    { label: "Track request and order lifecycle", Icon: CheckCircle2 },
-    { label: "Khalti and cash payment support", Icon: CreditCard },
-    { label: "eSewa coming soon", Icon: CreditCard },
-    { label: "Real-time notifications", Icon: BellRing },
-    { label: "Dark and light mode", Icon: Moon },
-    { label: "English and Nepali accessibility", Icon: Languages },
-    { label: "Profile, help, terms, and privacy", Icon: Settings },
+const screenshots: string[] = [];
+
+const appHighlights = [
+  { label: "Nepali & English", Icon: Languages },
+  { label: "Order Tracking", Icon: CheckCircle2 },
+  { label: "Notifications", Icon: BellRing },
+  { label: "Profile & Preferences", Icon: Settings },
 ];
 
 export default function DownloadAppSection() {
-    return (
-        <section id="mobile-app" className="section-reveal relative overflow-hidden bg-[#040947] px-4 py-20 text-white dark:bg-[#171716] sm:px-6 lg:px-8 lg:py-24">
-            <div className="absolute inset-0">
-                <div className="absolute right-[-100px] top-[-100px] h-[500px] w-[500px] rounded-full bg-[#ebbc01] opacity-20 blur-[120px]" />
-                <div className="absolute bottom-[-100px] left-[-100px] h-[400px] w-[400px] rounded-full bg-blue-500 opacity-20 blur-[120px]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.12)_1px,_transparent_1px)] bg-[size:30px_30px] opacity-20" />
-            </div>
-
-            <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-14 lg:flex-row">
-                <div className="relative flex min-h-[390px] w-full items-center justify-center lg:w-1/2">
-                    <Image
-                        src="/request.png"
-                        width={260}
-                        height={560}
-                        alt="Dhune mobile request screen"
-                        className="absolute left-[2%] top-12 z-10 hidden w-[190px] rotate-[-10deg] rounded-2xl opacity-80 shadow-xl transition duration-500 hover:scale-105 sm:block lg:w-[245px]"
-                    />
-                    <Image
-                        src="/home.png"
-                        width={300}
-                        height={620}
-                        alt="Dhune mobile home screen"
-                        className="z-30 w-[230px] rounded-2xl shadow-2xl transition duration-500 hover:scale-105 lg:w-[300px]"
-                    />
-                    <Image
-                        src="/order.png"
-                        width={260}
-                        height={560}
-                        alt="Dhune mobile order tracking screen"
-                        className="absolute right-[2%] top-20 z-10 hidden w-[190px] rotate-[10deg] rounded-2xl opacity-80 shadow-xl transition duration-500 hover:scale-105 md:block lg:w-[245px]"
-                    />
-                    <div className="absolute bottom-[-30px] h-[50px] w-[250px] rounded-full bg-[#ebbc01] opacity-30 blur-2xl" />
-                </div>
-
-                <div className="w-full text-center lg:w-1/2 lg:text-left">
-                    <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#ebbc01]">
-                        / Mobile App
-                    </p>
-                    <h2 className="mt-3 text-4xl font-extrabold leading-tight text-[#ebbc01] md:text-5xl lg:text-6xl">
-                        Complete booking experience in the app
-                    </h2>
-
-                    <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-gray-300 lg:mx-0">
-                        The React Native mobile app is where users create laundry requests, compare vendor offers, accept orders, pay, receive notifications, and manage profile or help screens.
-                    </p>
-
-                    <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                        {appFeatures.map((feature) => {
-                            const Icon = feature.Icon;
-
-                            return (
-                                <div
-                                    key={feature.label}
-                                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-left text-sm font-semibold text-white/90 transition hover:-translate-y-0.5 hover:bg-white/15"
-                                >
-                                    <Icon className="h-5 w-5 shrink-0 text-[#ebbc01]" />
-                                    <span>{feature.label}</span>
-                                </div>
-                            );
-                        })}
+  return (
+    <section id="user-app" className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.07] sm:p-8 lg:p-10">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="mx-auto w-full max-w-sm">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[270px] rounded-[2rem] border border-slate-300 bg-slate-950 p-3 shadow-2xl shadow-[#040947]/15 dark:border-white/15 dark:shadow-cyan-300/10">
+              <div className="h-full overflow-hidden rounded-[1.45rem] bg-gradient-to-b from-slate-100 to-white dark:from-[#07111f] dark:to-[#0d1b2e]">
+                {screenshots.length > 0 ? null : (
+                  <div className="flex h-full flex-col justify-between p-5">
+                    <div>
+                      <div className="h-3 w-24 rounded-full bg-slate-300 dark:bg-white/20" />
+                      <div className="mt-6 h-9 w-36 rounded-xl bg-[#040947] dark:bg-cyan-300" />
+                      <div className="mt-5 grid gap-3">
+                        {[0, 1, 2].map((item) => (
+                          <div key={item} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/10">
+                            <div className="h-3 w-3/4 rounded-full bg-slate-200 dark:bg-white/20" />
+                            <div className="mt-3 h-3 w-1/2 rounded-full bg-slate-100 dark:bg-white/10" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-
-                    <div className="mt-10 flex flex-wrap justify-center gap-4 lg:justify-start">
-                        <button className="rounded-lg bg-[#ebbc01] px-8 py-3 font-semibold text-black transition hover:-translate-y-0.5 hover:bg-[#ffd84d]">
-                            Google Play
-                        </button>
-                        <button className="rounded-lg bg-white px-8 py-3 font-semibold text-black transition hover:-translate-y-0.5 hover:bg-[#F7F5EE]">
-                            App Store
-                        </button>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[0, 1, 2].map((item) => (
+                        <div key={item} className="h-10 rounded-xl bg-slate-200 dark:bg-white/15" />
+                      ))}
                     </div>
-                </div>
+                  </div>
+                )}
+              </div>
             </div>
-        </section>
-    );
+          </div>
+
+          <div className="text-center lg:text-left">
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+              User App
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+              A mobile-first laundry experience
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300 lg:mx-0">
+              Ready for light and dark app screenshots, with a clean placeholder until the final screens are added.
+            </p>
+
+            <div className="mx-auto mt-7 grid max-w-xl gap-3 sm:grid-cols-2 lg:mx-0">
+              {appHighlights.map((feature) => {
+                const Icon = feature.Icon;
+
+                return (
+                  <div
+                    key={feature.label}
+                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/[0.08] dark:text-slate-200"
+                  >
+                    <Icon className="h-5 w-5 shrink-0 text-[#040947] dark:text-cyan-200" />
+                    <span>{feature.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }

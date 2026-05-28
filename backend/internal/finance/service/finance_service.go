@@ -10,6 +10,7 @@ import (
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/finance/repository"
 	orderRepo "github.com/Nabinlamsal/dhune.np/internal/orders/repository"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -154,6 +155,17 @@ func (s *FinanceService) CreateVendorSettlement(ctx context.Context, input Creat
 	if err != nil {
 		return nil, fmt.Errorf("failed to create settlement: %w", err)
 	}
+
+	utils.SendPlatformEmailAsync("Vendor settlement submitted", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+		Title:   "Settlement submitted",
+		Message: "A vendor submitted a commission settlement for admin verification.",
+		Details: []utils.EmailDetailRow{
+			{Label: "Vendor", Value: input.VendorID.String()},
+			{Label: "Amount", Value: amountStr},
+			{Label: "Method", Value: input.PaymentMethod},
+			{Label: "Reference", Value: input.Reference},
+		},
+	}))
 
 	return &settlement, nil
 }

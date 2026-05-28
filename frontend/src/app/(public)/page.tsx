@@ -1,104 +1,137 @@
 "use client";
 
-import AudienceSection from "../../components/AudienceSection";
 import DownloadAppSection from "@/src/components/DownloadAppSection";
 import FaqSection from "@/src/components/FaqSection";
 import FeaturesSection from "@/src/components/FeaturesSection";
 import HelpChatbot from "@/src/components/HelpChatbot";
 import HowItWorksSection from "@/src/components/HowItWorksSection";
 import LandingFooter from "@/src/components/LandingFooter";
+import TechStackSection from "@/src/components/TechStackSection";
+import { Building2, Sparkles, Store, UsersRound } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+const audienceCards = [
+  {
+    title: "Customers",
+    description: "Create pickup requests, compare vendor offers, and track every laundry order.",
+    Icon: UsersRound,
+  },
+  {
+    title: "Laundry Vendors",
+    description: "Receive nearby requests, send offers, manage orders, and grow repeat demand.",
+    Icon: Store,
+  },
+  {
+    title: "Business Users / Organizations",
+    description: "Use organized laundry support for uniforms, linens, teams, and organizations.",
+    Icon: Building2,
+  },
+];
 
 export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="overflow-x-hidden bg-[#F7F5EE] font-nunito text-[#1A1A2E] dark:bg-[#18212b] dark:text-[#F7F5EE]">
-      <section id="home" className="relative min-h-screen bg-[url('/hero.jpg')] bg-cover bg-center bg-no-repeat px-4 pt-14 sm:px-8 lg:px-10">
-        <div className="absolute inset-0 bg-[#f7f5ee]/45 dark:bg-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-full bg-[linear-gradient(90deg,rgba(24,33,43,0.84)_0%,rgba(24,33,43,0.62)_36%,rgba(24,33,43,0.2)_62%,rgba(24,33,43,0)_100%)] dark:block lg:w-[70%]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 bg-gradient-to-b from-transparent via-[#18212b]/18 to-[#18212b] dark:block" />
+    <div className="min-h-screen overflow-x-hidden bg-[#f7f8fb] font-nunito text-slate-950 dark:bg-[#050b16] dark:text-white">
+      <section
+        id="home"
+        className="relative isolate flex min-h-[calc(100vh-1rem)] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8"
+      >
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#ffffff_0%,#eef5ff_48%,#f7f8fb_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),linear-gradient(180deg,#07111f_0%,#08111f_52%,#050b16_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(4,9,71,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(4,9,71,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70 dark:bg-[linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] dark:opacity-45" />
 
-        <div className="relative z-10 flex min-h-[calc(100vh-3.5rem)] items-center px-2 py-16 sm:px-8">
-          <div className="w-full max-w-2xl rounded-3xl bg-[#F7F5EE]/45 p-5 backdrop-blur-[2px] dark:bg-[#18212b]/48 sm:p-0 sm:backdrop-blur-none sm:dark:bg-transparent">
-            <p className="mb-5 max-w-md font-nunito text-base font-bold text-[#ebbc01] sm:text-lg lg:text-xl">
-              / Connect. Compare. Clean.
-            </p>
-            <h1 className="font-nunito text-4xl font-bold text-[#111827] dark:text-white sm:text-5xl lg:text-6xl">
-              Pickup to Delivery,{" "}
-              <span className="relative inline-flex">
-                <span className="absolute inset-x-0 bottom-0 border-b-[20px] border-[#ebbc01] sm:border-b-[25px]" />
-                <span className="relative mt-4 text-3xl font-bold text-[#111827] dark:text-white sm:text-5xl lg:text-6xl">
-                  Your Way!
-                </span>
-              </span>
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="mx-auto max-w-3xl text-center lg:mx-0 lg:text-left">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#040947]/10 bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#040947] shadow-sm dark:border-cyan-300/20 dark:bg-white/[0.08] dark:text-cyan-200 lg:mx-0">
+              <Sparkles className="h-4 w-4" />
+              Smart laundry marketplace
+            </div>
+            <h1 className="mt-6 text-balance text-4xl font-black leading-[1.04] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl dark:text-white">
+              Dhune.np connects customers with trusted laundry vendors.
             </h1>
-
-            <p className="mt-8 text-base font-semibold leading-8 text-neutral-700 dark:text-[#F7F5EE]/80 sm:text-lg lg:text-xl">
-              Dhune.np is a laundry marketplace where users create laundry requests from the mobile app, vendors send offers, and users accept the best option before tracking the order.
+            <p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg dark:text-slate-300 lg:mx-0">
+              Create laundry pickup requests, compare offers, choose a vendor, and track the order from pickup to delivery.
             </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <button
                 onClick={() => router.push("/auth/login")}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-[#040947] px-8 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#121008ea] dark:bg-[#ebbc01] dark:text-[#111827] dark:hover:bg-[#ffd84d]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#040947] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#040947]/15 transition hover:-translate-y-0.5 hover:bg-[#0b146b] sm:w-auto dark:bg-cyan-300 dark:text-[#07111f] dark:shadow-cyan-300/15 dark:hover:bg-white"
                 type="button"
               >
-                Get Started
+                Download App / Get Started
               </button>
               <button
                 onClick={() => router.push("/auth/signup/vendor")}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-[#ebbc01] px-8 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#121008ea] hover:text-white dark:hover:bg-white dark:hover:text-[#111827]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-7 text-sm font-extrabold text-[#040947] shadow-sm transition hover:-translate-y-0.5 hover:border-[#040947]/25 sm:w-auto dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
                 type="button"
               >
-                Vendor Registration
+                Become a Vendor / Explore Services
               </button>
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-xl pt-4 lg:max-w-none lg:pt-0">
+            <div className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ebbc01]/20 blur-3xl dark:bg-cyan-300/12" />
+            <div className="absolute inset-x-8 bottom-2 h-20 rounded-full bg-[#040947]/10 blur-2xl dark:bg-cyan-300/10" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 p-3 shadow-2xl shadow-[#040947]/12 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-cyan-300/10 sm:p-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-[#040947]/5 dark:from-cyan-300/10 dark:via-transparent dark:to-[#020617]/40" />
+              <Image
+                src="/hero.png"
+                alt="Dhune.np laundry marketplace app illustration"
+                width={900}
+                height={720}
+                priority
+                className="relative z-10 h-auto w-full object-contain drop-shadow-2xl dark:brightness-90 dark:contrast-105"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <section id="about" className="flex w-full flex-col gap-4 px-4 py-12 lg:flex-row lg:px-0 lg:py-0">
-        <div className="flex items-center justify-center p-0 lg:w-2/5 lg:p-10">
-          <Image
-            src="/about.jpg"
-            width={640}
-            height={520}
-            className="h-auto max-w-full rounded-2xl shadow-2xl shadow-[#ebbc01]/45"
-            alt="Fresh laundry prepared for Dhune pickup and delivery"
-          />
-        </div>
-        <div className="flex flex-col p-0 lg:w-3/5 lg:p-16 xl:p-20">
-          <div className="max-w-3xl">
-            <p className="mb-5 max-w-md font-nunito text-base font-bold text-[#040947] dark:text-[#ebbc01] sm:text-lg lg:text-xl">
-              /About Us
-            </p>
-            <h2 className="relative text-3xl font-bold text-[#111827] dark:text-white sm:text-5xl">
-              Let Your Clothes Shine, Every Time!
-              <span className="absolute -bottom-4 left-0 w-1/4 border-b-[10px] border-[#ebbc01]" />
-            </h2>
+      <main>
+        <section id="about" className="px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+                About
+              </p>
+              <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+                Who Dhune.np is for
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+                A focused laundry marketplace for customers, vendors, and organizations in Nepal.
+              </p>
+            </div>
 
-            <p className="mt-8 text-base leading-8 text-neutral-800 dark:text-[#F7F5EE]/75">
-              Dhune.np connects users with laundry vendors through a clear request, offer, and order flow. Users create laundry requests, vendors send price and time offers, users compare and accept, and the order is tracked from pickup to completion.
-            </p>
-            <p className="mt-3 text-base leading-8 text-neutral-700 dark:text-[#F7F5EE]/70">
-              Normal users and business users share the same core features; business signup only adds registration verification. Vendors manage laundry work, while admins manage platform operations, support, disputes, users, vendors, and marketplace settings.
-            </p>
-            <p className="mb-8 mt-3 text-md font-semibold italic text-neutral-600 dark:text-[#F7F5EE]/70 sm:text-md">
-              &quot;<span className="font-bold text-[#040947] dark:text-[#ebbc01]">Our Mission </span>
-              is to simplify how Nepal does laundry by creating a digital ecosystem where quality, trust, and convenience come together&quot;
-            </p>
+            <div className="mx-auto mt-9 grid max-w-5xl gap-4 md:grid-cols-3">
+              {audienceCards.map((card) => {
+                const Icon = card.Icon;
 
-            <AudienceSection />
+                return (
+                  <article
+                    key={card.title}
+                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-cyan-300/30"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947] text-white dark:bg-cyan-300 dark:text-[#07111f]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-extrabold text-slate-950 dark:text-white">{card.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{card.description}</p>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <FeaturesSection />
-      <HowItWorksSection />
-      <DownloadAppSection />
-      <FaqSection />
+        <HowItWorksSection />
+        <DownloadAppSection />
+        <FeaturesSection />
+        <TechStackSection />
+        <FaqSection />
+      </main>
+
       <LandingFooter />
       <HelpChatbot />
     </div>

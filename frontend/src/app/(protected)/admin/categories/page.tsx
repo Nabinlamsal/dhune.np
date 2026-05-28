@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ca
 import { DataTable } from "@/src/components/dashboard/table/DataTable";
 import { Input } from "@/src/components/ui/input";
 import { CommissionSettingsCard } from "@/src/components/admin/CommissionSettingsCard";
+import { ConfirmActionDialog } from "@/src/components/common/ConfirmActionDialog";
 
 import {
     useCategories,
@@ -33,6 +34,10 @@ export default function AdminCategoriesPage() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [units, setUnits] = useState<PricingUnit[]>([]);
+    const [confirmAction, setConfirmAction] = useState<{
+        type: "deactivate" | "reactivate" | "delete";
+        category: Category;
+    } | null>(null);
 
     const PRICING_UNITS: PricingUnit[] = ["KG", "SQFT", "ITEMS"];
     const categories = data ?? [];
@@ -77,6 +82,23 @@ export default function AdminCategoriesPage() {
 
         resetForm();
         setOpen(false);
+    };
+
+    const handleConfirmedAction = () => {
+        if (!confirmAction) return;
+
+        const { type, category } = confirmAction;
+        const options = { onSuccess: () => setConfirmAction(null) };
+
+        if (type === "deactivate") {
+            deactivateMutation.mutate(category.id, options);
+            return;
+        }
+        if (type === "reactivate") {
+            reactivateMutation.mutate(category.id, options);
+            return;
+        }
+        deleteCategory.mutate(category.id, options);
     };
 
     const columns = [
@@ -131,22 +153,18 @@ export default function AdminCategoriesPage() {
                         Edit
                     </Button>
                     {category.is_active ? (
-                        <Button size="sm" variant="secondary" onClick={() => deactivateMutation.mutate(category.id)}>
+                        <Button size="sm" variant="secondary" onClick={() => setConfirmAction({ type: "deactivate", category })}>
                             Deactivate
                         </Button>
                     ) : (
-                        <Button size="sm" variant="secondary" onClick={() => reactivateMutation.mutate(category.id)}>
+                        <Button size="sm" variant="secondary" onClick={() => setConfirmAction({ type: "reactivate", category })}>
                             Reactivate
                         </Button>
                     )}
                     <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
-                            if (confirm(`Delete "${category.name}"?`)) {
-                                deleteCategory.mutate(category.id);
-                            }
-                        }}
+                        onClick={() => setConfirmAction({ type: "delete", category })}
                     >
                         Delete
                     </Button>
@@ -241,6 +259,33 @@ export default function AdminCategoriesPage() {
                     </Card>
                 </div>
             )}
+
+            <ConfirmActionDialog
+                open={!!confirmAction}
+                title={
+                    confirmAction?.type === "delete"
+                        ? "Delete category?"
+                        : confirmAction?.type === "deactivate"
+                            ? "Deactivate category?"
+                            : "Reactivate category?"
+                }
+                message={
+                    confirmAction
+                        ? `${confirmAction.type === "delete" ? "Delete" : confirmAction.type === "deactivate" ? "Deactivate" : "Reactivate"} "${confirmAction.category.name}"?`
+                        : ""
+                }
+                confirmLabel={
+                    confirmAction?.type === "delete"
+                        ? "Delete"
+                        : confirmAction?.type === "deactivate"
+                            ? "Deactivate"
+                            : "Reactivate"
+                }
+                tone={confirmAction?.type === "reactivate" ? "success" : "danger"}
+                isLoading={deactivateMutation.isPending || reactivateMutation.isPending || deleteCategory.isPending}
+                onCancel={() => setConfirmAction(null)}
+                onConfirm={handleConfirmedAction}
+            />
         </div>
     );
 }

@@ -115,6 +115,7 @@ export default function VendorOrdersPage() {
             : [];
 
     const canGoNext = orderRows.length === pageSize;
+    const showPagination = page > 0 || canGoNext;
 
     const resetDisputeForm = (orderId?: string) => {
         setDisputeForm({
@@ -240,7 +241,7 @@ export default function VendorOrdersPage() {
                 )}
             </div>
 
-            <div className="mt-4 flex items-center justify-end gap-2">
+            {showPagination ? <div className="mt-4 flex items-center justify-end gap-2">
                 <Button
                     size="sm"
                     variant="outline"
@@ -259,7 +260,7 @@ export default function VendorOrdersPage() {
                 >
                     Next
                 </Button>
-            </div>
+            </div> : null}
 
             <DetailsDrawer
                 open={!!selectedOrderId}

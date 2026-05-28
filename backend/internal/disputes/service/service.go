@@ -77,6 +77,16 @@ func (s *Service) Create(ctx context.Context, input CreateDisputeInput) (*Disput
 		return nil, err
 	}
 
+	utils.SendPlatformEmailAsync("New Dhune.np dispute created", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+		Title:   "New dispute created",
+		Message: "A customer or vendor created a dispute that may need admin review.",
+		Details: []utils.EmailDetailRow{
+			{Label: "Order", Value: orderID.String()},
+			{Label: "Raised by", Value: string(raisedBy)},
+			{Label: "Type", Value: string(disputeType)},
+		},
+	}))
+
 	return mapDispute(row, string(order.OrderStatus)), nil
 }
 

@@ -8,6 +8,7 @@ import (
 	db "github.com/Nabinlamsal/dhune.np/internal/database"
 	"github.com/Nabinlamsal/dhune.np/internal/events"
 	"github.com/Nabinlamsal/dhune.np/internal/orders/repository"
+	"github.com/Nabinlamsal/dhune.np/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -255,10 +256,28 @@ func (s *OrderService) UpdateStatus(
 	}
 
 	if next == db.OrderStatusCOMPLETED && s.financeSvc != nil {
-		if _, err := s.financeSvc.CreateCommissionForOrder(ctx, orderID); err != nil {
+		if commission, err := s.financeSvc.CreateCommissionForOrder(ctx, orderID); err != nil {
 			// Log the error but don't fail the order status update?
 			// The transaction is already committed for UpdateStatus (if any), actually UpdateStatus is auto-committed.
 			// Ideally they should be in the same transaction, but for MVP this is acceptable.
+		} else if commission != nil {
+			utils.SendPlatformEmailAsync("Dhune.np commission earned", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+				Title:   "Commission earned",
+				Message: "A completed paid order generated platform commission.",
+				Details: []utils.EmailDetailRow{
+					{Label: "Order", Value: orderID.String()},
+					{Label: "Vendor", Value: detail.Vendor.Name},
+					{Label: "Commission", Value: "Rs. " + commission.CommissionAmount},
+				},
+			}))
+			utils.SendEmailAsync(detail.Vendor.Email, "Dhune.np commission due", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+				Title:   "Platform commission due",
+				Message: "A commission is due for a completed Dhune.np order. Please clear it from your vendor finance dashboard.",
+				Details: []utils.EmailDetailRow{
+					{Label: "Order", Value: orderID.String()},
+					{Label: "Commission", Value: "Rs. " + commission.CommissionAmount},
+				},
+			}))
 		}
 	}
 
@@ -282,6 +301,17 @@ func (s *OrderService) UpdateStatus(
 			ActorUserID: detail.Vendor.ID,
 		},
 	})
+
+	if next == db.OrderStatusCOMPLETED || next == db.OrderStatusDELIVERING {
+		utils.SendEmailAsync(detail.User.Email, "Dhune.np order status updated", utils.BuildDhuneEmail(utils.DhuneEmailInput{
+			Title:   "Order status updated",
+			Message: "Your Dhune.np order status has changed.",
+			Details: []utils.EmailDetailRow{
+				{Label: "Order", Value: orderID.String()},
+				{Label: "Status", Value: status},
+			},
+		}))
+	}
 
 	return nil
 }

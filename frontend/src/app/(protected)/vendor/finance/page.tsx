@@ -21,6 +21,7 @@ export default function VendorFinancePage() {
     const openCommissionPayment = useOpenCommissionPayment();
     const createSettlement = useCreateSettlement();
     const [settlementReference, setSettlementReference] = useState("");
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"KHALTI" | "ESEWA" | null>(null);
 
     const stats = data?.stats;
     const settlements = rawSettlements ?? [];
@@ -111,6 +112,13 @@ export default function VendorFinancePage() {
         );
     };
 
+    const openPayment = (method: "KHALTI" | "ESEWA") => {
+        setSelectedPaymentMethod(method);
+        openCommissionPayment.mutate(method, {
+            onSettled: () => setSelectedPaymentMethod(null),
+        });
+    };
+
     if (isLoading) {
         return <p className="text-sm text-slate-500">Loading your finances...</p>;
     }
@@ -126,17 +134,18 @@ export default function VendorFinancePage() {
                     <Button
                         className="bg-[#5c2d91] text-white hover:bg-[#4a2277]"
                         disabled={openCommissionPayment.isPending || Number(stats?.TotalPendingDue ?? 0) <= 0}
-                        onClick={() => openCommissionPayment.mutate("KHALTI")}
+                        onClick={() => openPayment("KHALTI")}
                     >
                         <CreditCard className="size-4" />
-                        Pay Commission Due
+                        {selectedPaymentMethod === "KHALTI" && openCommissionPayment.isPending ? "Opening Khalti..." : "Pay with Khalti"}
                     </Button>
                     <Button
-                        variant="outline"
+                        className="bg-[#60bb46] text-white hover:bg-[#4fa43a]"
                         disabled={openCommissionPayment.isPending || Number(stats?.TotalPendingDue ?? 0) <= 0}
-                        onClick={() => openCommissionPayment.mutate("ESEWA")}
+                        onClick={() => openPayment("ESEWA")}
                     >
-                        eSewa
+                        <Wallet className="size-4" />
+                        {selectedPaymentMethod === "ESEWA" && openCommissionPayment.isPending ? "Opening eSewa..." : "Pay with eSewa"}
                     </Button>
                     <Button variant="outline" onClick={() => refetch()}>Refresh</Button>
                 </div>

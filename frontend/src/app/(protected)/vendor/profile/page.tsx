@@ -11,6 +11,7 @@ import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
 import { NEPAL_PHONE_HELPER_TEXT, PASSWORD_HELPER_TEXT, validatePassword } from "@/src/utils/validation";
 import { AxiosError } from "axios";
 import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
+import { ConfirmActionDialog } from "@/src/components/common/ConfirmActionDialog";
 
 const getApiError = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ error?: string }>;
@@ -31,6 +32,7 @@ export default function VendorProfilePage() {
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [confirmDeletePhoto, setConfirmDeletePhoto] = useState(false);
 
     if (isLoading) {
         return <div className="text-sm text-slate-500">Loading profile...</div>;
@@ -117,6 +119,15 @@ export default function VendorProfilePage() {
         Number.isFinite(businessLatitude) &&
         Number.isFinite(businessLongitude);
 
+    const handleDeletePhoto = () => {
+        deleteProfileImage.mutate(undefined, {
+            onSuccess: () => setConfirmDeletePhoto(false),
+            onError: (error) => {
+                setImageError(getApiError(error, "Unable to delete profile image."));
+            },
+        });
+    };
+
     return (
         <div className="space-y-6">
             <section>
@@ -155,31 +166,38 @@ export default function VendorProfilePage() {
                         </div>
 
                         <FieldGroup>
-                            <Field>
-                                <FieldLabel htmlFor="profile-image">Profile Image</FieldLabel>
-                                <Input
-                                    id="profile-image"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={uploadProfileImage.isPending}
-                                />
-                                <FieldDescription>Upload a new profile image for your vendor account.</FieldDescription>
-                            </Field>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                disabled={!profile.ProfileImageURL || deleteProfileImage.isPending}
-                                onClick={() =>
-                                    deleteProfileImage.mutate(undefined, {
-                                        onError: (error) => {
-                                            setImageError(getApiError(error, "Unable to delete profile image."));
-                                        },
-                                    })
-                                }
-                            >
-                                {deleteProfileImage.isPending ? "Deleting..." : "Delete profile image"}
-                            </Button>
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                <Field>
+                                    <FieldLabel htmlFor="profile-image">Profile Image</FieldLabel>
+                                    <FieldDescription>
+                                        Use a clear shop logo or owner photo. JPG, PNG, and WebP images are supported by your browser.
+                                    </FieldDescription>
+                                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                                        <Button asChild type="button" disabled={uploadProfileImage.isPending}>
+                                            <label htmlFor="profile-image" className="cursor-pointer">
+                                                {uploadProfileImage.isPending ? "Uploading..." : "Change Photo"}
+                                            </label>
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="border-red-200 text-red-700 hover:bg-red-50"
+                                            disabled={!profile.ProfileImageURL || deleteProfileImage.isPending}
+                                            onClick={() => setConfirmDeletePhoto(true)}
+                                        >
+                                            {deleteProfileImage.isPending ? "Deleting..." : "Delete Photo"}
+                                        </Button>
+                                    </div>
+                                    <Input
+                                        id="profile-image"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        disabled={uploadProfileImage.isPending}
+                                        className="sr-only"
+                                    />
+                                </Field>
+                            </div>
                             {imageError ? <p className="text-sm text-red-600">{imageError}</p> : null}
                         </FieldGroup>
 
@@ -320,6 +338,16 @@ export default function VendorProfilePage() {
                     </Card>
                 </div>
             </div>
+            <ConfirmActionDialog
+                open={confirmDeletePhoto}
+                title="Delete profile photo?"
+                message="This removes the current vendor profile image. You can upload a new one later."
+                confirmLabel="Delete Photo"
+                tone="danger"
+                isLoading={deleteProfileImage.isPending}
+                onCancel={() => setConfirmDeletePhoto(false)}
+                onConfirm={handleDeletePhoto}
+            />
         </div>
     );
 }

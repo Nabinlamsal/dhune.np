@@ -59,6 +59,7 @@ export default function AdminDisputesPage() {
     const { mutate: resolveDispute, isPending } = useResolveDispute();
 
     const disputes = data ?? [];
+    const showPagination = offset > 0 || disputes.length === pageSize;
     const selectedDispute = detail as DisputeDetail | undefined;
 
     const columns = [
@@ -182,7 +183,7 @@ export default function AdminDisputesPage() {
                     />
                 )}
 
-                <div className="flex items-center justify-end gap-2">
+                {showPagination ? <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => setOffset((v) => Math.max(0, v - pageSize))}
                         disabled={offset === 0}
@@ -197,7 +198,7 @@ export default function AdminDisputesPage() {
                     >
                         Next
                     </button>
-                </div>
+                </div> : null}
             </div>
 
             <DetailsDrawer

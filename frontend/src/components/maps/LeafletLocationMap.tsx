@@ -42,7 +42,7 @@ export default function LeafletLocationMap({
 
     return (
         <div
-            className="overflow-hidden rounded-xl border border-[#040947]/15 bg-slate-100"
+            className="relative z-0 overflow-hidden rounded-xl border border-[#040947]/15 bg-slate-100 [&_.leaflet-bottom]:z-[1] [&_.leaflet-control]:z-[1] [&_.leaflet-control-container]:z-[1] [&_.leaflet-marker-icon]:z-[2] [&_.leaflet-pane]:z-0 [&_.leaflet-popup-pane]:z-[3] [&_.leaflet-top]:z-[1]"
             style={{ height }}
         >
             <LeafletLocationMapInner

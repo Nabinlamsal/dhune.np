@@ -48,7 +48,7 @@ export function DataTable<T>({
                                 <td key={col.key} className="px-6 py-4">
                                     {col.render
                                         ? col.render(row)
-                                        : (row as any)[col.key]}
+                                        : (row as Record<string, unknown>)[col.key] as React.ReactNode}
                                 </td>
                             ))}
                         </tr>

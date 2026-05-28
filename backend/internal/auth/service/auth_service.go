@@ -184,6 +184,20 @@ func (s *AuthService) Signup(
 		log.Printf("send verification otp failed for %s: %v", user.Email, err)
 	}
 
+	utils.SendPlatformEmailAsync(
+		"New Dhune.np registration",
+		utils.BuildDhuneEmail(utils.DhuneEmailInput{
+			Title:   "New registration",
+			Message: "A new account registration was completed in Dhune.np.",
+			Details: []utils.EmailDetailRow{
+				{Label: "Name", Value: user.DisplayName},
+				{Label: "Email", Value: user.Email},
+				{Label: "Phone", Value: user.Phone},
+				{Label: "Role", Value: role},
+			},
+		}),
+	)
+
 	adminBody := user.DisplayName + " registered as " + role + "."
 	if role == "vendor" || role == "business" {
 		adminBody = user.DisplayName + " registered as " + role + " and is waiting for admin approval."

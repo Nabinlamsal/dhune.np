@@ -12,6 +12,7 @@ import {
     getVendorOfferStats,
 } from "@/src/services/orders/offer_service";
 import { OfferStatus } from "@/src/types/orders/orders-enums";
+import { UpdateOfferPayload } from "@/src/types/orders/offers";
 import { toast } from "sonner"
 
 //vendor
@@ -26,7 +27,7 @@ export const useCreateOffer = () => {
             qc.invalidateQueries({ queryKey: ["offers-by-request"] });
             qc.invalidateQueries({ queryKey: ["admin-offers"] });
         },
-        onError: (error: any) => {
+        onError: () => {
             toast.error("Failed to Submit Offer!")
         },
     });
@@ -36,7 +37,7 @@ export const useUpdateOffer = () => {
     const qc = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, payload }: any) =>
+        mutationFn: ({ id, payload }: { id: string; payload: UpdateOfferPayload }) =>
             updateOffer(id, payload),
         onSuccess: () => {
             toast.success("you offer is updated successfully!")

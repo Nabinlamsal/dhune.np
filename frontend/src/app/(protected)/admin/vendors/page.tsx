@@ -48,6 +48,7 @@ export default function AdminVendorsPage() {
 
     const { data: vendors = [], isLoading } =
         useGetUsersFiltered(filter);
+    const showPagination = page > 0 || vendors.length === pageSize;
 
     const columns = [
         { key: "DisplayName", header: "Vendor Name" },
@@ -132,7 +133,7 @@ export default function AdminVendorsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-end gap-2 mt-4">
+            {showPagination ? <div className="flex justify-end gap-2 mt-4">
                 <Button
                     size="sm"
                     variant="outline"
@@ -154,7 +155,7 @@ export default function AdminVendorsPage() {
                 >
                     Next
                 </Button>
-            </div>
+            </div> : null}
         </>
     );
 }
