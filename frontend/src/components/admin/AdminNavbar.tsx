@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -95,8 +96,8 @@ export default function AdminNavbar() {
         <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 text-slate-900 shadow-sm backdrop-blur">
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <Link href="/admin" className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#040947]/15 bg-gradient-to-br from-[#040947] to-[#0b1570] text-amber-200 shadow-sm">
-                        <Building2 className="h-4 w-4" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#040947]/15 bg-white shadow-sm">
+                        <Image src="/logo.png" alt="Dhune logo" width={28} height={28} className="h-7 w-7 object-contain" />
                     </div>
                     <div className="leading-tight">
                         <p className="text-sm font-semibold text-slate-900">Dhune.np</p>

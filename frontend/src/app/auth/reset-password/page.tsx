@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/src/components/ui/field";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { useResetPassword } from "@/src/hooks/auth/useAuthActions";
 import { AxiosError } from "axios";
+import { PASSWORD_HELPER_TEXT, validatePassword } from "@/src/utils/validation";
 
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const resetPassword = useResetPassword();
     const [email, setEmail] = useState(searchParams.get("email") ?? "");
     const [otp, setOtp] = useState("");
@@ -25,8 +27,9 @@ function ResetPasswordContent() {
         setErrorMessage(null);
         setSuccessMessage(null);
 
-        if (newPassword.length < 6) {
-            setErrorMessage("Password must be at least 6 characters.");
+        const passwordError = validatePassword(newPassword);
+        if (passwordError) {
+            setErrorMessage(passwordError);
             return;
         }
 
@@ -47,6 +50,9 @@ function ResetPasswordContent() {
                     setOtp("");
                     setNewPassword("");
                     setConfirmPassword("");
+                    setTimeout(() => {
+                        router.replace("/auth/login");
+                    }, 900);
                 },
                 onError: (error) => {
                     const axiosError = error as AxiosError<{ error?: string }>;
@@ -109,7 +115,7 @@ function ResetPasswordContent() {
                                     onChange={(event) => setConfirmPassword(event.target.value)}
                                     required
                                 />
-                                <FieldDescription>Password must be at least 6 characters.</FieldDescription>
+                                <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {successMessage ? <p className="rounded-md bg-green-100 p-2 text-sm text-green-700">{successMessage}</p> : null}

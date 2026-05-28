@@ -21,6 +21,7 @@ import {
 import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { NEPAL_PHONE_HELPER_TEXT, PASSWORD_HELPER_TEXT, validatePassword } from "@/src/utils/validation";
 import { AxiosError } from "axios";
 
 export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
@@ -37,7 +38,7 @@ export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => 
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
-        <div className={cn("w-full max-w-5xl max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl")}>
+        <div className={cn("w-full")}>
             <Card className="border-border bg-card text-card-foreground shadow-none">
                 <CardHeader>
                     <CardTitle className="text-blue-700 dark:text-[#ebbc01]">Business User Signup - Dhune.np</CardTitle>
@@ -60,6 +61,11 @@ export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => 
 
                             if (!isValidPhone(phoneNumber)) {
                                 setErrorMessage("Phone number must be exactly 10 digits.");
+                                return;
+                            }
+                            const passwordError = validatePassword(password);
+                            if (passwordError) {
+                                setErrorMessage(passwordError);
                                 return;
                             }
 
@@ -162,15 +168,21 @@ export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => 
                             {/* Contact Number */}
                             <Field>
                                 <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
-                                <Input
-                                    id="phone"
-                                    type="tel"
-                                    value={phoneNumber}
-                                    onChange={(e) => setPhoneNumber(sanitizePhoneInput(e.target.value))}
-                                    placeholder="98XXXXXXXX"
-                                    maxLength={10}
-                                    required
-                                />
+                                <div className="flex rounded-md border border-input bg-background">
+                                    <span className="inline-flex items-center gap-1 border-r px-3 text-sm text-muted-foreground">🇳🇵 +977</span>
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(sanitizePhoneInput(e.target.value))}
+                                        placeholder="98XXXXXXXX"
+                                        maxLength={10}
+                                        className="border-0 focus-visible:ring-0"
+                                        required
+                                    />
+                                </div>
+                                <FieldDescription>{NEPAL_PHONE_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Registration Number */}
@@ -214,6 +226,7 @@ export function BusinessSignupForm({ onBack, onSignupSuccess }: { onBack: () => 
                                     placeholder="Create a strong password"
                                     required
                                 />
+                                <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Submit Button */}

@@ -1,3 +1,3 @@
-export const sanitizePhoneInput = (value: string) => value.replace(/\D/g, "").slice(0, 10);
+export { sanitizePhoneInput } from "./validation";
 
-export const isValidPhone = (value: string) => /^\d{10}$/.test(value);
+export { isValidNepalPhone as isValidPhone } from "./validation";

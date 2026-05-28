@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -14,7 +15,6 @@ import {
     Menu,
     X,
     ChevronDown,
-    Building2,
     Settings,
     Banknote,
 } from "lucide-react";
@@ -78,8 +78,8 @@ export default function NavbarVendor() {
         <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 text-slate-900 shadow-sm backdrop-blur">
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <Link href="/vendor" className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#040947]/20 bg-gradient-to-br from-[#040947]/5 to-amber-50 text-[#040947]">
-                        <Building2 className="h-4 w-4" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#040947]/20 bg-white">
+                        <Image src="/logo.png" alt="Dhune logo" width={26} height={26} className="h-6 w-6 object-contain" />
                     </div>
                     <div className="leading-tight">
                         <p className="text-sm font-semibold text-slate-900">Dhune.np</p>

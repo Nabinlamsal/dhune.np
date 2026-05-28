@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/src/components/ui/field";
 import { Input } from "@/src/components/ui/input";
@@ -11,6 +12,7 @@ import { AxiosError } from "axios";
 
 export default function ForgotPasswordPage() {
     const forgotPassword = useForgotPassword();
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -25,6 +27,9 @@ export default function ForgotPasswordPage() {
             {
                 onSuccess: (data) => {
                     setSuccessMessage(data.message);
+                    setTimeout(() => {
+                        router.push(`/auth/reset-password?email=${encodeURIComponent(email.trim())}`);
+                    }, 900);
                 },
                 onError: (error) => {
                     const axiosError = error as AxiosError<{ error?: string }>;

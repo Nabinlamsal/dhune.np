@@ -20,6 +20,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useGoogleLogin } from "@/src/hooks/auth/useAuthActions";
 import { toast } from "sonner";
+import { NEPAL_PHONE_HELPER_TEXT, sanitizePhoneInput } from "@/src/utils/validation";
 
 type GoogleAccountsWindow = Window & typeof globalThis & {
     google?: {
@@ -108,10 +109,11 @@ export function LoginForm({
                                         setEmailOrPhone("");
                                         setPassword("");
                                     },
-                                    onError: (err: AxiosError<{ error?: string }>) => {
+                                    onError: (err: Error) => {
+                                        const axiosError = err as AxiosError<{ error?: string }>;
                                         setAuthError(
-                                            err.response?.data?.error ??
-                                            (err?.response?.status === 401
+                                            axiosError.response?.data?.error ??
+                                            (axiosError.response?.status === 401
                                                 ? "Your account is pending approval, unverified, or credentials are incorrect."
                                                 : "Something went wrong. Please try again.")
                                         );
@@ -130,9 +132,13 @@ export function LoginForm({
                                     placeholder="example@gmail.com or 98XXXXXXXX"
                                     className="bg-background text-foreground placeholder:text-muted-foreground"
                                     value={emailOrPhone}
-                                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setEmailOrPhone(/^\d+$/.test(value) ? sanitizePhoneInput(value) : value);
+                                    }}
                                     required
                                 />
+                                <FieldDescription>For phone login, use +977 and your 10-digit number. {NEPAL_PHONE_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Password */}

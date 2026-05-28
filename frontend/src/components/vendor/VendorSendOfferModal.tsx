@@ -8,6 +8,7 @@ import { Textarea } from "@/src/components/ui/textarea"
 import { Clock3, HandCoins, StickyNote, X } from "lucide-react"
 import { useCreateOffer } from "@/src/hooks/orders/useOffer"
 import { CreateOfferPayload } from "@/src/types/orders/offers"
+import { parsePositiveNumber, sanitizeDecimalInput, VENDOR_FINAL_OFFER_HINT } from "@/src/utils/validation"
 
 interface VendorSendOfferModalProps {
     requestId: string | null
@@ -26,15 +27,22 @@ export default function VendorSendOfferModal({
     const [price, setPrice] = useState("")
     const [completionTime, setCompletionTime] = useState("")
     const [description, setDescription] = useState("")
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
     if (!open) return null
 
     const handleSubmit = () => {
-        if (!requestId || !price || !completionTime) return
+        setErrorMessage(null)
+        const bidPrice = parsePositiveNumber(price)
+        if (!requestId || !completionTime) return
+        if (bidPrice === null) {
+            setErrorMessage("Offer price must be a positive number.")
+            return
+        }
 
         const payload: CreateOfferPayload = {
             request_id: requestId,
-            bid_price: Number(price),
+            bid_price: bidPrice,
             completion_time: new Date(completionTime).toISOString(),
             description: description || undefined,
         }
@@ -75,11 +83,15 @@ export default function VendorSendOfferModal({
                         </label>
                         <Input
                             type="number"
+                            min="1"
+                            step="0.01"
+                            inputMode="decimal"
                             value={price}
-                            onChange={(e) => setPrice(e.target.value)}
+                            onChange={(e) => setPrice(sanitizeDecimalInput(e.target.value))}
                             placeholder="e.g. 4500"
                             className="bg-white"
                         />
+                        <p className="mt-1 text-xs text-slate-500">{VENDOR_FINAL_OFFER_HINT}</p>
                     </div>
 
                     <div>
@@ -111,6 +123,7 @@ export default function VendorSendOfferModal({
                 </CardContent>
 
                 <CardFooter className="flex justify-end gap-3 border-t border-slate-100 bg-white">
+                    {errorMessage ? <p className="mr-auto text-sm text-red-600">{errorMessage}</p> : null}
                     <Button variant="outline" onClick={onClose} className="border-slate-300 text-slate-700">
                         Cancel
                     </Button>

@@ -25,6 +25,7 @@ import {
     DisputeStatus,
 } from "@/src/types/disputes/disputes";
 import { formatDisplayId } from "@/src/utils/display";
+import { sanitizeDecimalInput } from "@/src/utils/validation";
 
 function mapDisputeStatus(status: string): Status {
     switch (status) {
@@ -103,6 +104,9 @@ export default function AdminDisputesPage() {
 
     const handleResolve = () => {
         if (!selectedDisputeId) {
+            return;
+        }
+        if (adjustmentAmount.trim() !== "" && Number(adjustmentAmount) < 0) {
             return;
         }
 
@@ -302,11 +306,15 @@ export default function AdminDisputesPage() {
                                     <label className="text-sm font-medium text-slate-700">Adjustment Amount</label>
                                     <Input
                                         type="number"
+                                        min="0"
+                                        step="0.01"
+                                        inputMode="decimal"
                                         value={adjustmentAmount}
-                                        onChange={(e) => setAdjustmentAmount(e.target.value)}
+                                        onChange={(e) => setAdjustmentAmount(sanitizeDecimalInput(e.target.value))}
                                         placeholder="Optional amount"
                                         className="bg-white"
                                     />
+                                    <p className="text-xs text-slate-500">Use zero or a positive amount only.</p>
                                 </div>
                             </div>
 

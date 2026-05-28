@@ -9,7 +9,7 @@ type CreateDisputeDTO struct {
 
 type ResolveDisputeDTO struct {
 	Decision         string   `json:"decision" binding:"required"`
-	AdjustmentAmount *float64 `json:"adjustment_amount"`
+	AdjustmentAmount *float64 `json:"adjustment_amount" binding:"omitempty,gte=0"`
 	AdminNote        string   `json:"admin_note"`
 }
 

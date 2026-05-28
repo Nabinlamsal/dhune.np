@@ -53,6 +53,9 @@ func (s *AuthService) Signup(
 	if !utils.IsValidPhone(req.Phone) {
 		return nil, errors.New("phone must be exactly 10 digits")
 	}
+	if !utils.IsValidPassword(req.Password) {
+		return nil, errors.New("password must include uppercase, lowercase, and a number")
+	}
 
 	// role based validations
 	if role == "business" {
@@ -354,6 +357,10 @@ func (s *AuthService) ForgotPassword(ctx context.Context, req dto.ForgotPassword
 }
 
 func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequestDTO) error {
+	if !utils.IsValidPassword(req.NewPassword) {
+		return errors.New("password must include uppercase, lowercase, and a number")
+	}
+
 	user, err := s.authRepo.FindUserByEmail(ctx, strings.TrimSpace(req.Email))
 	if err != nil {
 		return errors.New("user not found")
@@ -372,6 +379,10 @@ func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRe
 }
 
 func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, req dto.ChangePasswordRequestDTO) error {
+	if !utils.IsValidPassword(req.NewPassword) {
+		return errors.New("password must include uppercase, lowercase, and a number")
+	}
+
 	user, err := s.authRepo.FindUserByID(ctx, userID)
 	if err != nil {
 		return err

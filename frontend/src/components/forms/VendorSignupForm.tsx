@@ -2,7 +2,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import {
     Card,
@@ -20,12 +20,40 @@ import {
 import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { NEPAL_PHONE_HELPER_TEXT, PASSWORD_HELPER_TEXT, sanitizeDecimalInput, validatePassword } from "@/src/utils/validation";
 import { AxiosError } from "axios";
 import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
 
 const DEFAULT_VENDOR_LOCATION = {
     latitude: 27.7172,
     longitude: 85.324,
+};
+
+type NominatimReverseResponse = {
+    display_name?: string;
+    address?: Record<string, string | undefined>;
+};
+
+const formatReverseGeocodedAddress = (data: NominatimReverseResponse) => {
+    if (data.display_name?.trim()) {
+        return data.display_name.trim();
+    }
+
+    const address = data.address;
+    if (!address) {
+        return "";
+    }
+
+    return [
+        address.road,
+        address.neighbourhood,
+        address.suburb,
+        address.city || address.town || address.village,
+        address.state,
+        address.country,
+    ]
+        .filter((part): part is string => Boolean(part?.trim()))
+        .join(", ");
 };
 
 export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
@@ -44,11 +72,63 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
     const [documentFile, setDocumentFile] = useState<File | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [addressLookupMessage, setAddressLookupMessage] = useState<string | null>(null);
+    const reverseGeocodeRequestRef = useRef(0);
+
+    const reverseGeocodeLocation = useCallback(async (latitude: number, longitude: number) => {
+        const requestId = reverseGeocodeRequestRef.current + 1;
+        reverseGeocodeRequestRef.current = requestId;
+        setAddressLookupMessage(null);
+
+        try {
+            const params = new URLSearchParams({
+                format: "jsonv2",
+                lat: String(latitude),
+                lon: String(longitude),
+            });
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
+                headers: {
+                    Accept: "application/json",
+                    "Accept-Language": "en",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Reverse geocoding failed");
+            }
+
+            const data = (await response.json()) as NominatimReverseResponse;
+            const nextAddress = formatReverseGeocodedAddress(data);
+
+            if (reverseGeocodeRequestRef.current !== requestId) {
+                return;
+            }
+
+            if (!nextAddress) {
+                throw new Error("No address found");
+            }
+
+            setAddress(nextAddress);
+        } catch {
+            if (reverseGeocodeRequestRef.current === requestId) {
+                setAddressLookupMessage("Could not detect address automatically. Please enter it manually.");
+            }
+        }
+    }, []);
+
+    const handleLocationChange = useCallback(
+        ({ latitude, longitude }: { latitude: number; longitude: number }) => {
+            setBusinessLatitude(latitude);
+            setBusinessLongitude(longitude);
+            void reverseGeocodeLocation(latitude, longitude);
+        },
+        [reverseGeocodeLocation]
+    );
 
     return (
         <div
             className={cn(
-                "w-full max-w-5xl max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl"
+                "w-full"
             )}
         >
             <Card className="border-border bg-card text-card-foreground shadow-none">
@@ -75,6 +155,11 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
 
                             if (!isValidPhone(phoneNumber)) {
                                 setErrorMessage("Phone number must be exactly 10 digits.");
+                                return;
+                            }
+                            const passwordError = validatePassword(password);
+                            if (passwordError) {
+                                setErrorMessage(passwordError);
                                 return;
                             }
 
@@ -157,10 +242,18 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     id="address"
                                     type="text"
                                     value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Business location"
+                                    onChange={(e) => {
+                                        setAddress(e.target.value);
+                                        setAddressLookupMessage(null);
+                                    }}
+                                    placeholder="Select location on map or type address"
                                     required
                                 />
+                                {addressLookupMessage ? (
+                                    <FieldDescription className="text-amber-700 dark:text-amber-300">
+                                        {addressLookupMessage}
+                                    </FieldDescription>
+                                ) : null}
                             </Field>
 
                             <Field className="md:col-span-2">
@@ -170,13 +263,10 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     longitude={businessLongitude ?? DEFAULT_VENDOR_LOCATION.longitude}
                                     editable
                                     height={260}
-                                    onLocationChange={({ latitude, longitude }) => {
-                                        setBusinessLatitude(latitude);
-                                        setBusinessLongitude(longitude);
-                                    }}
+                                    onLocationChange={handleLocationChange}
                                 />
                                 <FieldDescription>
-                                    Tap or drag the marker to select your shop location. The address above remains the official text address.
+                                    Tap or drag the marker to select your shop location. The address will be filled automatically when possible.
                                 </FieldDescription>
                                 <div className="mt-2 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
                                     <span>Lat: {businessLatitude !== null ? businessLatitude.toFixed(6) : "Not selected"}</span>
@@ -193,8 +283,9 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     type="number"
                                     min="0.1"
                                     step="0.1"
+                                    inputMode="decimal"
                                     value={serviceRadiusKm}
-                                    onChange={(e) => setServiceRadiusKm(e.target.value)}
+                                    onChange={(e) => setServiceRadiusKm(sanitizeDecimalInput(e.target.value))}
                                     placeholder="5"
                                 />
                                 <FieldDescription>
@@ -207,17 +298,23 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                 <FieldLabel htmlFor="contactNumber">
                                     Business Contact Number
                                 </FieldLabel>
-                                <Input
-                                    id="contactNumber"
-                                    type="tel"
-                                    value={phoneNumber}
-                                    onChange={(e) =>
-                                        setPhoneNumber(sanitizePhoneInput(e.target.value))
-                                    }
-                                    placeholder="98XXXXXXXX"
-                                    maxLength={10}
-                                    required
-                                />
+                                <div className="flex rounded-md border border-input bg-background">
+                                    <span className="inline-flex items-center gap-1 border-r px-3 text-sm text-muted-foreground">🇳🇵 +977</span>
+                                    <Input
+                                        id="contactNumber"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        value={phoneNumber}
+                                        onChange={(e) =>
+                                            setPhoneNumber(sanitizePhoneInput(e.target.value))
+                                        }
+                                        placeholder="98XXXXXXXX"
+                                        maxLength={10}
+                                        className="border-0 focus-visible:ring-0"
+                                        required
+                                    />
+                                </div>
+                                <FieldDescription>{NEPAL_PHONE_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Business Email */}
@@ -303,6 +400,7 @@ export function VendorSignupForm({ onBack, onSignupSuccess }: { onBack: () => vo
                                     placeholder="Create a strong password"
                                     required
                                 />
+                                <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Submit Button */}

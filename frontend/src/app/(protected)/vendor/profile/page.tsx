@@ -8,6 +8,7 @@ import { Button } from "@/src/components/ui/button";
 import { useDeleteProfileImage, useMyProfile, useUpdateMyProfile, useUploadProfileImage } from "@/src/hooks/users/useMyProfile";
 import { useChangePassword } from "@/src/hooks/auth/useAuthActions";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { NEPAL_PHONE_HELPER_TEXT, PASSWORD_HELPER_TEXT, validatePassword } from "@/src/utils/validation";
 import { AxiosError } from "axios";
 import LeafletLocationMap from "@/src/components/maps/LeafletLocationMap";
 
@@ -64,8 +65,9 @@ export default function VendorProfilePage() {
         event.preventDefault();
         setPasswordError(null);
 
-        if (newPassword.length < 6) {
-            setPasswordError("New password must be at least 6 characters.");
+        const passwordValidationError = validatePassword(newPassword);
+        if (passwordValidationError) {
+            setPasswordError(passwordValidationError);
             return;
         }
 
@@ -212,15 +214,20 @@ export default function VendorProfilePage() {
 
                                     <Field>
                                         <FieldLabel htmlFor="phone">Phone</FieldLabel>
-                                        <Input
-                                            id="phone"
-                                            type="tel"
-                                            value={phone ?? profile.Phone ?? ""}
-                                            onChange={(event) => setPhone(sanitizePhoneInput(event.target.value))}
-                                            maxLength={10}
-                                            required
-                                        />
-                                        <FieldDescription>Phone number must be exactly 10 digits.</FieldDescription>
+                                        <div className="flex rounded-md border border-input bg-background">
+                                            <span className="inline-flex items-center gap-1 border-r px-3 text-sm text-muted-foreground">🇳🇵 +977</span>
+                                            <Input
+                                                id="phone"
+                                                type="tel"
+                                                inputMode="numeric"
+                                                value={phone ?? profile.Phone ?? ""}
+                                                onChange={(event) => setPhone(sanitizePhoneInput(event.target.value))}
+                                                maxLength={10}
+                                                className="border-0 focus-visible:ring-0"
+                                                required
+                                            />
+                                        </div>
+                                        <FieldDescription>{NEPAL_PHONE_HELPER_TEXT}</FieldDescription>
                                     </Field>
 
                                     <Field>
@@ -287,6 +294,7 @@ export default function VendorProfilePage() {
                                             onChange={(event) => setNewPassword(event.target.value)}
                                             required
                                         />
+                                        <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                                     </Field>
 
                                     <Field>

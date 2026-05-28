@@ -6,6 +6,7 @@ import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Offer } from "@/src/types/orders/offers";
 import { Clock3, HandCoins, StickyNote, X } from "lucide-react";
+import { parsePositiveNumber, sanitizeDecimalInput, VENDOR_FINAL_OFFER_HINT } from "@/src/utils/validation";
 
 interface Props {
     open: boolean;
@@ -24,9 +25,7 @@ export default function EditOfferModal({
     onClose,
     onSubmit,
 }: Props) {
-    const [bidPrice, setBidPrice] = useState<number>(
-        offer?.bid_price ?? 0
-    );
+    const [bidPrice, setBidPrice] = useState<string>(String(offer?.bid_price ?? ""));
     const [completionTime, setCompletionTime] =
         useState<string>(offer?.completion_time ?? "");
     const [description, setDescription] =
@@ -60,12 +59,16 @@ export default function EditOfferModal({
                         </label>
                         <Input
                             type="number"
+                            min="1"
+                            step="0.01"
+                            inputMode="decimal"
                             value={bidPrice}
                             onChange={(e) =>
-                                setBidPrice(Number(e.target.value))
+                                setBidPrice(sanitizeDecimalInput(e.target.value))
                             }
                             className="bg-white"
                         />
+                        <p className="mt-1 text-xs text-slate-500">{VENDOR_FINAL_OFFER_HINT}</p>
                     </div>
 
                     <div>
@@ -110,11 +113,15 @@ export default function EditOfferModal({
 
                     <Button
                         onClick={() =>
-                            onSubmit({
-                                bid_price: bidPrice,
-                                completion_time: completionTime,
-                                description,
-                            })
+                            {
+                                const parsedBidPrice = parsePositiveNumber(bidPrice);
+                                if (!parsedBidPrice) return;
+                                onSubmit({
+                                    bid_price: parsedBidPrice,
+                                    completion_time: completionTime,
+                                    description,
+                                });
+                            }
                         }
                         className="bg-[#040947] text-white hover:bg-[#030736]"
                     >
@@ -125,4 +132,3 @@ export default function EditOfferModal({
         </div>
     );
 }
-

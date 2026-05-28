@@ -21,6 +21,7 @@ import { Input } from "../ui/input";
 import { useSignup } from "@/src/hooks/auth/useSignup";
 import { useState } from "react";
 import { isValidPhone, sanitizePhoneInput } from "@/src/utils/phone";
+import { NEPAL_PHONE_HELPER_TEXT, PASSWORD_HELPER_TEXT, validatePassword } from "@/src/utils/validation";
 import { AxiosError } from "axios";
 export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void; onSignupSuccess?: (email: string) => void }) {
     const { mutate, isPending } = useSignup()
@@ -32,7 +33,7 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
-        <div className={cn("w-full max-w-5xl max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl")}>
+        <div className={cn("w-full")}>
             <Card className="border-border bg-card text-card-foreground shadow-none">
                 <CardHeader className="flex md:grid-cols-2 gap-10">
                     <div>
@@ -54,6 +55,11 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
 
                             if (!isValidPhone(phoneNumber)) {
                                 setErrorMessage("Phone number must be exactly 10 digits.");
+                                return;
+                            }
+                            const passwordError = validatePassword(password);
+                            if (passwordError) {
+                                setErrorMessage(passwordError);
                                 return;
                             }
 
@@ -107,15 +113,21 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
                             {/* Business Contact Number */}
                             <Field>
                                 <FieldLabel htmlFor="contactNumber">Contact Number</FieldLabel>
-                                <Input
-                                    id="contactNumber"
-                                    type="tel"
-                                    placeholder="98XXXXXXXX"
-                                    value={phoneNumber}
-                                    onChange={(e) => setPhoneNumber(sanitizePhoneInput(e.target.value))}
-                                    maxLength={10}
-                                    required
-                                />
+                                <div className="flex rounded-md border border-input bg-background">
+                                    <span className="inline-flex items-center gap-1 border-r px-3 text-sm text-muted-foreground">🇳🇵 +977</span>
+                                    <Input
+                                        id="contactNumber"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        placeholder="98XXXXXXXX"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(sanitizePhoneInput(e.target.value))}
+                                        maxLength={10}
+                                        className="border-0 focus-visible:ring-0"
+                                        required
+                                    />
+                                </div>
+                                <FieldDescription>{NEPAL_PHONE_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Business Email */}
@@ -142,6 +154,7 @@ export function UserSignupForm({ onBack, onSignupSuccess }: { onBack: () => void
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                <FieldDescription>{PASSWORD_HELPER_TEXT}</FieldDescription>
                             </Field>
 
                             {/* Submit Button */}
