@@ -14,7 +14,7 @@ CREATE TYPE payment_method AS ENUM (
 
 CREATE TABLE requests(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES dhune_db.public.users(id) ON DELETE  CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE  CASCADE,
 
     pickup_address TEXT NOT NULL,
     pickup_time_from TIMESTAMPTZ NOT NULL,
