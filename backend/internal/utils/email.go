@@ -1,15 +1,22 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"html"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	gomail "gopkg.in/mail.v2"
 )
+
+const resendEmailEndpoint = "https://api.resend.com/emails"
 
 type EmailDetailRow struct {
 	Label string
@@ -68,9 +75,106 @@ func BuildDhuneEmail(input DhuneEmailInput) string {
 }
 
 func SendEmail(to, subject, htmlBody string) error {
+	if strings.TrimSpace(to) == "" {
+		return fmt.Errorf("send email: recipient is required")
+	}
+
+	if strings.TrimSpace(os.Getenv("RESEND_API_KEY")) != "" {
+		return sendEmailWithResend(to, subject, htmlBody)
+	}
+
+	if hasSMTPConfig() {
+		return sendEmailWithSMTP(to, subject, htmlBody)
+	}
+
+	return fmt.Errorf("RESEND_API_KEY is required for sending email")
+}
+
+func sendEmailWithResend(to, subject, htmlBody string) error {
+	apiKey := strings.TrimSpace(os.Getenv("RESEND_API_KEY"))
+	if apiKey == "" {
+		return fmt.Errorf("RESEND_API_KEY is required for sending email")
+	}
+
+	from := resendFromAddress()
+	if from == "" {
+		return fmt.Errorf("send email: RESEND_FROM_EMAIL is required for sending email")
+	}
+
+	payload := struct {
+		From    string   `json:"from"`
+		To      []string `json:"to"`
+		Subject string   `json:"subject"`
+		HTML    string   `json:"html"`
+		Text    string   `json:"text"`
+	}{
+		From:    from,
+		To:      []string{strings.TrimSpace(to)},
+		Subject: subject,
+		HTML:    htmlBody,
+		Text:    stripEmailHTML(htmlBody),
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("send email: build resend payload: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, resendEmailEndpoint, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("send email: build resend request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Dhune.np Backend/1.0")
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("send email: resend request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		responseBody, readErr := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		if readErr != nil {
+			log.Printf("email: resend failed with status %d and unreadable response body: %v", resp.StatusCode, readErr)
+			return fmt.Errorf("send email: resend returned status %d", resp.StatusCode)
+		}
+
+		log.Printf("email: resend failed with status %d: %s", resp.StatusCode, strings.TrimSpace(string(responseBody)))
+		return fmt.Errorf("send email: resend returned status %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func resendFromAddress() string {
+	if from := strings.TrimSpace(os.Getenv("RESEND_FROM_EMAIL")); from != "" {
+		return from
+	}
+
+	name := strings.TrimSpace(os.Getenv("RESEND_FROM_NAME"))
+	email := strings.TrimSpace(os.Getenv("FROM_EMAIL"))
+	if name != "" && email != "" {
+		return fmt.Sprintf("%s <%s>", name, email)
+	}
+
+	return email
+}
+
+func hasSMTPConfig() bool {
+	return strings.TrimSpace(os.Getenv("SMTP_HOST")) != "" &&
+		strings.TrimSpace(os.Getenv("SMTP_PORT")) != "" &&
+		strings.TrimSpace(os.Getenv("SMTP_USER")) != "" &&
+		strings.TrimSpace(os.Getenv("SMTP_PASS")) != "" &&
+		strings.TrimSpace(os.Getenv("FROM_EMAIL")) != ""
+}
+
+func sendEmailWithSMTP(to, subject, htmlBody string) error {
 	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	if err != nil {
-		return err
+		return fmt.Errorf("send email: invalid SMTP_PORT: %w", err)
 	}
 
 	msg := gomail.NewMessage()
