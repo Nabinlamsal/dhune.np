@@ -17,15 +17,15 @@ function PhoneFrame({ index, focus = "active" }: { index: number; focus?: "activ
       key={`${focus}-${index}`}
       className={`relative mx-auto aspect-[9/16] w-full rounded-[2rem] border bg-slate-950 p-2 transition-all duration-500 ease-out ${
         isActive
-          ? "max-w-[250px] border-[#040947]/35 opacity-100 shadow-2xl shadow-[#040947]/20 dark:border-cyan-300/40 dark:shadow-cyan-300/14 lg:max-w-[270px]"
-          : "max-w-[190px] border-slate-300/80 opacity-70 shadow-xl shadow-[#040947]/8 dark:border-white/12 dark:shadow-cyan-300/5 lg:max-w-[205px]"
+          ? "max-w-[250px] border-[#040947]/35 opacity-100 shadow-2xl shadow-[#040947]/20 dark:border-slate-300/25 dark:shadow-black/25 lg:max-w-[270px]"
+          : "max-w-[190px] border-slate-300/80 opacity-70 shadow-xl shadow-[#040947]/8 dark:border-slate-400/15 dark:shadow-black/20 lg:max-w-[205px]"
       }`}
       initial={{ opacity: 0, y: 12, scale: isActive ? 0.96 : 0.82 }}
       animate={{ opacity: isActive ? 1 : 0.7, y: 0, scale: isActive ? 1 : 0.86 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <div className="absolute left-1/2 top-3 z-20 h-1.5 w-16 -translate-x-1/2 rounded-full bg-slate-900/70 dark:bg-black/70" />
-      <div className="relative h-full overflow-hidden rounded-[1.55rem] bg-slate-100 dark:bg-[#07111f]">
+      <div className="relative h-full overflow-hidden rounded-[1.55rem] bg-slate-100 dark:bg-[#111827]">
         <Image
           src={lightScreens[index]}
           alt={`Dhune mobile app light screenshot ${index + 1}`}
@@ -72,13 +72,13 @@ export default function DownloadAppSection() {
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.07] sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-400/15 dark:bg-[#111827]/70 dark:shadow-black/10 sm:p-8 lg:p-10">
         <div className="grid items-center gap-9 lg:grid-cols-[2fr_1fr]">
           <div className="relative mx-auto w-full max-w-4xl overflow-hidden px-8 sm:px-12">
             <button
               type="button"
               onClick={goToPrevious}
-              className="absolute left-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-white/10 dark:bg-white/10 dark:text-cyan-200 dark:hover:bg-white/15"
+              className="absolute left-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-slate-400/15 dark:bg-[#1F2937]/80 dark:text-slate-200 dark:hover:bg-slate-700"
               aria-label="Previous app screenshot"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -99,7 +99,7 @@ export default function DownloadAppSection() {
             <button
               type="button"
               onClick={goToNext}
-              className="absolute right-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-white/10 dark:bg-white/10 dark:text-cyan-200 dark:hover:bg-white/15"
+              className="absolute right-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-slate-400/15 dark:bg-[#1F2937]/80 dark:text-slate-200 dark:hover:bg-slate-700"
               aria-label="Next app screenshot"
             >
               <ChevronRight className="h-5 w-5" />
@@ -112,7 +112,7 @@ export default function DownloadAppSection() {
                   type="button"
                   onClick={() => setActive(index)}
                   className={`h-2.5 rounded-full transition-all ${
-                    active === index ? "w-7 bg-[#040947] dark:bg-cyan-300" : "w-2.5 bg-slate-300 dark:bg-white/20"
+                    active === index ? "w-7 bg-[#040947] dark:bg-sky-300" : "w-2.5 bg-slate-300 dark:bg-slate-600"
                   }`}
                   aria-label={`Show app screenshot ${index + 1}`}
                 />
@@ -121,7 +121,7 @@ export default function DownloadAppSection() {
           </div>
 
           <div className="text-center lg:text-left">
-            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-slate-300">
               User App
             </p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
@@ -135,9 +135,9 @@ export default function DownloadAppSection() {
               {appFeatures.map((feature) => (
                 <div
                   key={feature}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/[0.08] dark:text-slate-200"
+                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm font-bold text-slate-700 dark:border-slate-400/15 dark:bg-[#1F2937]/70 dark:text-slate-200"
                 >
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#040947] dark:text-cyan-200" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#040947] dark:text-sky-300" />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -145,7 +145,7 @@ export default function DownloadAppSection() {
 
             <a
               href="#user-app"
-              className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-[#040947] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#0b146b] dark:bg-cyan-300 dark:text-[#07111f] dark:hover:bg-white"
+              className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-[#040947] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#0b146b] dark:bg-sky-300 dark:text-[#0B1220] dark:hover:bg-sky-200"
             >
               Download Android App
             </a>

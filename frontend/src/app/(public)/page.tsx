@@ -38,13 +38,13 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f7f8fb] font-nunito text-slate-950 dark:bg-[#050b16] dark:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-[#f7f8fb] font-nunito text-slate-950 dark:bg-[#0B1220] dark:text-white">
       <section
         id="home"
         className="relative isolate flex min-h-[calc(100vh-1rem)] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8"
       >
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#ffffff_0%,#eef5ff_48%,#f7f8fb_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),linear-gradient(180deg,#07111f_0%,#08111f_52%,#050b16_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(4,9,71,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(4,9,71,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70 dark:bg-[linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] dark:opacity-45" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#ffffff_0%,#eef5ff_48%,#f7f8fb_100%)] dark:bg-[linear-gradient(180deg,#0B1220_0%,#111827_48%,#0B1220_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(4,9,71,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(4,9,71,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70 dark:bg-[linear-gradient(rgba(148,163,184,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.05)_1px,transparent_1px)] dark:opacity-30" />
 
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <motion.div
@@ -54,7 +54,7 @@ export default function Home() {
             variants={reveal}
             transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#040947]/10 bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#040947] shadow-sm dark:border-cyan-300/20 dark:bg-white/[0.08] dark:text-cyan-200 lg:mx-0">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#040947]/10 bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#040947] shadow-sm dark:border-slate-400/15 dark:bg-[#111827]/70 dark:text-slate-200 lg:mx-0">
               Smart laundry marketplace
             </div>
             <h1 className="mt-6 text-balance text-3xl font-black leading-[1.08] tracking-tight text-slate-950 sm:text-4xl lg:text-5xl dark:text-white">
@@ -68,14 +68,14 @@ export default function Home() {
                 onClick={() => {
                   document.getElementById("user-app")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#040947] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#040947]/15 transition hover:-translate-y-0.5 hover:bg-[#0b146b] sm:w-auto dark:bg-cyan-300 dark:text-[#07111f] dark:shadow-cyan-300/15 dark:hover:bg-white"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#040947] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#040947]/15 transition hover:-translate-y-0.5 hover:bg-[#0b146b] sm:w-auto dark:bg-sky-300 dark:text-[#0B1220] dark:shadow-none dark:hover:bg-sky-200"
                 type="button"
               >
                 Explore App
               </button>
               <button
                 onClick={() => router.push("/auth/signup/vendor")}
-                className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-7 text-sm font-extrabold text-[#040947] shadow-sm transition hover:-translate-y-0.5 hover:border-[#040947]/25 sm:w-auto dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-7 text-sm font-extrabold text-[#040947] shadow-sm transition hover:-translate-y-0.5 hover:border-[#040947]/25 sm:w-auto dark:border-slate-400/15 dark:bg-[#111827]/70 dark:text-slate-100 dark:hover:bg-[#1F2937]/80"
                 type="button"
               >
                 Become a Vendor
@@ -89,10 +89,10 @@ export default function Home() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.65, delay: 0.08, ease: "easeOut" }}
           >
-            <div className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ebbc01]/20 blur-3xl dark:bg-cyan-300/12" />
-            <div className="absolute inset-x-8 bottom-2 h-20 rounded-full bg-[#040947]/10 blur-2xl dark:bg-cyan-300/10" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 p-3 shadow-2xl shadow-[#040947]/12 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-cyan-300/10 sm:p-4">
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-[#040947]/5 dark:from-cyan-300/10 dark:via-transparent dark:to-[#020617]/40" />
+            <div className="absolute left-1/2 top-1/2 h-[72%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ebbc01]/20 blur-3xl dark:bg-slate-500/10" />
+            <div className="absolute inset-x-8 bottom-2 h-20 rounded-full bg-[#040947]/10 blur-2xl dark:bg-black/20" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 p-3 shadow-2xl shadow-[#040947]/12 backdrop-blur dark:border-slate-400/15 dark:bg-[#111827]/55 dark:shadow-2xl dark:shadow-black/25 sm:p-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-[#040947]/5 dark:from-slate-700/15 dark:via-transparent dark:to-[#0B1220]/35" />
               <Image
                 src="/hero-light.png"
                 alt="Dhune.np laundry marketplace app illustration"
@@ -126,7 +126,7 @@ export default function Home() {
         >
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+              <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-slate-300">
                 About
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
@@ -144,14 +144,14 @@ export default function Home() {
                 return (
                   <motion.article
                     key={card.title}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-cyan-300/30"
+                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-slate-400/15 dark:bg-[#111827]/70 dark:shadow-black/10 dark:hover:border-slate-300/25"
                     initial={{ opacity: 0, y: 18 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.4, delay: index * 0.07, ease: "easeOut" }}
                     whileHover={{ y: -5, scale: 1.01 }}
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947] text-white dark:bg-cyan-300 dark:text-[#07111f]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947] text-white dark:bg-sky-300 dark:text-[#0B1220]">
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-4 text-lg font-extrabold text-slate-950 dark:text-white">{card.title}</h3>

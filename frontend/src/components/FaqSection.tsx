@@ -41,7 +41,7 @@ export default function FaqSection() {
     >
       <div className="mx-auto max-w-4xl">
         <div className="text-center">
-          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-slate-300">
             FAQ
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
@@ -53,7 +53,7 @@ export default function FaqSection() {
           {faqs.map((faq, index) => (
             <motion.details
               key={faq.question}
-              className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition open:border-[#040947]/25 dark:border-white/10 dark:bg-white/[0.08] dark:open:border-cyan-300/30"
+              className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition open:border-[#040947]/25 dark:border-slate-400/15 dark:bg-[#111827]/70 dark:shadow-black/10 dark:open:border-slate-300/25"
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
@@ -62,7 +62,7 @@ export default function FaqSection() {
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-extrabold text-slate-950 dark:text-white">
                 <span>{faq.question}</span>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg text-[#040947] transition group-open:rotate-45 dark:bg-white/10 dark:text-cyan-200">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg text-[#040947] transition group-open:rotate-45 dark:bg-[#1F2937] dark:text-slate-200">
                   +
                 </span>
               </summary>

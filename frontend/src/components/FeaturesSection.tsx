@@ -36,7 +36,7 @@ export default function FeaturesSection() {
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-slate-300">
             Features
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
@@ -54,14 +54,14 @@ export default function FeaturesSection() {
             return (
               <motion.article
                 key={feature.title}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-cyan-300/30"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#040947]/25 hover:shadow-lg dark:border-slate-400/15 dark:bg-[#111827]/70 dark:shadow-black/10 dark:hover:border-slate-300/25"
                 initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.35 }}
                 transition={{ duration: 0.36, delay: index * 0.035, ease: "easeOut" }}
                 whileHover={{ y: -5, scale: 1.012 }}
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947]/10 text-[#040947] dark:bg-cyan-300/15 dark:text-cyan-200">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#040947]/10 text-[#040947] dark:bg-slate-700/70 dark:text-sky-300">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="text-base font-extrabold text-slate-950 dark:text-white">{feature.title}</h3>
