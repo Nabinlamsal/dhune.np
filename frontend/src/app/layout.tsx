@@ -21,8 +21,11 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Dhune.np",
+  title: "Dhune",
   description: "Smart laundry platform for vendors and customers in Nepal",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

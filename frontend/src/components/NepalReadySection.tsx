@@ -1,33 +1,35 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Languages } from "lucide-react";
+import { CheckCircle2, Languages } from "lucide-react";
+import Image from "next/image";
 
-const screenshots: string[] = [];
-const nepaliLanguageCopy =
-  "\u0927\u0941\u0928\u0947.\u090f\u0928\u092a\u0940 \u0928\u0947\u092a\u093e\u0932\u0940 \u092a\u094d\u0930\u092f\u094b\u0917\u0915\u0930\u094d\u0924\u093e\u0932\u093e\u0908 \u0938\u0939\u091c \u0939\u0941\u0928\u0947 \u0917\u0930\u0940 \u092c\u0928\u093e\u0907\u090f\u0915\u094b \u091b, \u091c\u0938\u0932\u0947 \u090f\u092a\u092e\u093e \u0906\u092b\u094d\u0928\u0948 \u092d\u093e\u0937\u093e\u092e\u093e \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u092c\u0941\u091d\u094d\u0928 \u0930 \u0938\u0947\u0935\u093e \u092a\u094d\u0930\u092f\u094b\u0917 \u0917\u0930\u094d\u0928 \u092e\u0926\u094d\u0926\u0924 \u0917\u0930\u094d\u091b\u0964";
+const highlights = [
+  "Nepali & English interface",
+  "Easier for local customers",
+  "Built for Nepal-based laundry workflow",
+  "Supports local payments and pickup/delivery flow",
+];
 
-function LanguagePhone({ label }: { label: string }) {
+function LanguagePhone({ index, label, className = "" }: { index: 1 | 2; label: string; className?: string }) {
   return (
-    <div className="relative mx-auto aspect-[9/16] w-full max-w-[210px] rounded-[1.8rem] border border-slate-300 bg-slate-950 p-2.5 shadow-2xl shadow-[#040947]/12 dark:border-white/15 dark:shadow-cyan-300/10">
-      <div className="h-full overflow-hidden rounded-[1.25rem] bg-gradient-to-b from-slate-100 to-white dark:from-[#07111f] dark:to-[#0d1b2e]">
-        {screenshots.length > 0 ? null : (
-          <div className="flex h-full flex-col justify-between p-4">
-            <div>
-              <div className="h-2.5 w-20 rounded-full bg-slate-300 dark:bg-white/20" />
-              <div className="mt-5 h-8 w-28 rounded-xl bg-[#040947] dark:bg-cyan-300" />
-              <div className="mt-4 grid gap-2.5">
-                {[0, 1, 2].map((item) => (
-                  <div key={item} className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/10">
-                    <div className="h-2.5 w-3/4 rounded-full bg-slate-200 dark:bg-white/20" />
-                    <div className="mt-2.5 h-2.5 w-1/2 rounded-full bg-slate-100 dark:bg-white/10" />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <p className="text-center text-xs font-black text-slate-500 dark:text-slate-300">{label}</p>
-          </div>
-        )}
+    <div className={`relative mx-auto aspect-[9/16] w-full max-w-[220px] rounded-[1.9rem] border border-slate-300 bg-slate-950 p-2 shadow-2xl shadow-[#040947]/14 dark:border-white/15 dark:shadow-cyan-300/10 ${className}`}>
+      <div className="absolute left-1/2 top-3 z-20 h-1.5 w-14 -translate-x-1/2 rounded-full bg-slate-900/75 dark:bg-black/70" />
+      <div className="relative h-full overflow-hidden rounded-[1.45rem] bg-slate-100 dark:bg-[#07111f]">
+        <Image
+          src={`/nepali-light-${index}.png`}
+          alt={`${label} light screenshot`}
+          fill
+          sizes="(max-width: 640px) 44vw, 220px"
+          className="object-contain dark:hidden"
+        />
+        <Image
+          src={`/nepali-dark-${index}.png`}
+          alt={`${label} dark screenshot`}
+          fill
+          sizes="(max-width: 640px) 44vw, 220px"
+          className="hidden object-contain dark:block"
+        />
       </div>
     </div>
   );
@@ -35,20 +37,22 @@ function LanguagePhone({ label }: { label: string }) {
 
 export default function NepalReadySection() {
   return (
-    <motion.div
-      className="mt-10 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.07] sm:p-8 lg:p-10"
+    <motion.section
+      id="nepal-ready"
+      className="mt-10 scroll-mt-24 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.07] sm:p-8 lg:p-10"
       initial={{ opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="grid items-center gap-9 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <motion.div whileHover={{ y: -6, rotate: -1 }}>
-            <LanguagePhone label="Nepali language screenshot" />
+      <div className="grid items-center gap-9 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="relative mx-auto grid w-full max-w-xl grid-cols-2 items-center gap-3 sm:gap-5">
+          <div className="absolute left-1/2 top-1/2 h-[72%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ebbc01]/16 blur-3xl dark:bg-cyan-300/10" />
+          <motion.div className="relative z-10" whileHover={{ y: -6, rotate: -1 }}>
+            <LanguagePhone index={1} label="Nepali interface" />
           </motion.div>
-          <motion.div whileHover={{ y: -6, rotate: 1 }}>
-            <LanguagePhone label="English language screenshot" />
+          <motion.div className="relative z-10" whileHover={{ y: -6, rotate: 1 }}>
+            <LanguagePhone index={2} label="English interface" />
           </motion.div>
         </div>
 
@@ -57,35 +61,33 @@ export default function NepalReadySection() {
             <Languages className="h-5 w-5" />
           </div>
           <p className="mt-5 text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
-            Nepali Language
+            Nepal Ready
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 dark:text-white">
             Made for Nepal
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Nepali and English support makes Dhune.np easier for local users who prefer browsing, requesting service, and following app updates in a familiar language.
-          </p>
-          <p className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold leading-7 text-slate-700 dark:border-white/10 dark:bg-white/[0.08] dark:text-slate-200" lang="ne">
-            {nepaliLanguageCopy}
+            Nepali and English support makes the app easier for local users, vendors, and business customers. Dhune.np is designed around local laundry pickup, vendor offers, payments, and order tracking.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {[
-              "Nepali and English support",
-              "Built for local language comfort",
-            ].map((label) => (
+            {highlights.map((label, index) => (
               <motion.div
                 key={label}
                 className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/[0.08] dark:text-slate-200"
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.32, delay: index * 0.04, ease: "easeOut" }}
                 whileHover={{ y: -3, scale: 1.01 }}
               >
-                <Languages className="h-5 w-5 shrink-0 text-[#040947] dark:text-cyan-200" />
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-[#040947] dark:text-cyan-200" />
                 <span>{label}</span>
               </motion.div>
             ))}
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.section>
   );
 }

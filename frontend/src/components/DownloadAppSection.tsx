@@ -1,58 +1,68 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BellRing, CheckCircle2, CreditCard, Headphones, Languages, MapPin, Settings } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
-const screenshots: string[] = [];
+const darkScreens = ["/dark-1.png", "/dark-2.png", "/dark-3.png", "/dark-4.png", "/dark-5.png", "/dark-6.png"];
+const lightScreens = ["/light-1.png", "/light-2.png", "/light-3.png", "/light-4.png", "/light-5.png", "/light-6.png"];
+const appFeatures = ["Create requests", "Compare offers", "Track orders", "Manage payments"];
 
-const appHighlights = [
-  { title: "Geolocation", description: "Choose pickup points clearly.", Icon: MapPin },
-  { title: "Khalti & eSewa", description: "Payment status stays visible.", Icon: CreditCard },
-  { title: "Accessibility", description: "Nepali and English support.", Icon: Languages },
-  { title: "Preferences", description: "Profile settings stay personal.", Icon: Settings },
-  { title: "Help Center", description: "Support is close when needed.", Icon: Headphones },
-  { title: "Order Tracking", description: "Follow every order stage.", Icon: CheckCircle2 },
-  { title: "Notifications", description: "Important updates arrive fast.", Icon: BellRing },
-  { title: "Fast Requests", description: "Create laundry requests quickly.", Icon: MapPin },
-];
+function PhoneFrame({ index, focus = "active" }: { index: number; focus?: "active" | "side" }) {
+  const isActive = focus === "active";
 
-function PhonePreview({ active = false }: { active?: boolean }) {
   return (
-    <div
-      className={`relative mx-auto aspect-[9/16] w-full max-w-[230px] rounded-[1.9rem] border bg-slate-950 p-2.5 shadow-2xl transition ${
-        active
-          ? "border-[#040947]/25 shadow-[#040947]/18 dark:border-cyan-300/30 dark:shadow-cyan-300/12"
-          : "border-slate-300 opacity-80 dark:border-white/15"
+    <motion.div
+      key={`${focus}-${index}`}
+      className={`relative mx-auto aspect-[9/16] w-full rounded-[2rem] border bg-slate-950 p-2 transition-all duration-500 ease-out ${
+        isActive
+          ? "max-w-[250px] border-[#040947]/35 opacity-100 shadow-2xl shadow-[#040947]/20 dark:border-cyan-300/40 dark:shadow-cyan-300/14 lg:max-w-[270px]"
+          : "max-w-[190px] border-slate-300/80 opacity-70 shadow-xl shadow-[#040947]/8 dark:border-white/12 dark:shadow-cyan-300/5 lg:max-w-[205px]"
       }`}
+      initial={{ opacity: 0, y: 12, scale: isActive ? 0.96 : 0.82 }}
+      animate={{ opacity: isActive ? 1 : 0.7, y: 0, scale: isActive ? 1 : 0.86 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="h-full overflow-hidden rounded-[1.35rem] bg-gradient-to-b from-slate-100 to-white dark:from-[#07111f] dark:to-[#0d1b2e]">
-        {screenshots.length > 0 ? null : (
-          <div className="flex h-full flex-col justify-between p-4">
-            <div>
-              <div className="h-2.5 w-20 rounded-full bg-slate-300 dark:bg-white/20" />
-              <div className="mt-5 h-8 w-32 rounded-xl bg-[#040947] dark:bg-cyan-300" />
-              <div className="mt-4 grid gap-2.5">
-                {[0, 1, 2, 3].map((item) => (
-                  <div key={item} className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/10">
-                    <div className="h-2.5 w-3/4 rounded-full bg-slate-200 dark:bg-white/20" />
-                    <div className="mt-2.5 h-2.5 w-1/2 rounded-full bg-slate-100 dark:bg-white/10" />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[0, 1, 2].map((item) => (
-                <div key={item} className="h-8 rounded-xl bg-slate-200 dark:bg-white/15" />
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="absolute left-1/2 top-3 z-20 h-1.5 w-16 -translate-x-1/2 rounded-full bg-slate-900/70 dark:bg-black/70" />
+      <div className="relative h-full overflow-hidden rounded-[1.55rem] bg-slate-100 dark:bg-[#07111f]">
+        <Image
+          src={lightScreens[index]}
+          alt={`Dhune mobile app light screenshot ${index + 1}`}
+          fill
+          sizes={isActive ? "(max-width: 640px) 76vw, 270px" : "205px"}
+          className="object-contain dark:hidden"
+          priority={index === 0}
+        />
+        <Image
+          src={darkScreens[index]}
+          alt={`Dhune mobile app dark screenshot ${index + 1}`}
+          fill
+          sizes={isActive ? "(max-width: 640px) 76vw, 270px" : "205px"}
+          className="hidden object-contain dark:block"
+          priority={index === 0}
+        />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export default function DownloadAppSection() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % darkScreens.length);
+    }, 3600);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const goToPrevious = () => setActive((current) => (current - 1 + darkScreens.length) % darkScreens.length);
+  const goToNext = () => setActive((current) => (current + 1) % darkScreens.length);
+  const previous = (active - 1 + darkScreens.length) % darkScreens.length;
+  const next = (active + 1) % darkScreens.length;
+
   return (
     <motion.section
       id="user-app"
@@ -63,72 +73,85 @@ export default function DownloadAppSection() {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.07] sm:p-8 lg:p-10">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
-            User App
-          </p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
-            Mobile app preview, ready for real screenshots
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-            A clean carousel-ready space for request creation, order tracking, notifications, and profile screens.
-          </p>
-        </div>
+        <div className="grid items-center gap-9 lg:grid-cols-[2fr_1fr]">
+          <div className="relative mx-auto w-full max-w-4xl overflow-hidden px-8 sm:px-12">
+            <button
+              type="button"
+              onClick={goToPrevious}
+              className="absolute left-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-white/10 dark:bg-white/10 dark:text-cyan-200 dark:hover:bg-white/15"
+              aria-label="Previous app screenshot"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
 
-        <div className="mt-9 grid items-center gap-8 lg:grid-cols-[1fr_0.9fr]">
-          <div className="relative mx-auto flex w-full max-w-2xl items-center justify-center gap-4">
-            <motion.div className="hidden sm:block sm:w-[34%]" whileHover={{ y: -6, rotate: -1 }}>
-              <PhonePreview />
-            </motion.div>
-            <motion.div className="w-full max-w-[260px] sm:w-[40%]" whileHover={{ y: -8, scale: 1.015 }}>
-              <PhonePreview active />
-            </motion.div>
-            <motion.div className="hidden sm:block sm:w-[34%]" whileHover={{ y: -6, rotate: 1 }}>
-              <PhonePreview />
-            </motion.div>
+            <div className="flex w-full items-center justify-center gap-0 sm:gap-2 lg:gap-4">
+              <div className="hidden w-[28%] shrink-0 sm:block">
+                <PhoneFrame index={previous} focus="side" />
+              </div>
+              <div className="relative z-20 w-full max-w-[270px] shrink-0 sm:w-[36%] lg:max-w-[300px]">
+                <PhoneFrame index={active} focus="active" />
+              </div>
+              <div className="hidden w-[28%] shrink-0 sm:block">
+                <PhoneFrame index={next} focus="side" />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={goToNext}
+              className="absolute right-0 top-1/2 z-30 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-[#040947] shadow-sm transition hover:-translate-y-[55%] hover:border-[#040947]/30 dark:border-white/10 dark:bg-white/10 dark:text-cyan-200 dark:hover:bg-white/15"
+              aria-label="Next app screenshot"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div className="mt-5 flex items-center justify-center gap-2">
+              {darkScreens.map((screen, index) => (
+                <button
+                  key={screen}
+                  type="button"
+                  onClick={() => setActive(index)}
+                  className={`h-2.5 rounded-full transition-all ${
+                    active === index ? "w-7 bg-[#040947] dark:bg-cyan-300" : "w-2.5 bg-slate-300 dark:bg-white/20"
+                  }`}
+                  aria-label={`Show app screenshot ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="text-center lg:text-left">
-            <p className="mx-auto mb-4 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300 lg:mx-0">
-              Key mobile app features are designed for quick request creation, clear payment visibility, and easy order follow-up.
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-[#040947] dark:text-cyan-200">
+              User App
             </p>
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {appHighlights.map((feature, index) => {
-                const Icon = feature.Icon;
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+              Laundry requests from your phone
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+              Create pickup requests, review vendor offers, track orders, and manage payments in a mobile-first Dhune experience.
+            </p>
 
-                return (
-                  <motion.div
-                    key={feature.title}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:-translate-y-0.5 hover:border-[#040947]/25 dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-cyan-300/30"
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.35, delay: index * 0.035, ease: "easeOut" }}
-                    whileHover={{ y: -4, scale: 1.015 }}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="h-4 w-4 shrink-0 text-[#040947] dark:text-cyan-200" />
-                      <span className="text-sm font-extrabold text-slate-800 dark:text-white">{feature.title}</span>
-                    </div>
-                    <p className="mt-1.5 text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400">
-                      {feature.description}
-                    </p>
-                  </motion.div>
-                );
-              })}
+            <div className="mx-auto mt-5 grid max-w-sm gap-2.5 lg:mx-0">
+              {appFeatures.map((feature) => (
+                <div
+                  key={feature}
+                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/[0.08] dark:text-slate-200"
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#040947] dark:text-cyan-200" />
+                  <span>{feature}</span>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-7 text-center lg:text-left">
-              <a
-                href="#user-app"
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-[#040947] px-5 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#0b146b] dark:bg-cyan-300 dark:text-[#07111f] dark:hover:bg-white"
-              >
-                Download Android App
-              </a>
-              <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Android app download will be available soon.
-              </p>
-            </div>
+            <a
+              href="#user-app"
+              className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-[#040947] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#0b146b] dark:bg-cyan-300 dark:text-[#07111f] dark:hover:bg-white"
+            >
+              Download Android App
+            </a>
+            <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Android app download will be available soon.
+            </p>
           </div>
         </div>
       </div>

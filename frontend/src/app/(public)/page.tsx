@@ -71,7 +71,7 @@ export default function Home() {
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#040947] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#040947]/15 transition hover:-translate-y-0.5 hover:bg-[#0b146b] sm:w-auto dark:bg-cyan-300 dark:text-[#07111f] dark:shadow-cyan-300/15 dark:hover:bg-white"
                 type="button"
               >
-                Get Started
+                Explore App
               </button>
               <button
                 onClick={() => router.push("/auth/signup/vendor")}

@@ -3,12 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 const quickLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "User App", href: "#user-app" },
-  { label: "Features", href: "#features" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Home", href: "/#home" },
+  { label: "About", href: "/#about" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "User App", href: "/#user-app" },
+  { label: "Features", href: "/#features" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export default function LandingFooter() {
