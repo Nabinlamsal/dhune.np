@@ -18,6 +18,12 @@ import (
 
 const resendEmailEndpoint = "https://api.resend.com/emails"
 
+const (
+	emailProviderDisabled = "disabled"
+	emailProviderResend   = "resend"
+	emailProviderSMTP     = "smtp"
+)
+
 type EmailDetailRow struct {
 	Label string
 	Value string
@@ -79,15 +85,65 @@ func SendEmail(to, subject, htmlBody string) error {
 		return fmt.Errorf("send email: recipient is required")
 	}
 
-	if strings.TrimSpace(os.Getenv("RESEND_API_KEY")) != "" {
+	provider, err := selectedEmailProvider()
+	if err != nil {
+		return err
+	}
+	log.Printf("email: provider selected provider=%s", provider)
+
+	switch provider {
+	case emailProviderDisabled:
+		log.Printf("email: delivery disabled, skipped subject=%q recipient=%s", subject, strings.TrimSpace(to))
+		return nil
+	case emailProviderResend:
 		return sendEmailWithResend(to, subject, htmlBody)
-	}
-
-	if hasSMTPConfig() {
+	case emailProviderSMTP:
 		return sendEmailWithSMTP(to, subject, htmlBody)
+	default:
+		return fmt.Errorf("send email: unsupported provider %q", provider)
+	}
+}
+
+func EmailDeliveryEnabled() bool {
+	raw := strings.TrimSpace(os.Getenv("EMAIL_DELIVERY_ENABLED"))
+	if raw == "" {
+		return true
 	}
 
-	return fmt.Errorf("RESEND_API_KEY is required for sending email")
+	enabled, err := strconv.ParseBool(raw)
+	if err != nil {
+		log.Printf("email: invalid EMAIL_DELIVERY_ENABLED value %q, defaulting to enabled", raw)
+		return true
+	}
+
+	return enabled
+}
+
+func selectedEmailProvider() (string, error) {
+	if !EmailDeliveryEnabled() {
+		return emailProviderDisabled, nil
+	}
+
+	configuredProvider := strings.ToLower(strings.TrimSpace(os.Getenv("EMAIL_PROVIDER")))
+	if configuredProvider != "" && configuredProvider != emailProviderResend && configuredProvider != emailProviderSMTP {
+		return "", fmt.Errorf("send email: unsupported EMAIL_PROVIDER %q", configuredProvider)
+	}
+
+	if configuredProvider == emailProviderResend || strings.TrimSpace(os.Getenv("RESEND_API_KEY")) != "" {
+		if strings.TrimSpace(os.Getenv("RESEND_API_KEY")) == "" {
+			return "", fmt.Errorf("send email: RESEND_API_KEY is required when EMAIL_PROVIDER=resend")
+		}
+		return emailProviderResend, nil
+	}
+
+	if configuredProvider == emailProviderSMTP || hasSMTPConfig() {
+		if !hasSMTPConfig() {
+			return "", fmt.Errorf("send email: SMTP configuration is incomplete")
+		}
+		return emailProviderSMTP, nil
+	}
+
+	return "", fmt.Errorf("send email: no email provider is configured")
 }
 
 func sendEmailWithResend(to, subject, htmlBody string) error {
@@ -150,12 +206,11 @@ func sendEmailWithResend(to, subject, htmlBody string) error {
 }
 
 func resendFromAddress() string {
-	if from := strings.TrimSpace(os.Getenv("RESEND_FROM_EMAIL")); from != "" {
-		return from
-	}
-
 	name := strings.TrimSpace(os.Getenv("RESEND_FROM_NAME"))
-	email := strings.TrimSpace(os.Getenv("FROM_EMAIL"))
+	email := strings.TrimSpace(os.Getenv("RESEND_FROM_EMAIL"))
+	if email == "" {
+		return ""
+	}
 	if name != "" && email != "" {
 		return fmt.Sprintf("%s <%s>", name, email)
 	}

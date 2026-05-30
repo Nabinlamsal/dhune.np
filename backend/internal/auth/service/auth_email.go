@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Nabinlamsal/dhune.np/internal/utils"
@@ -33,7 +35,7 @@ func (s *AuthService) sendVerificationOTPEmail(
 		Footer: "If you did not create a Dhune.np account, you can ignore this email.",
 	})
 
-	return utils.SendEmail(email, "Verify your email", body)
+	return sendOTPEmail(email, otpPurposeEmailVerification, "Verify your email", body)
 }
 
 func (s *AuthService) sendPasswordResetOTPEmail(
@@ -60,5 +62,22 @@ func (s *AuthService) sendPasswordResetOTPEmail(
 		Footer: "If you did not request a password reset, you can ignore this email.",
 	})
 
-	return utils.SendEmail(email, "Reset your password", body)
+	return sendOTPEmail(email, otpPurposePasswordReset, "Reset your password", body)
+}
+
+func sendOTPEmail(email, purpose, subject, body string) error {
+	log.Printf("email: otp send attempted purpose=%s recipient=%s", purpose, strings.TrimSpace(email))
+
+	if !utils.EmailDeliveryEnabled() {
+		log.Printf("email: otp send skipped purpose=%s recipient=%s delivery_enabled=false", purpose, strings.TrimSpace(email))
+		return nil
+	}
+
+	if err := utils.SendEmail(email, subject, body); err != nil {
+		log.Printf("email: otp send failed purpose=%s recipient=%s: %v", purpose, strings.TrimSpace(email), err)
+		return errors.New("unable to send email right now")
+	}
+
+	log.Printf("email: otp send succeeded purpose=%s recipient=%s", purpose, strings.TrimSpace(email))
+	return nil
 }
