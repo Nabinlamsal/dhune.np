@@ -309,14 +309,14 @@ function MobileAppHero() {
                 <div className="relative min-h-[340px] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-4 sm:min-h-[420px]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_20%,rgba(235,188,1,0.28),transparent_32%),radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.22),transparent_34%)]" />
                     <Image
-                        src="/request.png"
+                        src="/light-2.png"
                         alt="Dhune mobile request screen"
                         width={260}
                         height={520}
                         className="absolute left-2 top-14 w-[145px] rotate-[-10deg] rounded-2xl shadow-2xl sm:left-8 sm:w-[185px]"
                     />
                     <Image
-                        src="/home.png"
+                        src="/light-1.png"
                         alt="Dhune mobile home screen"
                         width={300}
                         height={600}
@@ -324,7 +324,7 @@ function MobileAppHero() {
                         className="absolute left-1/2 top-4 z-20 w-[170px] -translate-x-1/2 rounded-2xl shadow-2xl sm:w-[220px]"
                     />
                     <Image
-                        src="/order.png"
+                        src="/light-4.png"
                         alt="Dhune mobile order tracking screen"
                         width={260}
                         height={520}
