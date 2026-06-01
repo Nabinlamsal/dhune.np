@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     question: "Is the mobile app available?",
-    answer: "The Android app download section is prepared and the public download link will be available soon.",
+    answer: "Yes. Use the Download Android App button to open the installer page and download the latest DHUNE Android build.",
   },
 ];
 

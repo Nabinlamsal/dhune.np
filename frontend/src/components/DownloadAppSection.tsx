@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 const darkScreens = ["/dark-1.png", "/dark-2.png", "/dark-3.png", "/dark-4.png", "/dark-5.png", "/dark-6.png"];
 const lightScreens = ["/light-1.png", "/light-2.png", "/light-3.png", "/light-4.png", "/light-5.png", "/light-6.png"];
 const appFeatures = ["Create requests", "Compare offers", "Track orders", "Manage payments"];
+const androidAppDownloadUrl =
+  "https://expo.dev/accounts/nabinlamsal/projects/dhune-mobile/builds/71f0031b-0daf-42a1-b21f-d83c4fd8f8dc";
 
 function PhoneFrame({ index, focus = "active" }: { index: number; focus?: "active" | "side" }) {
   const isActive = focus === "active";
@@ -144,13 +146,15 @@ export default function DownloadAppSection() {
             </div>
 
             <a
-              href="#user-app"
+              href={androidAppDownloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-[#040947] px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#0b146b] dark:bg-sky-300 dark:text-[#0B1220] dark:hover:bg-sky-200"
             >
               Download Android App
             </a>
             <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Android app download will be available soon.
+              Opens the Android installer page in a new tab.
             </p>
           </div>
         </div>
