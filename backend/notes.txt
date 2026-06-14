@@ -1,6 +1,10 @@
 $env:GOOSE_DRIVER="postgres"
 $env:GOOSE_DBSTRING="postgres://postgres:nabin@localhost:5432/dhune_db?sslmode=disable"
 
+
+$env:GOOSE_DRIVER="postgres"
+$env:GOOSE_DBSTRING="postgresql://neondb_owner:npg_cMl1kU2aybIj@ep-still-mountain-aq5v30h0.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
 goose -env=none -dir db/migrations up
 # codex resume 019d957c-29ef-7fc0-8c4d-ff63fd68c5f1
 
